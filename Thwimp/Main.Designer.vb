@@ -25,10 +25,10 @@ Partial Class Main
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(Main))
         Me.LoadTHPRoot = New System.Windows.Forms.FolderBrowserDialog()
         Me.TabTHP = New System.Windows.Forms.TabPage()
-        Me.lblTE_D = New System.Windows.Forms.GroupBox()
+        Me.grpTHPEnc = New System.Windows.Forms.GroupBox()
         Me.chkTE_Dum = New System.Windows.Forms.CheckBox()
         Me.txtTE_D = New System.Windows.Forms.TextBox()
-        Me.kbk = New System.Windows.Forms.Label()
+        Me.lblTE_D = New System.Windows.Forms.Label()
         Me.btnTE_Enc = New System.Windows.Forms.Button()
         Me.chkTE_A1 = New System.Windows.Forms.CheckBox()
         Me.txtTE_F = New System.Windows.Forms.TextBox()
@@ -59,7 +59,7 @@ Partial Class Main
         Me.lblTD_CW = New System.Windows.Forms.Label()
         Me.lblTD_CX = New System.Windows.Forms.Label()
         Me.btnRip = New System.Windows.Forms.Button()
-        Me.chkDSound = New System.Windows.Forms.CheckBox()
+        Me.chkRip_DSound = New System.Windows.Forms.CheckBox()
         Me.btnPlay = New System.Windows.Forms.Button()
         Me.lblTHPFile = New System.Windows.Forms.Label()
         Me.grpTHPInfo = New System.Windows.Forms.GroupBox()
@@ -134,8 +134,10 @@ Partial Class Main
         Me.LoadTHPConv = New System.Windows.Forms.OpenFileDialog()
         Me.ofdRip = New System.Windows.Forms.OpenFileDialog()
         Me.ofdOutput = New System.Windows.Forms.FolderBrowserDialog()
+        Me.chkRip_Type = New System.Windows.Forms.CheckBox()
+        Me.chkTE_wav = New System.Windows.Forms.CheckBox()
         Me.TabTHP.SuspendLayout()
-        Me.lblTE_D.SuspendLayout()
+        Me.grpTHPEnc.SuspendLayout()
         Me.grpTHPDec.SuspendLayout()
         Me.grpTHPDec_Crop.SuspendLayout()
         Me.grpTHPInfo.SuspendLayout()
@@ -158,12 +160,11 @@ Partial Class Main
         'LoadTHPRoot
         '
         Me.LoadTHPRoot.Description = "Select the root directory for THP files"
-        Me.LoadTHPRoot.RootFolder = System.Environment.SpecialFolder.MyDocuments
         Me.LoadTHPRoot.ShowNewFolderButton = False
         '
         'TabTHP
         '
-        Me.TabTHP.Controls.Add(Me.lblTE_D)
+        Me.TabTHP.Controls.Add(Me.grpTHPEnc)
         Me.TabTHP.Controls.Add(Me.grpTHPDec)
         Me.TabTHP.Controls.Add(Me.lblTHPFile)
         Me.TabTHP.Controls.Add(Me.grpTHPInfo)
@@ -177,41 +178,42 @@ Partial Class Main
         Me.TabTHP.Text = "THP"
         Me.TabTHP.UseVisualStyleBackColor = True
         '
-        'lblTE_D
+        'grpTHPEnc
         '
-        Me.lblTE_D.Controls.Add(Me.chkTE_Dum)
-        Me.lblTE_D.Controls.Add(Me.txtTE_D)
-        Me.lblTE_D.Controls.Add(Me.kbk)
-        Me.lblTE_D.Controls.Add(Me.btnTE_Enc)
-        Me.lblTE_D.Controls.Add(Me.chkTE_A1)
-        Me.lblTE_D.Controls.Add(Me.txtTE_F)
-        Me.lblTE_D.Controls.Add(Me.chkTE_A2)
-        Me.lblTE_D.Controls.Add(Me.lblTE_F)
-        Me.lblTE_D.Controls.Add(Me.chkTE_A3)
-        Me.lblTE_D.Controls.Add(Me.chkTE_A4)
-        Me.lblTE_D.Controls.Add(Me.chkTE_A5)
-        Me.lblTE_D.Controls.Add(Me.txtTE_M)
-        Me.lblTE_D.Controls.Add(Me.chkTE_A6)
-        Me.lblTE_D.Controls.Add(Me.lblTE_M)
-        Me.lblTE_D.Controls.Add(Me.chkTE_B1)
-        Me.lblTE_D.Controls.Add(Me.lblTE_C)
-        Me.lblTE_D.Controls.Add(Me.chkTE_B2)
-        Me.lblTE_D.Controls.Add(Me.lblTE_R)
-        Me.lblTE_D.Controls.Add(Me.chkTE_B3)
-        Me.lblTE_D.Controls.Add(Me.chkTE_B6)
-        Me.lblTE_D.Controls.Add(Me.chkTE_B4)
-        Me.lblTE_D.Controls.Add(Me.chkTE_B5)
-        Me.lblTE_D.Location = New System.Drawing.Point(307, 411)
-        Me.lblTE_D.Name = "lblTE_D"
-        Me.lblTE_D.Size = New System.Drawing.Size(228, 218)
-        Me.lblTE_D.TabIndex = 42
-        Me.lblTE_D.TabStop = False
-        Me.lblTE_D.Text = "THP Encoder"
+        Me.grpTHPEnc.Controls.Add(Me.chkTE_wav)
+        Me.grpTHPEnc.Controls.Add(Me.chkTE_Dum)
+        Me.grpTHPEnc.Controls.Add(Me.txtTE_D)
+        Me.grpTHPEnc.Controls.Add(Me.lblTE_D)
+        Me.grpTHPEnc.Controls.Add(Me.btnTE_Enc)
+        Me.grpTHPEnc.Controls.Add(Me.chkTE_A1)
+        Me.grpTHPEnc.Controls.Add(Me.txtTE_F)
+        Me.grpTHPEnc.Controls.Add(Me.chkTE_A2)
+        Me.grpTHPEnc.Controls.Add(Me.lblTE_F)
+        Me.grpTHPEnc.Controls.Add(Me.chkTE_A3)
+        Me.grpTHPEnc.Controls.Add(Me.chkTE_A4)
+        Me.grpTHPEnc.Controls.Add(Me.chkTE_A5)
+        Me.grpTHPEnc.Controls.Add(Me.txtTE_M)
+        Me.grpTHPEnc.Controls.Add(Me.chkTE_A6)
+        Me.grpTHPEnc.Controls.Add(Me.lblTE_M)
+        Me.grpTHPEnc.Controls.Add(Me.chkTE_B1)
+        Me.grpTHPEnc.Controls.Add(Me.lblTE_C)
+        Me.grpTHPEnc.Controls.Add(Me.chkTE_B2)
+        Me.grpTHPEnc.Controls.Add(Me.lblTE_R)
+        Me.grpTHPEnc.Controls.Add(Me.chkTE_B3)
+        Me.grpTHPEnc.Controls.Add(Me.chkTE_B6)
+        Me.grpTHPEnc.Controls.Add(Me.chkTE_B4)
+        Me.grpTHPEnc.Controls.Add(Me.chkTE_B5)
+        Me.grpTHPEnc.Location = New System.Drawing.Point(307, 411)
+        Me.grpTHPEnc.Name = "grpTHPEnc"
+        Me.grpTHPEnc.Size = New System.Drawing.Size(228, 218)
+        Me.grpTHPEnc.TabIndex = 42
+        Me.grpTHPEnc.TabStop = False
+        Me.grpTHPEnc.Text = "THP Encoder"
         '
         'chkTE_Dum
         '
         Me.chkTE_Dum.AutoSize = True
-        Me.chkTE_Dum.Location = New System.Drawing.Point(150, 183)
+        Me.chkTE_Dum.Location = New System.Drawing.Point(150, 151)
         Me.chkTE_Dum.Name = "chkTE_Dum"
         Me.chkTE_Dum.Size = New System.Drawing.Size(75, 21)
         Me.chkTE_Dum.TabIndex = 44
@@ -220,24 +222,24 @@ Partial Class Main
         '
         'txtTE_D
         '
-        Me.txtTE_D.Location = New System.Drawing.Point(178, 95)
+        Me.txtTE_D.Location = New System.Drawing.Point(178, 74)
         Me.txtTE_D.Name = "txtTE_D"
         Me.txtTE_D.Size = New System.Drawing.Size(20, 22)
         Me.txtTE_D.TabIndex = 43
         Me.txtTE_D.Text = "8"
         '
-        'kbk
+        'lblTE_D
         '
-        Me.kbk.AutoSize = True
-        Me.kbk.Location = New System.Drawing.Point(147, 97)
-        Me.kbk.Name = "kbk"
-        Me.kbk.Size = New System.Drawing.Size(36, 17)
-        Me.kbk.TabIndex = 42
-        Me.kbk.Text = "Digs"
+        Me.lblTE_D.AutoSize = True
+        Me.lblTE_D.Location = New System.Drawing.Point(147, 76)
+        Me.lblTE_D.Name = "lblTE_D"
+        Me.lblTE_D.Size = New System.Drawing.Size(36, 17)
+        Me.lblTE_D.TabIndex = 42
+        Me.lblTE_D.Text = "Digs"
         '
         'btnTE_Enc
         '
-        Me.btnTE_Enc.Location = New System.Drawing.Point(150, 124)
+        Me.btnTE_Enc.Location = New System.Drawing.Point(150, 98)
         Me.btnTE_Enc.Name = "btnTE_Enc"
         Me.btnTE_Enc.Size = New System.Drawing.Size(72, 53)
         Me.btnTE_Enc.TabIndex = 29
@@ -256,7 +258,7 @@ Partial Class Main
         '
         'txtTE_F
         '
-        Me.txtTE_F.Location = New System.Drawing.Point(150, 65)
+        Me.txtTE_F.Location = New System.Drawing.Point(150, 46)
         Me.txtTE_F.Name = "txtTE_F"
         Me.txtTE_F.Size = New System.Drawing.Size(48, 22)
         Me.txtTE_F.TabIndex = 33
@@ -275,7 +277,7 @@ Partial Class Main
         'lblTE_F
         '
         Me.lblTE_F.AutoSize = True
-        Me.lblTE_F.Location = New System.Drawing.Point(147, 40)
+        Me.lblTE_F.Location = New System.Drawing.Point(133, 23)
         Me.lblTE_F.Name = "lblTE_F"
         Me.lblTE_F.Size = New System.Drawing.Size(89, 17)
         Me.lblTE_F.TabIndex = 41
@@ -420,9 +422,10 @@ Partial Class Main
         '
         'grpTHPDec
         '
+        Me.grpTHPDec.Controls.Add(Me.chkRip_Type)
         Me.grpTHPDec.Controls.Add(Me.grpTHPDec_Crop)
         Me.grpTHPDec.Controls.Add(Me.btnRip)
-        Me.grpTHPDec.Controls.Add(Me.chkDSound)
+        Me.grpTHPDec.Controls.Add(Me.chkRip_DSound)
         Me.grpTHPDec.Controls.Add(Me.btnPlay)
         Me.grpTHPDec.Location = New System.Drawing.Point(7, 411)
         Me.grpTHPDec.Name = "grpTHPDec"
@@ -441,7 +444,7 @@ Partial Class Main
         Me.grpTHPDec_Crop.Controls.Add(Me.txtTD_CX)
         Me.grpTHPDec_Crop.Controls.Add(Me.lblTD_CW)
         Me.grpTHPDec_Crop.Controls.Add(Me.lblTD_CX)
-        Me.grpTHPDec_Crop.Location = New System.Drawing.Point(6, 80)
+        Me.grpTHPDec_Crop.Location = New System.Drawing.Point(6, 106)
         Me.grpTHPDec_Crop.Name = "grpTHPDec_Crop"
         Me.grpTHPDec_Crop.Size = New System.Drawing.Size(282, 87)
         Me.grpTHPDec_Crop.TabIndex = 26
@@ -525,15 +528,15 @@ Partial Class Main
         Me.btnRip.Text = "Rip"
         Me.btnRip.UseVisualStyleBackColor = True
         '
-        'chkDSound
+        'chkRip_DSound
         '
-        Me.chkDSound.AutoSize = True
-        Me.chkDSound.Location = New System.Drawing.Point(6, 40)
-        Me.chkDSound.Name = "chkDSound"
-        Me.chkDSound.Size = New System.Drawing.Size(116, 21)
-        Me.chkDSound.TabIndex = 27
-        Me.chkDSound.Text = "DirectSound?"
-        Me.chkDSound.UseVisualStyleBackColor = True
+        Me.chkRip_DSound.AutoSize = True
+        Me.chkRip_DSound.Location = New System.Drawing.Point(6, 23)
+        Me.chkRip_DSound.Name = "chkRip_DSound"
+        Me.chkRip_DSound.Size = New System.Drawing.Size(116, 21)
+        Me.chkRip_DSound.TabIndex = 27
+        Me.chkRip_DSound.Text = "DirectSound?"
+        Me.chkRip_DSound.UseVisualStyleBackColor = True
         '
         'btnPlay
         '
@@ -1180,7 +1183,6 @@ Partial Class Main
         Me.txtTHPConv.Size = New System.Drawing.Size(324, 22)
         Me.txtTHPConv.TabIndex = 38
         Me.txtTHPConv.TabStop = False
-        Me.txtTHPConv.Text = "C:\Users\Anthony\Downloads\thp\THPGUI\THP\THPConv.exe"
         '
         'btnBrowseFFMpeg
         '
@@ -1201,8 +1203,6 @@ Partial Class Main
         Me.txtFFMpeg.Size = New System.Drawing.Size(324, 22)
         Me.txtFFMpeg.TabIndex = 36
         Me.txtFFMpeg.TabStop = False
-        Me.txtFFMpeg.Text = "C:\Program Files (x86)\Media\Video\ffmpeg\ffmpeg-20181015-c27c7b4-win64-static\bi" & _
-            "n"
         '
         'lblFMpeg
         '
@@ -1233,7 +1233,6 @@ Partial Class Main
         Me.txtRoot.Size = New System.Drawing.Size(324, 22)
         Me.txtRoot.TabIndex = 0
         Me.txtRoot.TabStop = False
-        Me.txtRoot.Text = "C:\Users\Anthony\Downloads\thp"
         '
         'lblRoot
         '
@@ -1282,6 +1281,26 @@ Partial Class Main
         Me.ofdOutput.Description = "Select the directory with the appropriately named input files"
         Me.ofdOutput.ShowNewFolderButton = False
         '
+        'chkRip_Type
+        '
+        Me.chkRip_Type.AutoSize = True
+        Me.chkRip_Type.Location = New System.Drawing.Point(6, 46)
+        Me.chkRip_Type.Name = "chkRip_Type"
+        Me.chkRip_Type.Size = New System.Drawing.Size(92, 21)
+        Me.chkRip_Type.TabIndex = 29
+        Me.chkRip_Type.Text = "Rip to AVI"
+        Me.chkRip_Type.UseVisualStyleBackColor = True
+        '
+        'chkTE_wav
+        '
+        Me.chkTE_wav.AutoSize = True
+        Me.chkTE_wav.Location = New System.Drawing.Point(150, 178)
+        Me.chkTE_wav.Name = "chkTE_wav"
+        Me.chkTE_wav.Size = New System.Drawing.Size(54, 21)
+        Me.chkTE_wav.TabIndex = 45
+        Me.chkTE_wav.Text = "wav"
+        Me.chkTE_wav.UseVisualStyleBackColor = True
+        '
         'Main
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(8.0!, 16.0!)
@@ -1295,8 +1314,8 @@ Partial Class Main
         Me.Text = "Thwimp"
         Me.TabTHP.ResumeLayout(False)
         Me.TabTHP.PerformLayout()
-        Me.lblTE_D.ResumeLayout(False)
-        Me.lblTE_D.PerformLayout()
+        Me.grpTHPEnc.ResumeLayout(False)
+        Me.grpTHPEnc.PerformLayout()
         Me.grpTHPDec.ResumeLayout(False)
         Me.grpTHPDec.PerformLayout()
         Me.grpTHPDec_Crop.ResumeLayout(False)
@@ -1409,7 +1428,7 @@ Partial Class Main
     Friend WithEvents lblTD_CW As System.Windows.Forms.Label
     Friend WithEvents lblTD_CX As System.Windows.Forms.Label
     Friend WithEvents btnRip As System.Windows.Forms.Button
-    Friend WithEvents chkDSound As System.Windows.Forms.CheckBox
+    Friend WithEvents chkRip_DSound As System.Windows.Forms.CheckBox
     Friend WithEvents btnPlay As System.Windows.Forms.Button
     Friend WithEvents txtTE_M As System.Windows.Forms.TextBox
     Friend WithEvents lblTE_M As System.Windows.Forms.Label
@@ -1427,7 +1446,7 @@ Partial Class Main
     Friend WithEvents chkTE_A3 As System.Windows.Forms.CheckBox
     Friend WithEvents chkTE_A2 As System.Windows.Forms.CheckBox
     Friend WithEvents chkTE_A1 As System.Windows.Forms.CheckBox
-    Friend WithEvents lblTE_D As System.Windows.Forms.GroupBox
+    Friend WithEvents grpTHPEnc As System.Windows.Forms.GroupBox
     Friend WithEvents btnTE_Enc As System.Windows.Forms.Button
     Friend WithEvents txtTE_F As System.Windows.Forms.TextBox
     Friend WithEvents lblTE_F As System.Windows.Forms.Label
@@ -1437,8 +1456,10 @@ Partial Class Main
     Friend WithEvents lblVS_S As System.Windows.Forms.Label
     Friend WithEvents ofdRip As System.Windows.Forms.OpenFileDialog
     Friend WithEvents ofdOutput As System.Windows.Forms.FolderBrowserDialog
-    Friend WithEvents kbk As System.Windows.Forms.Label
+    Friend WithEvents lblTE_D As System.Windows.Forms.Label
     Friend WithEvents txtTE_D As System.Windows.Forms.TextBox
     Friend WithEvents chkTE_Dum As System.Windows.Forms.CheckBox
     Friend WithEvents PictureBox1 As System.Windows.Forms.PictureBox
+    Friend WithEvents chkRip_Type As System.Windows.Forms.CheckBox
+    Friend WithEvents chkTE_wav As System.Windows.Forms.CheckBox
 End Class
