@@ -1,0 +1,31 @@
+When a cup is highlighted in Battle Mode. Top=Wii, Bot=Retro. 5 courses per cup (z)
+Video displayed when a track is highlighted for a Battle Cup
+Video displayed when selecting a battle mode type. Top=Balloon Battle (Block Plaza), Bot=Coin Runners (Delfino Pier)
+Video displayed when highlighting a Wii Battle Track in competition? (Unused?)
+=============================
+Engine class selection. 1st 4 are 50cc (karts only), 100cc (bikes only), 150cc (karts and bikes), mirror (karts and bikes). Last 2 are 50cc (karts and bikes) and 100cc (karts and bikes). 150cc and mirror are mirrored. Each subvideo is a class row (50,100,150, 150m)
+Drift type selection. Top=manual, bot=auto (flipflopped than in-game). Technically Z=2, with a crossfade meant to be applied between frames 95-125 for 2 halves of a video
+Team selection. Top=individual, bot=team
+Unused MP Video. Top=race, bot=battle. Technically same video is looped twice on both cells (2 240 frame videos)
+Main Menu for Single Player. 1st Col=GP, TT, 2nd col=VS, BT. These 4 cells are very out of sync, do whatever
+=============================
+Banana cup courses
+Video displayed when highlighting over a cup, showing each course (GP mode). In TT/VS, when selecting an individual course, displays cell of appropriate subvideo. Arrangement: 1st column is Nth course in Mushroom, Flower, Star, and Special cups respectively. 2nd column is Nth course in Shell, Banana, Leaf, and Thunder cups respectively. 
+Flower Cup courses
+Mushroom Cup courses
+Leaf Cup courses
+Koopa Cup courses
+Special Cup Courses
+Star Cup Courses
+Thunder Cup Courses
+=============================
+Fake Ending (NTSC)
+Fake Ending (PAL)
+True Ending (NTSC)
+True Ending (PAL)
+=============================
+Title Movie (NTSC Wide)
+Title Movie (PAL Wide)
+Title Movie (NTSC SD)
+Title Movie (PAL SD)
+Main Menu (Single Player, Multiplayer (2-4, 3 squares), WFC (2 squares), MKWii Channel (1 square)
