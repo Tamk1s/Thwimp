@@ -2,13 +2,13 @@ White box, determines highlighted track (1-5)
 n/a
 n/a
 n/a
-=============================
 n/a
 n/a
 n/a
 n/a
 n/a
-=============================
+n/a
+n/a
 n/a
 White box, determines Nth course in cup to display.
 n/a
@@ -18,7 +18,8 @@ n/a
 n/a
 n/a
 n/a
-=============================
+n/a
+n/a
 n/a
 n/a
 n/a

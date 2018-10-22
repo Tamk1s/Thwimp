@@ -6,6 +6,8 @@ Public Class Main
     'xReplace val with NDType.TryParse() methods, and error handling if the entires are wrong'
     'xError handling if a exe coutil is not found
     'xKeep crop values in valid ranges
+    'xHandle dummy entries in combo box appropriately
+    'xRemove multiplicity optional flag
     'Apparently control ripping is off by one for cup_select
     'Replace abs file pathing for Shell with relative pathing
 
@@ -29,7 +31,6 @@ Public Class Main
 
     'THP data
     Shared THPs(255) As THPData                           'Array containing all of the THPData
-    Const BADENTRY As SByte = -2                          'Flag for signifying that the data for empty THPs is invalid (prevents error). !@ Leftover from BreakGold Editor; try utilizing it to prevent errors on loading of dummy THP in combo box?
 
     ''' <summary>
     ''' Generic structure for image dims (width and height).
@@ -49,7 +50,6 @@ Public Class Main
         Dim col As Byte             '~          cols
         Dim subV As Byte            '           subvideos (=rows*cols)
         Dim mult As Byte            '           Multiplicity for each cell
-        Dim multOpt As Boolean      'Is multiplicity optional? !@ Needs removed from data files, code, form, defaults restored in data files
         Dim subVT As Byte           'Total amount of subvidoes (subvideos*multiplicity)
     End Structure
 
@@ -96,6 +96,7 @@ Public Class Main
         Dim audial As Audio                                 'Audio data of THP
         Dim Desc As String                                  'Desc: Description of usage of file (in words)
         Dim File As String                                  'File: Directory of the file, relative to the THP root
+        Dim Bad As Boolean                                  'Is this a dummy, bad THP entry?
     End Structure
     '========================
 
@@ -141,10 +142,9 @@ Public Class Main
         Dim bytStart As Byte            'Start position in the string for extracting a subentry
         Dim bytEnd As Byte              'End position ~
         Dim bytLen As Byte              'The length of the string to extract
-        Const bytDataEnt As Byte = 19   'Amount of entries per line
+        Const bytDataEnt As Byte = 18   'Amount of entries per line
 
-        '!@ Use me to prevent errors/handle dummy THP entries!
-        'Dim bytErrFlag As Byte          'Counts the number of invalid entries, if = 5 bad entries, mark .BPP as BADENTRY to prevent errors
+        Dim bytErrFlag As Byte = 0      'Counts the number of invalid entries, if = bytDataEnt bad entries, disable THPDec, ThpRip, and ThpEnc group boxes
 
         Try
             bytItems = 0
@@ -204,6 +204,7 @@ Public Class Main
 
                 bytStart = 1                                        'Init start pos
                 'Parse each of the entries in each line
+                bytErrFlag = 0
                 For bytCtr2 = 1 To bytDataEnt Step 1                'Iterate through all entries in line
 
                     'If not the last data entry in line, find the position of the SEP character (,), else SEP2 character (;)
@@ -211,8 +212,12 @@ Public Class Main
                     bytLen = (bytEnd - bytStart)             'Get the length of the sub entry (subtract End from Start)
                     strVar = Mid(strEntry, bytStart, bytLen) 'Extract the sub entry via MID command
 
-                    '!@
-                    'If Val(strVar) = 0 Then bytErrFlag += 1 'If the entry is 0, increment error counter
+                    'If the entry is 0, increment error counter
+                    If bytCtr2 = 14 Then
+                        If TryParseErr_Single(strVar) = 0 Then bytErrFlag += 1
+                    Else
+                        If TryParseErr_UShort(strVar) = 0 Then bytErrFlag += 1
+                    End If
 
                     'Allocate the extracted value into the appropriate array data fields based on index
                     Select Case bytCtr2
@@ -234,46 +239,52 @@ Public Class Main
                         Case 6
                             THPs(bytCtr1).visual.THPinfo.mult = TryParseErr_Byte(strVar)
                         Case 7
-                            THPs(bytCtr1).visual.THPinfo.multOpt = BitToBool(TryParseErr_Byte(strVar))
-                        Case 8
                             THPs(bytCtr1).visual.THPinfo.subVT = TryParseErr_Byte(strVar)
 
                             'Subvideo info
                             'Subvideo width and height
-                        Case 9
+                        Case 8
                             THPs(bytCtr1).visual.SDim.width = TryParseErr_UShort(strVar)
-                        Case 10
+                        Case 9
                             THPs(bytCtr1).visual.SDim.height = TryParseErr_UShort(strVar)
 
                             'Frame counts for each subvideo, total THP video
-                        Case 11
+                        Case 10
                             THPs(bytCtr1).visual.Frames.subframes = TryParseErr_UShort(strVar)
-                        Case 12
+                        Case 11
                             THPs(bytCtr1).visual.Frames.totframes = TryParseErr_UShort(strVar)
 
                             'Width and height of padding
-                        Case 13
+                        Case 12
                             THPs(bytCtr1).visual.Padding.width = TryParseErr_UShort(strVar)
-                        Case 14
+                        Case 13
                             THPs(bytCtr1).visual.Padding.height = TryParseErr_UShort(strVar)
-                        Case 15
+                        Case 14
                             'FPS as single                            
                             THPs(bytCtr1).visual.FPS = TryParseErr_Single(strVar)
 
                             'Control/Audio info
                             'Has control signal?, has audio?, is stereo?, audio freq
-                        Case 16
+                        Case 15
                             THPs(bytCtr1).visual.Ctrl = BitToBool(TryParseErr_Byte(strVar))
-                        Case 17
+                        Case 16
                             THPs(bytCtr1).audial.has = BitToBool(TryParseErr_Byte(strVar))
-                        Case 18
+                        Case 17
                             THPs(bytCtr1).audial.Stereo = BitToBool(TryParseErr_Byte(strVar))
-                        Case 19
+                        Case 18
                             THPs(bytCtr1).audial.freq = TryParseErr_UShort(strVar)
                     End Select
 
                     bytStart = bytEnd + 1 'Increment the start position to 1 past the located SEP1 character
                 Next bytCtr2 'Repeat for the other entries in the line
+
+                'Set bad flag as appropriately
+                If bytErrFlag = bytDataEnt Then
+                    THPs(bytCtr1).Bad = True
+                Else
+                    THPs(bytCtr1).Bad = False
+                End If
+
             Next bytCtr1 'Repeat for all lines
 
             'Close the DATA file
@@ -375,11 +386,14 @@ Public Class Main
     ''' <remarks></remarks>
     Private Sub cmbTHP_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cmbTHP.SelectedIndexChanged
         Try
-            Dim bytEntry As Byte = (cmbTHP.SelectedIndex) + 1       'Index in the THP combo box
+            'Index in the THP combo box
+            Dim bytEntry As Byte = cmbTHP.SelectedIndex + 1
 
-            'Set THPEnc and THPDec group boxes to visible
-            grpTHPEnc.Visible = True
-            grpTHPDec.Visible = True
+            'Set THPEnc and THPDec group boxes to visible as appropriately, depending on bad state
+            Dim state As Boolean = THPs(bytEntry).Bad
+            state = Not (state)
+            grpTHPEnc.Visible = state
+            grpTHPDec.Visible = state
 
             'Update stats for current THP
             'Total video width and height
@@ -393,7 +407,6 @@ Public Class Main
 
             'Video multiplicity info: Amount of mult, optional? 
             txtVM_M.Text = THPs(bytEntry).visual.THPinfo.mult.ToString()
-            txtVM_O.Text = THPs(bytEntry).visual.THPinfo.multOpt.ToString()
 
             'Total amount of subvideos (r*c*multiplicity)
             txtV_TSubs.Text = THPs(bytEntry).visual.THPinfo.subVT.ToString()
@@ -1125,10 +1138,6 @@ Public Class Main
                 shell.Close()
 
                 'Do Step 2
-                '!@ This doesn't always truncate to the exact amount of frames!
-                'For now, user needs to remove excess frames in the jpg files before THP encoding.
-                'Hence the MsgBox to halt execution while the user does this
-
                 'Iterate through columns 1 to C
                 For j = 1 To c Step 1
                     cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT & " -y "           '"C:\FFMPegDir\FFMPeg.exe" -y

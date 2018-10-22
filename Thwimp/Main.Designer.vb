@@ -103,8 +103,6 @@ Partial Class Main
         Me.lblArr_R = New System.Windows.Forms.Label()
         Me.txtV_TSubs = New System.Windows.Forms.TextBox()
         Me.gVMult = New System.Windows.Forms.GroupBox()
-        Me.lblVM_O = New System.Windows.Forms.Label()
-        Me.txtVM_O = New System.Windows.Forms.TextBox()
         Me.lblVM_M = New System.Windows.Forms.Label()
         Me.txtVM_M = New System.Windows.Forms.TextBox()
         Me.lblV_TSubs = New System.Windows.Forms.Label()
@@ -901,9 +899,7 @@ Partial Class Main
         'grpVArrInfo
         '
         Me.grpVArrInfo.Controls.Add(Me.grpVArr)
-        Me.grpVArrInfo.Controls.Add(Me.txtV_TSubs)
         Me.grpVArrInfo.Controls.Add(Me.gVMult)
-        Me.grpVArrInfo.Controls.Add(Me.lblV_TSubs)
         Me.grpVArrInfo.Location = New System.Drawing.Point(127, 15)
         Me.grpVArrInfo.Name = "grpVArrInfo"
         Me.grpVArrInfo.Size = New System.Drawing.Size(377, 106)
@@ -919,7 +915,7 @@ Partial Class Main
         Me.grpVArr.Controls.Add(Me.txtArr_R)
         Me.grpVArr.Controls.Add(Me.lblArr_C)
         Me.grpVArr.Controls.Add(Me.lblArr_R)
-        Me.grpVArr.Location = New System.Drawing.Point(6, 21)
+        Me.grpVArr.Location = New System.Drawing.Point(46, 20)
         Me.grpVArr.Name = "grpVArr"
         Me.grpVArr.Size = New System.Drawing.Size(133, 80)
         Me.grpVArr.TabIndex = 9
@@ -985,7 +981,7 @@ Partial Class Main
         '
         'txtV_TSubs
         '
-        Me.txtV_TSubs.Location = New System.Drawing.Point(306, 64)
+        Me.txtV_TSubs.Location = New System.Drawing.Point(74, 43)
         Me.txtV_TSubs.Name = "txtV_TSubs"
         Me.txtV_TSubs.ReadOnly = True
         Me.txtV_TSubs.Size = New System.Drawing.Size(43, 22)
@@ -995,35 +991,16 @@ Partial Class Main
         '
         'gVMult
         '
-        Me.gVMult.Controls.Add(Me.lblVM_O)
-        Me.gVMult.Controls.Add(Me.txtVM_O)
         Me.gVMult.Controls.Add(Me.lblVM_M)
+        Me.gVMult.Controls.Add(Me.txtV_TSubs)
         Me.gVMult.Controls.Add(Me.txtVM_M)
-        Me.gVMult.Location = New System.Drawing.Point(145, 21)
+        Me.gVMult.Controls.Add(Me.lblV_TSubs)
+        Me.gVMult.Location = New System.Drawing.Point(185, 20)
         Me.gVMult.Name = "gVMult"
-        Me.gVMult.Size = New System.Drawing.Size(133, 80)
+        Me.gVMult.Size = New System.Drawing.Size(148, 80)
         Me.gVMult.TabIndex = 10
         Me.gVMult.TabStop = False
-        Me.gVMult.Text = "Multiplicity"
-        '
-        'lblVM_O
-        '
-        Me.lblVM_O.AutoSize = True
-        Me.lblVM_O.Location = New System.Drawing.Point(58, 23)
-        Me.lblVM_O.Name = "lblVM_O"
-        Me.lblVM_O.Size = New System.Drawing.Size(69, 17)
-        Me.lblVM_O.TabIndex = 14
-        Me.lblVM_O.Text = "Optional?"
-        '
-        'txtVM_O
-        '
-        Me.txtVM_O.Location = New System.Drawing.Point(57, 43)
-        Me.txtVM_O.Name = "txtVM_O"
-        Me.txtVM_O.ReadOnly = True
-        Me.txtVM_O.Size = New System.Drawing.Size(43, 22)
-        Me.txtVM_O.TabIndex = 13
-        Me.txtVM_O.TabStop = False
-        Me.txtVM_O.Text = "False"
+        Me.gVMult.Text = "Subvideo Info"
         '
         'lblVM_M
         '
@@ -1047,7 +1024,7 @@ Partial Class Main
         'lblV_TSubs
         '
         Me.lblV_TSubs.AutoSize = True
-        Me.lblV_TSubs.Location = New System.Drawing.Point(284, 44)
+        Me.lblV_TSubs.Location = New System.Drawing.Point(58, 23)
         Me.lblV_TSubs.Name = "lblV_TSubs"
         Me.lblV_TSubs.Size = New System.Drawing.Size(87, 17)
         Me.lblV_TSubs.TabIndex = 15
@@ -1371,7 +1348,6 @@ Partial Class Main
         Me.grpVFrames.ResumeLayout(False)
         Me.grpVFrames.PerformLayout()
         Me.grpVArrInfo.ResumeLayout(False)
-        Me.grpVArrInfo.PerformLayout()
         Me.grpVArr.ResumeLayout(False)
         Me.grpVArr.PerformLayout()
         Me.gVMult.ResumeLayout(False)
@@ -1441,8 +1417,6 @@ Partial Class Main
     Friend WithEvents lblArr_R As System.Windows.Forms.Label
     Friend WithEvents txtV_TSubs As System.Windows.Forms.TextBox
     Friend WithEvents gVMult As System.Windows.Forms.GroupBox
-    Friend WithEvents lblVM_O As System.Windows.Forms.Label
-    Friend WithEvents txtVM_O As System.Windows.Forms.TextBox
     Friend WithEvents lblVM_M As System.Windows.Forms.Label
     Friend WithEvents txtVM_M As System.Windows.Forms.TextBox
     Friend WithEvents lblV_TSubs As System.Windows.Forms.Label
