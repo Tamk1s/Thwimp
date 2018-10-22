@@ -26,6 +26,7 @@ Partial Class Main
         Me.LoadTHPRoot = New System.Windows.Forms.FolderBrowserDialog()
         Me.TabTHP = New System.Windows.Forms.TabPage()
         Me.grpTHPEnc = New System.Windows.Forms.GroupBox()
+        Me.chkTE_wav = New System.Windows.Forms.CheckBox()
         Me.chkTE_Dum = New System.Windows.Forms.CheckBox()
         Me.txtTE_D = New System.Windows.Forms.TextBox()
         Me.lblTE_D = New System.Windows.Forms.Label()
@@ -49,6 +50,7 @@ Partial Class Main
         Me.chkTE_B4 = New System.Windows.Forms.CheckBox()
         Me.chkTE_B5 = New System.Windows.Forms.CheckBox()
         Me.grpTHPDec = New System.Windows.Forms.GroupBox()
+        Me.chkRip_Type = New System.Windows.Forms.CheckBox()
         Me.grpTHPDec_Crop = New System.Windows.Forms.GroupBox()
         Me.txtTD_CH = New System.Windows.Forms.TextBox()
         Me.txtTD_CY = New System.Windows.Forms.TextBox()
@@ -129,13 +131,11 @@ Partial Class Main
         Me.btnBrowseRoot = New System.Windows.Forms.Button()
         Me.txtRoot = New System.Windows.Forms.TextBox()
         Me.lblRoot = New System.Windows.Forms.Label()
-        Me.Launch = New System.Windows.Forms.TabControl()
+        Me.tabApp = New System.Windows.Forms.TabControl()
         Me.LoadFMPegRoot = New System.Windows.Forms.FolderBrowserDialog()
         Me.LoadTHPConv = New System.Windows.Forms.OpenFileDialog()
         Me.ofdRip = New System.Windows.Forms.OpenFileDialog()
         Me.ofdOutput = New System.Windows.Forms.FolderBrowserDialog()
-        Me.chkRip_Type = New System.Windows.Forms.CheckBox()
-        Me.chkTE_wav = New System.Windows.Forms.CheckBox()
         Me.TabTHP.SuspendLayout()
         Me.grpTHPEnc.SuspendLayout()
         Me.grpTHPDec.SuspendLayout()
@@ -154,7 +154,7 @@ Partial Class Main
         Me.TabOptions.SuspendLayout()
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.picOptions, System.ComponentModel.ISupportInitialize).BeginInit()
-        Me.Launch.SuspendLayout()
+        Me.tabApp.SuspendLayout()
         Me.SuspendLayout()
         '
         'LoadTHPRoot
@@ -210,6 +210,17 @@ Partial Class Main
         Me.grpTHPEnc.TabStop = False
         Me.grpTHPEnc.Text = "THP Encoder"
         '
+        'chkTE_wav
+        '
+        Me.chkTE_wav.AutoSize = True
+        Me.chkTE_wav.Location = New System.Drawing.Point(150, 178)
+        Me.chkTE_wav.Name = "chkTE_wav"
+        Me.chkTE_wav.Size = New System.Drawing.Size(54, 21)
+        Me.chkTE_wav.TabIndex = 45
+        Me.chkTE_wav.TabStop = False
+        Me.chkTE_wav.Text = "wav"
+        Me.chkTE_wav.UseVisualStyleBackColor = True
+        '
         'chkTE_Dum
         '
         Me.chkTE_Dum.AutoSize = True
@@ -217,6 +228,7 @@ Partial Class Main
         Me.chkTE_Dum.Name = "chkTE_Dum"
         Me.chkTE_Dum.Size = New System.Drawing.Size(75, 21)
         Me.chkTE_Dum.TabIndex = 44
+        Me.chkTE_Dum.TabStop = False
         Me.chkTE_Dum.Text = "dummy"
         Me.chkTE_Dum.UseVisualStyleBackColor = True
         '
@@ -225,7 +237,7 @@ Partial Class Main
         Me.txtTE_D.Location = New System.Drawing.Point(178, 74)
         Me.txtTE_D.Name = "txtTE_D"
         Me.txtTE_D.Size = New System.Drawing.Size(20, 22)
-        Me.txtTE_D.TabIndex = 43
+        Me.txtTE_D.TabIndex = 1
         Me.txtTE_D.Text = "8"
         '
         'lblTE_D
@@ -242,17 +254,18 @@ Partial Class Main
         Me.btnTE_Enc.Location = New System.Drawing.Point(150, 98)
         Me.btnTE_Enc.Name = "btnTE_Enc"
         Me.btnTE_Enc.Size = New System.Drawing.Size(72, 53)
-        Me.btnTE_Enc.TabIndex = 29
-        Me.btnTE_Enc.Text = "Encode"
+        Me.btnTE_Enc.TabIndex = 2
+        Me.btnTE_Enc.Text = "&Encode"
         Me.btnTE_Enc.UseVisualStyleBackColor = True
         '
         'chkTE_A1
         '
         Me.chkTE_A1.AutoSize = True
-        Me.chkTE_A1.Location = New System.Drawing.Point(44, 43)
+        Me.chkTE_A1.Location = New System.Drawing.Point(44, 45)
         Me.chkTE_A1.Name = "chkTE_A1"
         Me.chkTE_A1.Size = New System.Drawing.Size(47, 21)
         Me.chkTE_A1.TabIndex = 26
+        Me.chkTE_A1.TabStop = False
         Me.chkTE_A1.Text = "A1"
         Me.chkTE_A1.UseVisualStyleBackColor = True
         '
@@ -261,7 +274,7 @@ Partial Class Main
         Me.txtTE_F.Location = New System.Drawing.Point(150, 46)
         Me.txtTE_F.Name = "txtTE_F"
         Me.txtTE_F.Size = New System.Drawing.Size(48, 22)
-        Me.txtTE_F.TabIndex = 33
+        Me.txtTE_F.TabIndex = 0
         Me.txtTE_F.Text = "1234"
         '
         'chkTE_A2
@@ -271,6 +284,7 @@ Partial Class Main
         Me.chkTE_A2.Name = "chkTE_A2"
         Me.chkTE_A2.Size = New System.Drawing.Size(47, 21)
         Me.chkTE_A2.TabIndex = 27
+        Me.chkTE_A2.TabStop = False
         Me.chkTE_A2.Text = "A2"
         Me.chkTE_A2.UseVisualStyleBackColor = True
         '
@@ -290,6 +304,7 @@ Partial Class Main
         Me.chkTE_A3.Name = "chkTE_A3"
         Me.chkTE_A3.Size = New System.Drawing.Size(47, 21)
         Me.chkTE_A3.TabIndex = 28
+        Me.chkTE_A3.TabStop = False
         Me.chkTE_A3.Text = "A3"
         Me.chkTE_A3.UseVisualStyleBackColor = True
         '
@@ -300,6 +315,7 @@ Partial Class Main
         Me.chkTE_A4.Name = "chkTE_A4"
         Me.chkTE_A4.Size = New System.Drawing.Size(47, 21)
         Me.chkTE_A4.TabIndex = 29
+        Me.chkTE_A4.TabStop = False
         Me.chkTE_A4.Text = "A4"
         Me.chkTE_A4.UseVisualStyleBackColor = True
         '
@@ -310,6 +326,7 @@ Partial Class Main
         Me.chkTE_A5.Name = "chkTE_A5"
         Me.chkTE_A5.Size = New System.Drawing.Size(47, 21)
         Me.chkTE_A5.TabIndex = 30
+        Me.chkTE_A5.TabStop = False
         Me.chkTE_A5.Text = "A5"
         Me.chkTE_A5.UseVisualStyleBackColor = True
         '
@@ -321,6 +338,7 @@ Partial Class Main
         Me.txtTE_M.ReadOnly = True
         Me.txtTE_M.Size = New System.Drawing.Size(34, 60)
         Me.txtTE_M.TabIndex = 33
+        Me.txtTE_M.TabStop = False
         Me.txtTE_M.Text = "_1" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "to" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "_4"
         '
         'chkTE_A6
@@ -330,6 +348,7 @@ Partial Class Main
         Me.chkTE_A6.Name = "chkTE_A6"
         Me.chkTE_A6.Size = New System.Drawing.Size(47, 21)
         Me.chkTE_A6.TabIndex = 31
+        Me.chkTE_A6.TabStop = False
         Me.chkTE_A6.Text = "A6"
         Me.chkTE_A6.UseVisualStyleBackColor = True
         '
@@ -349,6 +368,7 @@ Partial Class Main
         Me.chkTE_B1.Name = "chkTE_B1"
         Me.chkTE_B1.Size = New System.Drawing.Size(47, 21)
         Me.chkTE_B1.TabIndex = 32
+        Me.chkTE_B1.TabStop = False
         Me.chkTE_B1.Text = "B1"
         Me.chkTE_B1.UseVisualStyleBackColor = True
         '
@@ -368,6 +388,7 @@ Partial Class Main
         Me.chkTE_B2.Name = "chkTE_B2"
         Me.chkTE_B2.Size = New System.Drawing.Size(47, 21)
         Me.chkTE_B2.TabIndex = 33
+        Me.chkTE_B2.TabStop = False
         Me.chkTE_B2.Text = "B2"
         Me.chkTE_B2.UseVisualStyleBackColor = True
         '
@@ -387,6 +408,7 @@ Partial Class Main
         Me.chkTE_B3.Name = "chkTE_B3"
         Me.chkTE_B3.Size = New System.Drawing.Size(47, 21)
         Me.chkTE_B3.TabIndex = 34
+        Me.chkTE_B3.TabStop = False
         Me.chkTE_B3.Text = "B3"
         Me.chkTE_B3.UseVisualStyleBackColor = True
         '
@@ -397,6 +419,7 @@ Partial Class Main
         Me.chkTE_B6.Name = "chkTE_B6"
         Me.chkTE_B6.Size = New System.Drawing.Size(47, 21)
         Me.chkTE_B6.TabIndex = 37
+        Me.chkTE_B6.TabStop = False
         Me.chkTE_B6.Text = "B6"
         Me.chkTE_B6.UseVisualStyleBackColor = True
         '
@@ -407,6 +430,7 @@ Partial Class Main
         Me.chkTE_B4.Name = "chkTE_B4"
         Me.chkTE_B4.Size = New System.Drawing.Size(47, 21)
         Me.chkTE_B4.TabIndex = 35
+        Me.chkTE_B4.TabStop = False
         Me.chkTE_B4.Text = "B4"
         Me.chkTE_B4.UseVisualStyleBackColor = True
         '
@@ -417,6 +441,7 @@ Partial Class Main
         Me.chkTE_B5.Name = "chkTE_B5"
         Me.chkTE_B5.Size = New System.Drawing.Size(47, 21)
         Me.chkTE_B5.TabIndex = 36
+        Me.chkTE_B5.TabStop = False
         Me.chkTE_B5.Text = "B5"
         Me.chkTE_B5.UseVisualStyleBackColor = True
         '
@@ -433,6 +458,16 @@ Partial Class Main
         Me.grpTHPDec.TabIndex = 25
         Me.grpTHPDec.TabStop = False
         Me.grpTHPDec.Text = "THP Viewer/Ripper"
+        '
+        'chkRip_Type
+        '
+        Me.chkRip_Type.AutoSize = True
+        Me.chkRip_Type.Location = New System.Drawing.Point(6, 46)
+        Me.chkRip_Type.Name = "chkRip_Type"
+        Me.chkRip_Type.Size = New System.Drawing.Size(92, 21)
+        Me.chkRip_Type.TabIndex = 1
+        Me.chkRip_Type.Text = "Rip to AVI"
+        Me.chkRip_Type.UseVisualStyleBackColor = True
         '
         'grpTHPDec_Crop
         '
@@ -456,7 +491,7 @@ Partial Class Main
         Me.txtTD_CH.Location = New System.Drawing.Point(189, 51)
         Me.txtTD_CH.Name = "txtTD_CH"
         Me.txtTD_CH.Size = New System.Drawing.Size(46, 22)
-        Me.txtTD_CH.TabIndex = 31
+        Me.txtTD_CH.TabIndex = 3
         Me.txtTD_CH.Text = "1234"
         '
         'txtTD_CY
@@ -464,7 +499,7 @@ Partial Class Main
         Me.txtTD_CY.Location = New System.Drawing.Point(189, 21)
         Me.txtTD_CY.Name = "txtTD_CY"
         Me.txtTD_CY.Size = New System.Drawing.Size(46, 22)
-        Me.txtTD_CY.TabIndex = 30
+        Me.txtTD_CY.TabIndex = 1
         Me.txtTD_CY.Text = "1234"
         '
         'lblTD_CH
@@ -490,7 +525,7 @@ Partial Class Main
         Me.txtTD_CW.Location = New System.Drawing.Point(85, 51)
         Me.txtTD_CW.Name = "txtTD_CW"
         Me.txtTD_CW.Size = New System.Drawing.Size(46, 22)
-        Me.txtTD_CW.TabIndex = 27
+        Me.txtTD_CW.TabIndex = 2
         Me.txtTD_CW.Text = "1234"
         '
         'txtTD_CX
@@ -498,7 +533,7 @@ Partial Class Main
         Me.txtTD_CX.Location = New System.Drawing.Point(85, 23)
         Me.txtTD_CX.Name = "txtTD_CX"
         Me.txtTD_CX.Size = New System.Drawing.Size(46, 22)
-        Me.txtTD_CX.TabIndex = 26
+        Me.txtTD_CX.TabIndex = 0
         Me.txtTD_CX.Text = "1234"
         '
         'lblTD_CW
@@ -524,8 +559,8 @@ Partial Class Main
         Me.btnRip.Location = New System.Drawing.Point(197, 23)
         Me.btnRip.Name = "btnRip"
         Me.btnRip.Size = New System.Drawing.Size(75, 53)
-        Me.btnRip.TabIndex = 28
-        Me.btnRip.Text = "Rip"
+        Me.btnRip.TabIndex = 3
+        Me.btnRip.Text = "&Rip"
         Me.btnRip.UseVisualStyleBackColor = True
         '
         'chkRip_DSound
@@ -534,7 +569,7 @@ Partial Class Main
         Me.chkRip_DSound.Location = New System.Drawing.Point(6, 23)
         Me.chkRip_DSound.Name = "chkRip_DSound"
         Me.chkRip_DSound.Size = New System.Drawing.Size(116, 21)
-        Me.chkRip_DSound.TabIndex = 27
+        Me.chkRip_DSound.TabIndex = 0
         Me.chkRip_DSound.Text = "DirectSound?"
         Me.chkRip_DSound.UseVisualStyleBackColor = True
         '
@@ -543,8 +578,8 @@ Partial Class Main
         Me.btnPlay.Location = New System.Drawing.Point(123, 23)
         Me.btnPlay.Name = "btnPlay"
         Me.btnPlay.Size = New System.Drawing.Size(75, 53)
-        Me.btnPlay.TabIndex = 26
-        Me.btnPlay.Text = "Play"
+        Me.btnPlay.TabIndex = 2
+        Me.btnPlay.Text = "&Play"
         Me.btnPlay.UseVisualStyleBackColor = True
         '
         'lblTHPFile
@@ -553,7 +588,7 @@ Partial Class Main
         Me.lblTHPFile.Location = New System.Drawing.Point(4, 14)
         Me.lblTHPFile.Name = "lblTHPFile"
         Me.lblTHPFile.Size = New System.Drawing.Size(62, 17)
-        Me.lblTHPFile.TabIndex = 24
+        Me.lblTHPFile.TabIndex = 0
         Me.lblTHPFile.Text = "THP File"
         '
         'grpTHPInfo
@@ -565,7 +600,7 @@ Partial Class Main
         Me.grpTHPInfo.Location = New System.Drawing.Point(7, 37)
         Me.grpTHPInfo.Name = "grpTHPInfo"
         Me.grpTHPInfo.Size = New System.Drawing.Size(528, 368)
-        Me.grpTHPInfo.TabIndex = 23
+        Me.grpTHPInfo.TabIndex = 0
         Me.grpTHPInfo.TabStop = False
         Me.grpTHPInfo.Text = "THP Info"
         '
@@ -577,7 +612,7 @@ Partial Class Main
         Me.grpVideo.Location = New System.Drawing.Point(6, 21)
         Me.grpVideo.Name = "grpVideo"
         Me.grpVideo.Size = New System.Drawing.Size(511, 240)
-        Me.grpVideo.TabIndex = 20
+        Me.grpVideo.TabIndex = 0
         Me.grpVideo.TabStop = False
         Me.grpVideo.Text = "Video"
         '
@@ -618,7 +653,8 @@ Partial Class Main
         Me.txtTDims_W.Name = "txtTDims_W"
         Me.txtTDims_W.ReadOnly = True
         Me.txtTDims_W.Size = New System.Drawing.Size(41, 22)
-        Me.txtTDims_W.TabIndex = 1
+        Me.txtTDims_W.TabIndex = 0
+        Me.txtTDims_W.TabStop = False
         Me.txtTDims_W.Text = "1234"
         '
         'txtTDims_H
@@ -627,7 +663,8 @@ Partial Class Main
         Me.txtTDims_H.Name = "txtTDims_H"
         Me.txtTDims_H.ReadOnly = True
         Me.txtTDims_H.Size = New System.Drawing.Size(41, 22)
-        Me.txtTDims_H.TabIndex = 2
+        Me.txtTDims_H.TabIndex = 1
+        Me.txtTDims_H.TabStop = False
         Me.txtTDims_H.Text = "1234"
         '
         'grpVPlayback
@@ -675,6 +712,7 @@ Partial Class Main
         Me.txtVC_D.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
         Me.txtVC_D.Size = New System.Drawing.Size(106, 54)
         Me.txtVC_D.TabIndex = 14
+        Me.txtVC_D.TabStop = False
         '
         'txtVC_C
         '
@@ -683,6 +721,7 @@ Partial Class Main
         Me.txtVC_C.ReadOnly = True
         Me.txtVC_C.Size = New System.Drawing.Size(45, 22)
         Me.txtVC_C.TabIndex = 13
+        Me.txtVC_C.TabStop = False
         Me.txtVC_C.Text = "False"
         '
         'lblVC_C
@@ -701,6 +740,7 @@ Partial Class Main
         Me.txtVC_F.ReadOnly = True
         Me.txtVC_F.Size = New System.Drawing.Size(45, 22)
         Me.txtVC_F.TabIndex = 10
+        Me.txtVC_F.TabStop = False
         Me.txtVC_F.Text = "12.34"
         '
         'lblVC_F
@@ -746,6 +786,7 @@ Partial Class Main
         Me.txtVP_H.ReadOnly = True
         Me.txtVP_H.Size = New System.Drawing.Size(41, 22)
         Me.txtVP_H.TabIndex = 11
+        Me.txtVP_H.TabStop = False
         Me.txtVP_H.Text = "1234"
         '
         'txtVP_W
@@ -755,6 +796,7 @@ Partial Class Main
         Me.txtVP_W.ReadOnly = True
         Me.txtVP_W.Size = New System.Drawing.Size(41, 22)
         Me.txtVP_W.TabIndex = 10
+        Me.txtVP_W.TabStop = False
         Me.txtVP_W.Text = "1234"
         '
         'lblVS_H
@@ -773,6 +815,7 @@ Partial Class Main
         Me.txtVS_H.ReadOnly = True
         Me.txtVS_H.Size = New System.Drawing.Size(41, 22)
         Me.txtVS_H.TabIndex = 7
+        Me.txtVS_H.TabStop = False
         Me.txtVS_H.Text = "1234"
         '
         'lblVS_W
@@ -791,6 +834,7 @@ Partial Class Main
         Me.txtVS_W.ReadOnly = True
         Me.txtVS_W.Size = New System.Drawing.Size(41, 22)
         Me.txtVS_W.TabIndex = 6
+        Me.txtVS_W.TabStop = False
         Me.txtVS_W.Text = "1234"
         '
         'lblVS_S
@@ -841,6 +885,7 @@ Partial Class Main
         Me.txtVF_S.ReadOnly = True
         Me.txtVF_S.Size = New System.Drawing.Size(53, 22)
         Me.txtVF_S.TabIndex = 6
+        Me.txtVF_S.TabStop = False
         Me.txtVF_S.Text = "123456"
         '
         'txtVF_T
@@ -850,6 +895,7 @@ Partial Class Main
         Me.txtVF_T.ReadOnly = True
         Me.txtVF_T.Size = New System.Drawing.Size(53, 22)
         Me.txtVF_T.TabIndex = 7
+        Me.txtVF_T.TabStop = False
         Me.txtVF_T.Text = "123456"
         '
         'grpVArrInfo
@@ -895,7 +941,8 @@ Partial Class Main
         Me.txtArr_S.Name = "txtArr_S"
         Me.txtArr_S.ReadOnly = True
         Me.txtArr_S.Size = New System.Drawing.Size(29, 22)
-        Me.txtArr_S.TabIndex = 7
+        Me.txtArr_S.TabIndex = 0
+        Me.txtArr_S.TabStop = False
         Me.txtArr_S.Text = "12"
         '
         'txtArr_C
@@ -905,6 +952,7 @@ Partial Class Main
         Me.txtArr_C.ReadOnly = True
         Me.txtArr_C.Size = New System.Drawing.Size(29, 22)
         Me.txtArr_C.TabIndex = 8
+        Me.txtArr_C.TabStop = False
         Me.txtArr_C.Text = "12"
         '
         'txtArr_R
@@ -913,7 +961,8 @@ Partial Class Main
         Me.txtArr_R.Name = "txtArr_R"
         Me.txtArr_R.ReadOnly = True
         Me.txtArr_R.Size = New System.Drawing.Size(29, 22)
-        Me.txtArr_R.TabIndex = 6
+        Me.txtArr_R.TabIndex = 2
+        Me.txtArr_R.TabStop = False
         Me.txtArr_R.Text = "12"
         '
         'lblArr_C
@@ -941,6 +990,7 @@ Partial Class Main
         Me.txtV_TSubs.ReadOnly = True
         Me.txtV_TSubs.Size = New System.Drawing.Size(43, 22)
         Me.txtV_TSubs.TabIndex = 15
+        Me.txtV_TSubs.TabStop = False
         Me.txtV_TSubs.Text = "12"
         '
         'gVMult
@@ -972,6 +1022,7 @@ Partial Class Main
         Me.txtVM_O.ReadOnly = True
         Me.txtVM_O.Size = New System.Drawing.Size(43, 22)
         Me.txtVM_O.TabIndex = 13
+        Me.txtVM_O.TabStop = False
         Me.txtVM_O.Text = "False"
         '
         'lblVM_M
@@ -990,6 +1041,7 @@ Partial Class Main
         Me.txtVM_M.ReadOnly = True
         Me.txtVM_M.Size = New System.Drawing.Size(25, 22)
         Me.txtVM_M.TabIndex = 11
+        Me.txtVM_M.TabStop = False
         Me.txtVM_M.Text = "12"
         '
         'lblV_TSubs
@@ -1032,6 +1084,7 @@ Partial Class Main
         Me.txtA_F.ReadOnly = True
         Me.txtA_F.Size = New System.Drawing.Size(52, 22)
         Me.txtA_F.TabIndex = 5
+        Me.txtA_F.TabStop = False
         Me.txtA_F.Text = "12345"
         '
         'lblA_F
@@ -1050,6 +1103,7 @@ Partial Class Main
         Me.txtA_S.ReadOnly = True
         Me.txtA_S.Size = New System.Drawing.Size(52, 22)
         Me.txtA_S.TabIndex = 3
+        Me.txtA_S.TabStop = False
         Me.txtA_S.Text = "False"
         '
         'lblA_S
@@ -1068,6 +1122,7 @@ Partial Class Main
         Me.txtA_A.ReadOnly = True
         Me.txtA_A.Size = New System.Drawing.Size(52, 22)
         Me.txtA_A.TabIndex = 1
+        Me.txtA_A.TabStop = False
         Me.txtA_A.Text = "False"
         '
         'lblA_A
@@ -1088,6 +1143,7 @@ Partial Class Main
         Me.txtFDesc.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
         Me.txtFDesc.Size = New System.Drawing.Size(305, 74)
         Me.txtFDesc.TabIndex = 16
+        Me.txtFDesc.TabStop = False
         Me.txtFDesc.Text = resources.GetString("txtFDesc.Text")
         '
         'cmbTHP
@@ -1160,7 +1216,7 @@ Partial Class Main
         Me.btnAbout.Margin = New System.Windows.Forms.Padding(4)
         Me.btnAbout.Name = "btnAbout"
         Me.btnAbout.Size = New System.Drawing.Size(127, 112)
-        Me.btnAbout.TabIndex = 28
+        Me.btnAbout.TabIndex = 3
         Me.btnAbout.Text = "&About"
         Me.btnAbout.UseVisualStyleBackColor = True
         '
@@ -1170,8 +1226,8 @@ Partial Class Main
         Me.btnBrowseTHPConv.Margin = New System.Windows.Forms.Padding(4)
         Me.btnBrowseTHPConv.Name = "btnBrowseTHPConv"
         Me.btnBrowseTHPConv.Size = New System.Drawing.Size(97, 27)
-        Me.btnBrowseTHPConv.TabIndex = 39
-        Me.btnBrowseTHPConv.Text = "B&rowse"
+        Me.btnBrowseTHPConv.TabIndex = 2
+        Me.btnBrowseTHPConv.Text = "Br&owse"
         Me.btnBrowseTHPConv.UseVisualStyleBackColor = True
         '
         'txtTHPConv
@@ -1190,7 +1246,7 @@ Partial Class Main
         Me.btnBrowseFFMpeg.Margin = New System.Windows.Forms.Padding(4)
         Me.btnBrowseFFMpeg.Name = "btnBrowseFFMpeg"
         Me.btnBrowseFFMpeg.Size = New System.Drawing.Size(97, 27)
-        Me.btnBrowseFFMpeg.TabIndex = 37
+        Me.btnBrowseFFMpeg.TabIndex = 1
         Me.btnBrowseFFMpeg.Text = "B&rowse"
         Me.btnBrowseFFMpeg.UseVisualStyleBackColor = True
         '
@@ -1220,7 +1276,7 @@ Partial Class Main
         Me.btnBrowseRoot.Margin = New System.Windows.Forms.Padding(4)
         Me.btnBrowseRoot.Name = "btnBrowseRoot"
         Me.btnBrowseRoot.Size = New System.Drawing.Size(97, 27)
-        Me.btnBrowseRoot.TabIndex = 1
+        Me.btnBrowseRoot.TabIndex = 0
         Me.btnBrowseRoot.Text = "&Browse"
         Me.btnBrowseRoot.UseVisualStyleBackColor = True
         '
@@ -1244,17 +1300,17 @@ Partial Class Main
         Me.lblRoot.TabIndex = 0
         Me.lblRoot.Text = "THP Root"
         '
-        'Launch
+        'tabApp
         '
-        Me.Launch.Controls.Add(Me.TabTHP)
-        Me.Launch.Controls.Add(Me.TabOptions)
-        Me.Launch.Location = New System.Drawing.Point(-1, 15)
-        Me.Launch.Margin = New System.Windows.Forms.Padding(4)
-        Me.Launch.Name = "Launch"
-        Me.Launch.SelectedIndex = 0
-        Me.Launch.Size = New System.Drawing.Size(561, 661)
-        Me.Launch.TabIndex = 0
-        Me.Launch.TabStop = False
+        Me.tabApp.Controls.Add(Me.TabTHP)
+        Me.tabApp.Controls.Add(Me.TabOptions)
+        Me.tabApp.Location = New System.Drawing.Point(-1, 15)
+        Me.tabApp.Margin = New System.Windows.Forms.Padding(4)
+        Me.tabApp.Name = "tabApp"
+        Me.tabApp.SelectedIndex = 0
+        Me.tabApp.Size = New System.Drawing.Size(561, 661)
+        Me.tabApp.TabIndex = 0
+        Me.tabApp.TabStop = False
         '
         'LoadFMPegRoot
         '
@@ -1281,32 +1337,14 @@ Partial Class Main
         Me.ofdOutput.Description = "Select the directory with the appropriately named input files"
         Me.ofdOutput.ShowNewFolderButton = False
         '
-        'chkRip_Type
-        '
-        Me.chkRip_Type.AutoSize = True
-        Me.chkRip_Type.Location = New System.Drawing.Point(6, 46)
-        Me.chkRip_Type.Name = "chkRip_Type"
-        Me.chkRip_Type.Size = New System.Drawing.Size(92, 21)
-        Me.chkRip_Type.TabIndex = 29
-        Me.chkRip_Type.Text = "Rip to AVI"
-        Me.chkRip_Type.UseVisualStyleBackColor = True
-        '
-        'chkTE_wav
-        '
-        Me.chkTE_wav.AutoSize = True
-        Me.chkTE_wav.Location = New System.Drawing.Point(150, 178)
-        Me.chkTE_wav.Name = "chkTE_wav"
-        Me.chkTE_wav.Size = New System.Drawing.Size(54, 21)
-        Me.chkTE_wav.TabIndex = 45
-        Me.chkTE_wav.Text = "wav"
-        Me.chkTE_wav.UseVisualStyleBackColor = True
-        '
         'Main
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(8.0!, 16.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(564, 682)
-        Me.Controls.Add(Me.Launch)
+        Me.Controls.Add(Me.tabApp)
+        Me.DoubleBuffered = True
+        Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.Margin = New System.Windows.Forms.Padding(4)
         Me.MaximizeBox = False
@@ -1344,7 +1382,7 @@ Partial Class Main
         Me.TabOptions.PerformLayout()
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.picOptions, System.ComponentModel.ISupportInitialize).EndInit()
-        Me.Launch.ResumeLayout(False)
+        Me.tabApp.ResumeLayout(False)
         Me.ResumeLayout(False)
 
     End Sub
@@ -1355,7 +1393,7 @@ Partial Class Main
     Friend WithEvents btnBrowseRoot As System.Windows.Forms.Button
     Friend WithEvents txtRoot As System.Windows.Forms.TextBox
     Friend WithEvents lblRoot As System.Windows.Forms.Label
-    Friend WithEvents Launch As System.Windows.Forms.TabControl
+    Friend WithEvents tabApp As System.Windows.Forms.TabControl
     Friend WithEvents picOptions As System.Windows.Forms.PictureBox
     Friend WithEvents btnAbout As System.Windows.Forms.Button
     Friend WithEvents lblTHPConv As System.Windows.Forms.Label

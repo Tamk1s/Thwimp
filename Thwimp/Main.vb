@@ -462,14 +462,7 @@ Public Class Main
         Next i
 
         'Handle dummy checkbox states
-        'Get dimensions of video padding
-        Dim d As Dims
-        d.width = Val(txtVP_W.Text)
-        d.height = Val(txtVP_H.Text)        
-        state = True
-        'If the dims are both 0, then no padding.
-        If d.width = 0 And d.height = 0 Then state = False
-        'Update the checked/enabled states
+        state = THPHasPad()
         Dum.Checked = state
         Dum.Enabled = state
 
@@ -637,20 +630,29 @@ Public Class Main
 
     '================
 
+    ''' <summary>
+    ''' Handle THP playback
+    ''' </summary>
+    ''' <param name="sender"></param>
+    ''' <param name="e"></param>
+    ''' <remarks></remarks>
     Private Sub btnPlay_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnPlay.Click        
         Dim startInfo As ProcessStartInfo
         startInfo = New ProcessStartInfo
+
+        'If DirectSound option checked, set SDL_AUDIODRIVE = directsound. This is a workaround to a ffmpeg bug to allow audio
         If chkRip_DSound.Checked = True Then
             'https://social.msdn.microsoft.com/Forums/vstudio/en-US/a18210d7-44f4-4895-8bcc-d3d1d26719e5/setting-environment-variable-from-vbnet?forum=netfxbcl
             'set SDL_AUDIODRIVER=directsound            
             startInfo.EnvironmentVariables("SDL_AUDIODRIVER") = "directsound"
         End If
 
-        Dim cmd As String = strQUOT & txtFFMpeg.Text & strBAK & exeFPlay & strQUOT
-        Dim args As String = strQUOT & txtRoot.Text & cmbTHP.Text & strQUOT
+        Dim cmd As String = strQUOT & txtFFMpeg.Text & strBAK & exeFPlay & strQUOT  'FFPlay command "C:\FDIR\ffplay.exe"
+        Dim args As String = strQUOT & txtRoot.Text & cmbTHP.Text & strQUOT         'Arguments for FFPLlay "C:\Path\to\THPRoot\file.THP"
+
+        'Run the cmd
         startInfo.FileName = cmd & args
         startInfo.UseShellExecute = False
-
         Dim shell As Process
         shell = New Process
         shell.StartInfo = startInfo
@@ -659,44 +661,51 @@ Public Class Main
         shell.Close()
     End Sub
 
+    ''' <summary>
+    ''' Handles ripping a THP to AVI(+WAV) and dummy frames for padding
+    ''' </summary>
+    ''' <param name="sender"></param>
+    ''' <param name="e"></param>
+    ''' <remarks></remarks>
     Private Sub btnRip_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnRip.Click
-        'Load the ofdRip, user selects path/base filename
-        Dim inFile As String = txtRoot.Text & cmbTHP.Text
-        Dim initDir As String = FileDir(inFile)
-        Dim newFile As String = FileAndExt(cmbTHP.Text)
+
+        'Open ofdRip, user selects path/base filename
+        Dim inFile As String = txtRoot.Text & cmbTHP.Text   'Input file. C:\PathToTHP\DIRtoTHP\file.thp"
+        Dim initDir As String = FileDir(inFile)             'Initial directory. Directory of inFile
+        Dim newFile As String = FileAndExt(cmbTHP.Text)     'New file. "Filename.thp" from inFile
         Dim file As String = ""
-        Dim type As Boolean = chkRip_Type.Checked
-        newFile = newFile.Replace(".thp", "")
-        ofdRip.FileName = newFile
-        ofdRip.InitialDirectory = initDir
+        Dim type As Boolean = chkRip_Type.Checked           'Type of ripping to do. False=AVI(+WAV), True=AVI(+Wav)+Dummy
+        newFile = newFile.Replace(".thp", "")               'Remove extension from newFile, just get filename-ext
+        ofdRip.FileName = newFile                           'Set ofd box filename to newFile
+        ofdRip.InitialDirectory = initDir                   'Set ofd init dir to initDir
 
+        'Show the DBox
         If ofdRip.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
-        Dim outFile As String = ofdRip.FileName
-        Dim outPath As String = FileDir(outFile)
-        Dim outFilename As String = FileAndExt(outFile)
+        Dim outFile As String = ofdRip.FileName             'Output file. C:\PathToFile\file.avi
+        Dim outPath As String = FileDir(outFile)            'Output path. Path of outFile
+        Dim outFilename As String = FileAndExt(outFile)     'Output filename. Filename.avi
 
-        'https://video.stackexchange.com/questions/4563/how-can-i-crop-a-video-with-ffmpeg
         'Video Conv: ffmpeg -i input_video.mp4 output.avi
+        'https://video.stackexchange.com/questions/4563/how-can-i-crop-a-video-with-ffmpeg
         'Video Crop: ffmpeg -i in.mp4 -filter:v "crop=out_w:out_h:x:y" out.mp4
-
         'https://www.bugcodemaster.com/article/extract-audio-video-using-ffmpeg
-        'Audio Ext: ffmpeg -i input_video.mp4 -vn output_audio.mp3
-
+        'Audio Extraction: ffmpeg -i input_video.mp4 -vn output_audio.mp3
         'https://forums.creativecow.net/docs/forums/post.php?forumid=291&postid=219&univpostid=219&pview=t
-        'ffmpeg -i input.mov -pix_fmt yuvj422p -acodec pcm -vcodec rawvideo -y output.avi        
+        'Convert to RAW AVI: ffmpeg -i input.mov -pix_fmt yuvj422p -acodec pcm -vcodec rawvideo -y output.avi        
 
-        Dim cmd As String = ""
-        Dim x As String = txtTD_CX.Text
-        Dim y As String = txtTD_CY.Text
-        Dim w As String = txtTD_CW.Text
-        Dim h As String = txtTD_CH.Text        
+        Dim cmd As String = ""                              'Command to run
+        Dim x As String = txtTD_CX.Text                     'Crop xpos
+        Dim y As String = txtTD_CY.Text                     'Crop ypos
+        Dim w As String = txtTD_CW.Text                     'Crop width
+        Dim h As String = txtTD_CH.Text                     'Crop height
 
-        'AVI
-        'Extract video as AVI
+        'Convert THP to AVI. Encoded THP to raw AVI with crop filter
+        '"C:\FFMPegPath\ffmpeg.exe"
         cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT
-        '-i input.thp -pix_fmt yuvj422p -vcodec rawvideo -y -filter:v "crop=out_w:out_h:x:y" output.avi
+        ' -i C:\PathToTHP\DIRtoTHP\file.thp -pix_fmt yuvj422p -vcodec rawvideo -y -filter:v "crop=out_w:out_h:x:y" "C:\OutputDir\output.avi"
         cmd &= " -i " & strQUOT & inFile & strQUOT & " -pix_fmt yuvj422p -vcodec rawvideo -y -filter:v " & strQUOT & "crop=" & w & ":" & h & ":" & x & ":" & y & strQUOT & " " & strQUOT & outFile & strQUOT
 
+        'Run the cmd
         Dim startInfo As ProcessStartInfo
         startInfo = New ProcessStartInfo
         startInfo.FileName = cmd
@@ -708,53 +717,77 @@ Public Class Main
         shell.WaitForExit()
 
         'Extract audio as wav (if any)
-        Dim has As String = txtVC_C.Text
-        Dim hasAudio As Boolean = BoolStrToBool(has)
-
+        Dim hasAudio As Boolean = THPHasAudio()
         If hasAudio Then
+            'If THP has audio
+
+            'If DirectSound checked, do SDL driver workaround
             If chkRip_DSound.Checked = True Then
                 'set SDL_AUDIODRIVER=directsound
                 startInfo.EnvironmentVariables("SDL_AUDIODRIVER") = "directsound"
             End If
+
+            'Convert the audio to file.wav file
+            '"C:\FFMPegPath\FFMPEG.exe"
             cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT
+            ' -i "C:\PathToTHP\DIRtoTHP\file.thp" -vn "C:\OutputDir\file.wav"
             cmd &= " -i " & strQUOT & inFile & strQUOT & " -vn " & strQUOT & outFile.Replace(".avi", ".wav") & strQUOT
+
+            'Run the cmd
             startInfo.FileName = cmd
             shell.StartInfo = startInfo
             shell.Start()
             shell.WaitForExit()
         End If
 
-        If type = True Then            
+        If type = True Then
+            'If ripping AVI(+wav)+dummy ctrl frames.
+            'Convert the cropped AVI file (cropped to the ctrl area) to bmp frames ("dummyTemp_%0Nd.bmp"),
+            'Keep only 1st frame for each multiplicty, rename to "dummy_N.bmp", delete excess frames
+
+            '"C:\FFMPegPath\FFMPEG.exe" -y 
             cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT & " -y "
 
-            'Output to .jpg frames
-            Dim d As String = ""
-            Dim dgs As UShort = 0
-            dgs = Val(txtVF_T.Text.Length)
-            d = "%0" & dgs.ToString() & "d"
-            cmd &= "-i " & strQUOT & outFile & strQUOT
+            'Output ctrl avi to .bmp frames
+            Dim d As String = ""                                                    'Printf digit formatter thingy (pad to N digits)
+            Dim dgs As UShort = 0                                                   'Amount of digits for printf formatter thingy
+            dgs = Val(txtVF_T.Text.Length)                                          'Set digits to the amount of digits for the total amount of frames in the video
+            d = "%0" & dgs.ToString() & "d"                                         'Set the printf digit formatter to "dgs" digits
+            cmd &= "-i " & strQUOT & outFile & strQUOT                              '-i "C:\OutputDir\file.avi"
+
+            '"C:\OutputDir\dummyTemp_%0Nd.bmp"
             file = strQUOT & FileDir(outFile) & "dummyTemp_" & d & ".bmp" & strQUOT
             cmd &= " " & file
+
+            'Run cmd
             startInfo.FileName = cmd
             shell.StartInfo = startInfo
             shell.Start()
             shell.WaitForExit()
 
-            'Rename the appropriate frames to dummyN.bmp"
-            Dim i As Byte = 0
-            Dim j As UShort = 0
-            Dim frames As UShort = Val(txtVF_S.Text)
-            Dim m As Byte = Val(txtVM_M.Text) - 1
+            'Rename the appropriate frames to "dummy_N.bmp", remove the others 
+            Dim i As Byte = 0                           'Generic iterator
+            Dim j As UShort = 0                         'Frame value
+            Dim frames As UShort = Val(txtVF_S.Text)    'The amount of frames per subvideo
+            Dim m As Byte = Val(txtVM_M.Text) - 1       '0-based multiplicity value
+
+            'Iterate through the mults (0-based)
             For i = 0 To m Step 1
-                j = i * frames
-                j += 1
-                d = "_" & j.ToString(StrDup(dgs, "0")) & ".bmp"
-                file = "dummy_" & (i + 1).ToString() & ".bmp"
-                file = FileDir(outFile) & FileAndExt(file)
+                j = i * frames                                      'Frame ID = multiplicity ID * amount of frames. This gets 1st frame for each multplicity.
+                j += 1                                              'Make FrameID 1-based
+                d = "_" & j.ToString(StrDup(dgs, "0")) & ".bmp"     'Set d as the frame ID string "_%0Nd.bmp"
+                file = "dummy_" & (i + 1).ToString() & ".bmp"       'File = "dummy_N.bmp"
+                file = FileDir(outFile) & FileAndExt(file)          'File = "C:\OutputDir\dummy_N.bmp"
+
+                'Move file "C:\OutputDir\dummyTemp_ID.bmp" to "C:\OutputDir\dummy_N.bmp"
                 My.Computer.FileSystem.MoveFile(FileDir(outFile) & "dummyTemp" & d, file, True)
             Next i
+
+            'Delete all extra "dummyTemp_%0Nd.bmp" files
             DeleteFilesFromFolder(FileDir(outFile), "dummyTemp*.bmp")
         End If
+
+        'Thwimp kicks dat Koopa shell away!
         shell.Close()
     End Sub
 
@@ -802,44 +835,108 @@ Public Class Main
         HandleArrState()
     End Sub
 
+    ''' <summary>
+    ''' Handles encoding many input subvideos, a wav file, and dummy padding frames into a composite THP file.
+    ''' </summary>
+    ''' <param name="sender"></param>
+    ''' <param name="e"></param>
+    ''' <remarks>This the main feature of the program, and quite schmancy</remarks>
     Private Sub btnTE_Enc_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnTE_Enc.Click
+
+        'Psuedo code of encoding process. Assume an array of subvideos with a multiplicity.
+        '0. If video has padding, convert the appropriate dummy bmp file ("dummy_N.bmp") to a video of appropriate frame length ("dummy_N.avi") for the current multiplicity
+        '1. All subvideos in a column are vstacked ("cN.avi"). Do for all columns
+        '2. ALl subvideos in a column are then limited to F frames ("dN.avi"). Do for all columns
+        '3. 
+        '4. HStack all frame-limited column videos ("dN.avi" in step 2) to create a composite video with all subvideos included for the current multiplicity. ("mN.avi", where N is the current multiplicity)
+        '5. Repeat steps 0-4 for each multiplicity
+        '6. Concatenate each composite multiplicity video (all "mN.avi" files in step 4) to a nearly-final avi file ("filename.avi")
+        '7. If video has padding, concatenate all dummy video multiplicities ("dummy_N.avi" in step 1) to a composite dummy video ("dummy.avi")
+        '8. If video has padding, vstack the video in step 6 ("filename.avi") with the composite dummy
+        '   video in step 7 ("dummy.avi") into a file called "final.avi".
+        '   MoveFile "final.avi"->"filename.avi"
+        '9. Convert final video ("filename.avi") into JPG frames, padded to N digits ("frame_%0Nd.jpg")
+        '10. A MsgBox will appear. Check the output directory, and make sure you have the correct amount (frames) of JPG files. Delete some if too many. Then click "OK" to continue
+        '11. The jpg files and the audio file (if applicable, "filename.wav") are converted into "filename.thp" with THPConv
+        '12. Cleanup() is run to delete all temporary files from steps 0-11 during the conversion
+        '13. Done!
+
+        'Imagine having to do the above steps manually with specially-crafted batch scripts
+        'for the specific configuration of each THP file you want encoded,
+        ' or worse, without scripts and with a video edtior x_x!
+
+        'Thwimp tackles this proplem headon, and in a very automated fashion!
+
+        'Naming conventions:
+        'The working directory for conversion needs the following input files:
+        '*  AVI video files for each subvideo, and for each multiplicity.
+        '   Named as "filename_AX_Y.avi", where "A" is a letter indicating the row ID in the array,
+        '   where "X" is the column ID as a number, and "Y" is the multiplicity ID. A and X are setup in MS Excel A1N notation
+        '*  If video has audio, "filename.wav" for the audio stream
+        '*  If video has dummy padding, a single BMP image file for each multiplicity
+        '   ("dummy_N.bmp", where N is the current mult ID).
+        '   This will be converted into a video of fixed framelength and used during the processing
+
+        'In the THP Encoding group box, an array of checkboxes indicates what files will be needed
+        'to fulfill the array, and also if a file will be needed for padding or audio
+
+        'The THP Encoding group box has 2 user inputs:
+        '*"Trunc Frame" - Amount of frames to truncate subvideos to.
+        '   This is used to ensure all subvideos have the same framelength
+        '   (e.g., if bad video mastering made, say 255 frames vs. target 250 for all videos)
+        '*"Digs"- The amount of digits in the "Trunc Frame" value.
+        '   Used for some filenaming formating.
+        ' They should match appropriately!
+
+        'BEGIN CODE!
+
+        'FFMPEG NOTES:
+        'Vertical and horizontal stacking (2 files)
         'https://unix.stackexchange.com/questions/233832/merge-two-video-clips-into-one-placing-them-next-to-each-other
         'ffmpeg -i top.mp4 -i bot.mp4 -filter_complex vstack output.mp4
         'ffmpeg -i left.mp4 -i right.mp4 -filter_complex hstack output.mp4
 
+        'V/HStacking for N videos
         'https://stackoverflow.com/questions/11552565/vertically-or-horizontally-stack-several-videos-using-ffmpeg/33764934#33764934
         'ffmpeg -i input0 -i input1 -i input2 -filter_complex "[0:v][1:v][2:v]vstack=inputs=3[v]" -map "[v]" output
 
+        'Concatenate N videos. This usually requires using -i ListOfFiles.txt to work properly :(.
         'https://stackoverflow.com/questions/7333232/how-to-concatenate-two-mp4-files-using-ffmpeg
         'ffmpeg -i opening.mkv -i episode.mkv -i ending.mkv -filter_complex concat output.mkv"
 
+        'Show ofdOutput, let user select the working directory with the input files
         If ofdOutput.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
 
         Dim startInfo As ProcessStartInfo
-        startInfo = New ProcessStartInfo        
-        startInfo.UseShellExecute = False        
+        startInfo = New ProcessStartInfo
+        startInfo.UseShellExecute = False
         Dim shell As Process
         shell = New Process
 
-        Dim path As String = ofdOutput.SelectedPath
-        Dim filename As String = FileAndExt(cmbTHP.Text)
-        Dim file As String = ""
-        Dim file2 As String = ""
-        filename = filename.Replace(".thp", "")
-        Dim cmd As String = ""
+        Dim path As String = ofdOutput.SelectedPath         'The working directory with our input files.
+        Dim filename As String = FileAndExt(cmbTHP.Text)    '"filename.thp" we want to create
+        Dim file As String = ""                             'Generic file string
+        Dim file2 As String = ""                            'Generic file string2
+        filename = filename.Replace(".thp", "")             'Remove extension from filename var
+        Dim cmd As String = ""                              'String with commands to run in a Process/Shell
 
-        Dim i As Byte = 1
-        Dim j As Byte = 1
-        Dim k As Byte = 1
-        Dim r As Byte = Val(txtArr_R.Text)
-        Dim c As Byte = Val(txtArr_C.Text)
-        Dim m As Byte = Val(txtVM_M.Text)
-        Dim suffix As String
-        Dim frames As String = txtTE_F.Text
-        Dim parms(6) As String
-        Dim parm As String
-        Dim d As Dims
-        Dim max As UShort
+        'Generic iterators
+        Dim i As Byte = 1   'Usually rows
+        Dim j As Byte = 1   '~       cols
+        Dim k As Byte = 1   '~       multiplicity
+
+        'THP Array dims
+        Dim r As Byte = Val(txtArr_R.Text)  'Amount of rows
+        Dim c As Byte = Val(txtArr_C.Text)  'Amount of cols
+        Dim m As Byte = Val(txtVM_M.Text)   'Amount of mult
+        Dim suffix As String                'The suffix to use to meet array naming conventions        
+
+        Dim parms(6) As String              'Array of generic string parameters for cmd string building. Usually used for v/hstacking N videos.
+        Dim parm As String                  'Usually the concatenation of the elements in the parms array
+        Dim frames As UShort = Val(txtTE_F.Text) 'The amount of frames to limit each subvideo to
+
+        'Array of suffixes for the naming conventions in MS Excel A1N notation (Row, Column)
+        'It is hardcoded to 6x2, since the components of each length dimension don't go any larger than this
         Dim suffixes(6, 2) As String
         suffixes(1, 1) = "_A1"
         suffixes(2, 1) = "_A2"
@@ -853,92 +950,126 @@ Public Class Main
         suffixes(4, 2) = "_B4"
         suffixes(5, 2) = "_B5"
         suffixes(6, 2) = "_B6"
-        Dim Files(6) As String        
-        Dim hasPad As Boolean = False
 
-        d.width = Val(txtVP_W.Text)
-        d.height = Val(txtVP_H.Text)
-        If d.width <> 0 And d.height <> 0 Then
-            hasPad = True
-        End If
+        Dim Files(6) As String          'Array of input files for ffmpeg. Written to File.txt, used as input listing file
+        Dim hasPad As Boolean = THPHasPad()
 
-        CleanUp(path, filename, r, c, m, hasPad, False)
+        CleanUp(path, filename, r, c, m, hasPad, False)         'Cleanup leftover temp files at working dir
 
+        'BEGIN PROCESSING
+        'Iterate through all multiplicities from 1 to m
         For k = 1 To m Step 1
+
             If hasPad Then
-                'If THP has some dummy/control frames, create a video from the dummy image for future h/vstacking                
-                'Copy image file to duplicate frames
-                max = Val(txtTE_F.Text)
-                Dim dg As Byte = txtTE_F.Text.Length
-                Dim dgs As String = StrDup(dg, "0")
-                Dim cnt As UShort = 0
-                For cnt = 1 To max
-                    file = path & strBAK & "dummy_" & k.ToString() & ".bmp"
-                    file2 = path & strBAK & "dummy_" & k.ToString() & "_" & cnt.ToString(dgs) & ".bmp"
-                    My.Computer.FileSystem.CopyFile(file, file2)
+                'Do Step 0 if padding
+                Dim dg As Byte = frames.ToString().Length   'The amount of frames to limit to in digits
+                Dim dgs As String = StrDup(dg, "0")         'A .ToString() format string, limiting to N digits
+                Dim cnt As UShort = 0                       'Generic iterator
+
+                'Convert dummy still images for the current multiplicity to a videos.
+                'Do this by copying the image to many sequentially named files,
+                'then render all frames as .avi video
+
+                'Iterate through all frames from 1 to Frames
+                For cnt = 1 To frames
+                    file = path & strBAK & "dummy_" & k.ToString() & ".bmp"                             'file =     "C:\WorkingDir\dummy_N.bmp"
+                    file2 = path & strBAK & "dummy_" & k.ToString() & "_" & cnt.ToString(dgs) & ".bmp"  'file2 =    "C:\WorkingDir\dummy_N_FFF.bmp"
+                    My.Computer.FileSystem.CopyFile(file, file2)                                        'Copy file to file2
                 Next cnt
 
-                'ffmpeg -f image2 -framerate FPS -i image_%03d.bmp test.avi
-                cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT & " -y"
-                Dim rate As Single = Val(txtVC_F.Text)
-                cmd &= " -f image2 -framerate " & rate
+                'Convert jpg files to AVI: ffmpeg -f image2 -framerate FPS -i image_%03d.bmp test.avi
+                cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT & " -y"                                    '"C:\FFMPegPath\FFMPeg.exe" -y
+                Dim rate As Single = Val(txtVC_F.Text)                                                                  'FPS as single
+                cmd &= " -f image2 -framerate " & rate                                                                  ' -f image2 -framerate FPS
+
                 file = strQUOT & path & strBAK & "dummy_" & k.ToString() & "_%0" & dg.ToString() & "d.bmp" & strQUOT
-                cmd &= " -i " & file
+                cmd &= " -i " & file                                                                                    ' -i "C:\WorkingDir\dummy_M_%0Nd.bmp"
                 file = strQUOT & path & strBAK & "dummy_" & k.ToString() & ".avi" & strQUOT
-                cmd &= " " & file
+                cmd &= " " & file                                                                                       ' "C:\WorkingDir\dummy_N.avi"
+
+                'Run cmd
                 startInfo.FileName = cmd
                 shell.StartInfo = startInfo
                 shell.Start()
                 shell.WaitForExit()
+
+                'Cleanup all of the BMP frames
                 CleanUp(path, filename, r, c, m, hasPad, True)
             End If
+            shell.Close()
 
+            'Do step 1
+            'Iterate through columns 1 to C
             For j = 1 To c Step 1
                 'ffmpeg -i input0 -i input1 -i input2 -filter_complex "[0:v][1:v][2:v]vstack=inputs=3[v]" -map "[v]" output
-                parm = ""
-                ReDim parms(r)
-                cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT & " -y "
 
+                parm = ""                                                                                                       'Clear parm string
+                ReDim parms(r)                                                                                                  'Redim parm array to the amount of rows
+                cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT & " -y "                                           '"C:\FFMPegPath\FFMPeg.exe" -y
+
+                'Iterate through all rows 1 to r
+                'Concatenate all input file args ("-i filename") onto cmd, build input pads
                 For i = 1 To r Step 1
-                    suffix = suffixes(i, j) & "_" & k.ToString()
+                    suffix = suffixes(i, j) & "_" & k.ToString()                                                                'Get appropriate video cell suffix ("_AX_Y")
                     file = strQUOT & path & strBAK & filename & suffix & ".avi" & strQUOT
-
-                    cmd &= "-i " & file
+                    cmd &= "-i " & file                                                                                         '-i "C:\WorkingDir\filename_AX_Y.avi"
                     cmd &= " "
-                    parms(i) = "[" & (i - 1).ToString() + ":v]"
-                    parm &= parms(i)
+                    parms(i) = "[" & (i - 1).ToString() + ":v]"                                                                 'Generate input pad for element in array ("[N:v]")
+                    parm &= parms(i)                                                                                            'Concatenate index onto parm
                 Next i
-                file = strQUOT & path & strBAK & "c" & j.ToString() & ".avi" & strQUOT
+
+                file = strQUOT & path & strBAK & "c" & j.ToString() & ".avi" & strQUOT                                          'Filename for output column video ("cN.avi"). "C:\WorkingDir\cN.avi"
+
                 If r > 1 Then
+                    'If multiple rows
+
+                    '-filter_complex "([0:v] to [r:v])vstack=inputs=r[v]" -map "[v]" "C:\WorkingDir\cN.avi"
                     cmd &= "-filter_complex " & strQUOT
                     cmd &= parm & "vstack=inputs=" & r.ToString() & "[v]" & strQUOT & " -map " & strQUOT & "[v]" & strQUOT
                     cmd &= " " & file
                 Else
+                    'If one row, just set output to "C:\WorkingDir\cN.avi"
+                    'Final cmd will be
+                    '"C:\FFMPegDir\ffmpeg.exe" -y -i "C:\WorkingDir\title_AX_Y.avi" "C:\WorkingDir\cN.avi"
                     cmd &= file
                 End If
 
+                'Run cmd
                 startInfo.FileName = cmd
                 shell.StartInfo = startInfo
                 shell.Start()
                 shell.WaitForExit()
             Next j
+            shell.Close()
 
-            '!@ This doesn't always truncate frames? (Test with battle_retro.thp)
+            'Do Step 2
+            '!@ This doesn't always truncate to the exact amount of frames!
+            'For now, user needs to remove excess frames in the jpg files before THP encoding.
+            'Hence the MsgBox to halt execution while the user does this
+
+            'Iterate through columns 1 to C
             For j = 1 To c Step 1
-                cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT & " -y "
+                cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT & " -y "           '"C:\FFMPegDir\FFMPeg.exe" -y
                 file = strQUOT & path & strBAK & "c" & j.ToString() & ".avi" & strQUOT
-                cmd &= "-i " & file
+                cmd &= "-i " & file                                                             '-i "C:\WorkingDir\cN.avi"
                 file = strQUOT & path & strBAK & "d" & j.ToString() & ".avi" & strQUOT
-                cmd &= " -filter_complex trim=start_frame=0:end_frame=" & frames & " " & file
+                cmd &= " -filter_complex trim=start_frame=0:end_frame=" & frames & " " & file   ' -filter_complex trim=start_frame=X:end_frame=Y "C:\WorkingDir\dN.avi"
+
+                '"-filter complex trim=start_frame=X:end_frame=Y" only renders frames X-Y for a video
+                'Run cmd
                 startInfo.FileName = cmd
                 shell.StartInfo = startInfo
                 shell.Start()
                 shell.WaitForExit()
             Next j
+            shell.Close()
 
-            parm = ""
-            ReDim parms(c)
-            cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT & " -y "
+            'Do Step 4
+            parm = ""                                                               'Clear parm string
+            ReDim parms(c)                                                          'ReDim parms to amount of columns
+            cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT & " -y "   '"C:\FFMPegDir\FFMPeg.exe" - y
+            'Iterate through all columns 1 to c
+            'Concatenate all input file args ("-i dN.avi") onto cmd, build input pads. Similar to Step 1 with vstack
             For j = 1 To c Step 1
                 file = strQUOT & path & strBAK & "d" & j.ToString() & ".avi" & strQUOT
                 cmd &= "-i " & file
@@ -949,37 +1080,47 @@ Public Class Main
             file = strQUOT & path & strBAK & "m" & k.ToString() & ".avi" & strQUOT
 
             If c > 1 Then
+                'If multiple columns
+                '-filter_complex "([0:v] to [c:v])hstack=inputs=c[v]" -map "[v]" "C:\WorkingDir\mN.avi"
                 cmd &= "-filter_complex " & strQUOT
                 cmd &= parm & "hstack=inputs=" & c.ToString() & "[v]" & strQUOT & " -map " & strQUOT & "[v]" & strQUOT
                 cmd &= " " & file
             Else
+                'If one col, just set output to "C:\WorkingDir\mN.avi"
+                'Final cmd will be
+                '"C:\FFMPegDir\ffmpeg.exe" -y -i "C:\WorkingDir\d1.avi" "C:\WorkingDir\mN.avi"
                 cmd &= file
             End If
 
+            'Run cmd
             startInfo.FileName = cmd
             shell.StartInfo = startInfo
             shell.Start()
             shell.WaitForExit()
-        Next k
+            shell.Close()
+        Next k  'Do Step 5
 
+        'Do Step 6
         'https://stackoverflow.com/questions/5415006/ffmpeg-combine-merge-multiple-mp4-videos-not-working-output-only-contains-the
         'ffmpeg -f concat -i inputs.txt -vcodec copy -acodec copy Mux1.mp4
         If m > 1 Then
+            'If video has multiplicity
+
+            '"C:\FFMPegDir\FFMPeg.exe" -y -f concat -i
             cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT & " -y -f concat -i "
+
+            'Redim files to 0-based multiplicity
             ReDim Files(m - 1)
-            'For k = 1 To m Step 1
-            '        'ffmpeg -i opening.mkv -i episode.mkv -i ending.mkv -filter_complex concat output.mkv"
-            'file = strQUOT & path & strBAK & "m" & k.ToString() & ".avi" & strQUOT
-            'cmd &= "-i " & file
-            'cmd &= " "
-            'Next k
+            'Iterate multiplicity from 1 to m
             For k = 1 To m Step 1
+                '0-based file index = "mN.avi", where "N" is 1-based
                 Files(k - 1) = "m" & k.ToString() & ".avi"
             Next k
-            WriteTxtFile(path, Files)
-            file = strQUOT & path & strBAK & "File.txt" & strQUOT
-            cmd &= file & " -vcodec copy -acodec copy " & strQUOT & path & strBAK & filename & ".avi" & strQUOT
+            WriteTxtFile(path, Files)                                                                           'Write file list (File.txt) to WorkingDir
+            file = strQUOT & path & strBAK & "File.txt" & strQUOT                                               'That file is located at "C:\WorkingDir\File.Txt"
+            cmd &= file & " -vcodec copy -acodec copy " & strQUOT & path & strBAK & filename & ".avi" & strQUOT '"C:\WorkingDir\File.Txt" -vcodec copy -acodec copy "C:\WorkingDir\filename.avi"
 
+            'Run cmd
             startInfo.FileName = cmd
             startInfo.WorkingDirectory = path
             shell.StartInfo = startInfo
@@ -987,6 +1128,7 @@ Public Class Main
             shell.WaitForExit()
             shell.Close()
         Else
+            'If video has no multiplicity, just copy "C:\WorkingDir\m1.avi" to "C:\WorkingDir\filename.avi"
             file = path & strBAK & "m1.avi"
             My.Computer.FileSystem.CopyFile(file, path & strBAK & filename & ".avi")
         End If
@@ -994,16 +1136,26 @@ Public Class Main
         'If we have dummy padding, concatenate each of the dummy_*.avi files into dummy.avi,
         'then vstack filename.avi with dummy.avi for final.avi. Rename final.avi to filename.avi and replace
         If hasPad Then
-            'Concatenate dummy*.avi
+            'If padding, Do Step 7
+
             If m > 1 Then
+                'If multiplicity, concatenate all dummy_N.avi to dummy.avi
+
+                'Setup similar to Step 6
+                '"C:\FFMPegDir\FFMPeg.exe" -y -f concat -i
                 cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT & " -y -f concat -i "
+                'Redim files to 0-based multiplicity
                 ReDim Files(m - 1)
+                'Iterate multiplicity from 1 to m
                 For k = 1 To m Step 1
+                    '0-based file index = "dummy_N.avi", where "N" is 1-based
                     Files(k - 1) = "dummy_" & k.ToString() & ".avi"
                 Next k
-                WriteTxtFile(path, Files)
-                file = strQUOT & path & strBAK & "File.txt" & strQUOT
-                cmd &= file & " -vcodec copy -acodec copy " & strQUOT & path & strBAK & "dummy.avi" & strQUOT
+                WriteTxtFile(path, Files)                                                                       'Write file list (File.txt) to WorkingDir
+                file = strQUOT & path & strBAK & "File.txt" & strQUOT                                           'That file is located at "C:\WorkingDir\File.Txt"
+                cmd &= file & " -vcodec copy -acodec copy " & strQUOT & path & strBAK & "dummy.avi" & strQUOT   '"C:\WorkingDir\File.Txt" -vcodec copy -acodec copy "C:\WorkingDir\dummy.avi"
+
+                'Run cmd
                 startInfo.FileName = cmd
                 startInfo.WorkingDirectory = path
                 shell.StartInfo = startInfo
@@ -1011,73 +1163,91 @@ Public Class Main
                 shell.WaitForExit()
                 shell.Close()
             Else
+                'If no multiplicity, copy "C:\WorkingDir\dummy_1.avi" to "C:\WorkingDir\dummy.avi"
                 file = path & strBAK & "dummy_1.avi"
                 file2 = path & strBAK & "dummy.avi"
                 My.Computer.FileSystem.MoveFile(file, file2, True)
             End If
 
+            'Do Step 8
             'vstack filename.avi with dummy.avi into final.avi
             'ffmpeg -i top.mp4 -i bot.mp4 -filter_complex vstack output.mp4
-            cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT & " -y"
+            cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT & " -y"    '"C:\FFMPegDir\FFMPeg.exe" -y
             file = strQUOT & path & strBAK & filename & ".avi" & strQUOT
-            cmd &= " -i " & file
+            cmd &= " -i " & file                                                    ' -i "C:\WorkingDir\filename.avi"
             file = strQUOT & path & strBAK & "dummy.avi" & strQUOT
+
             cmd &= " -i " & file
             cmd &= " -filter_complex vstack "
             file = strQUOT & path & strBAK & "final.avi" & strQUOT
-            cmd &= file
+            cmd &= file                                                             ' -i "C:\WorkingDir\dummy.avi -filter_complex vstack "C:\WorkingDir\final.avi""
+
+            'Run cmd
             startInfo.FileName = cmd
             shell.StartInfo = startInfo
             shell.Start()
             shell.WaitForExit()
             shell.Close()
 
+            'MoveFile("C:\WorkingDir\final.avi"->"C:\WorkingDir\filename.avi")
             file = path & strBAK & "final.avi"
             file2 = path & strBAK & filename & ".avi"
             My.Computer.FileSystem.MoveFile(file, file2, True)
         End If
 
-            'Output to .jpg frames
-            i = Val(txtTE_D.Text)
-            cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT & " -y "
-            file = strQUOT & path & strBAK & filename & ".avi" & strQUOT
-            cmd &= "-i " & file
-            file = strQUOT & path & strBAK & "frame_%0" & i.ToString() & "d.jpg" & strQUOT
-            cmd &= " " & file
-            startInfo.FileName = cmd
-            shell.StartInfo = startInfo
-            shell.Start()
-            shell.WaitForExit()
-            shell.Close()
+        'Do Step 9: Output to .jpg frames
+        i = Val(txtTE_D.Text)                                                           'Set i to amount of digits in framelimit
+        cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT & " -y "           '"C:\FFMPegDir\FFMPeg.exe" -y 
+        file = strQUOT & path & strBAK & filename & ".avi" & strQUOT
+        cmd &= "-i " & file                                                             '-i "C:\WorkingDir\filename.avi"
+        file = strQUOT & path & strBAK & "frame_%0" & i.ToString() & "d.jpg" & strQUOT
+        cmd &= " " & file                                                               ' "C:\WorkingDir\frame_%0Nd.jpg"
 
-            MsgBox("The JPG frames have been rendered! Make sure the proper amount of frames have been rendered. If more than necessary have been created, delete the extra frames. Then click OK to convert to a THP!", MsgBoxStyle.OkOnly, "THP Rendering")
+        'Run cmd
+        startInfo.FileName = cmd
+        shell.StartInfo = startInfo
+        shell.Start()
+        shell.WaitForExit()
+        shell.Close()
 
-        Dim hasAudio As Boolean = BoolStrToBool(txtA_A.Text.ToString())
+        'Do Step 10
+        MsgBox("The JPG frames have been rendered! Make sure the proper amount of frames have been rendered. If more than necessary have been created, delete the extra frames. Then click OK to convert to a THP!", MsgBoxStyle.OkOnly, "THP Rendering")
 
-            If hasAudio = False Then                
+        'Do Step 11
+        Dim hasAudio As Boolean = THPHasAudio()
+        If hasAudio = False Then
+            'If no audio, just convert jpg frames into THP using THPConv
+            '"C:\THPConvDir\THPConv.exe" -j "C:\WorkingDir\*.jpg" -d "C:\WorkingDir\filename.thp"
             cmd = strQUOT & txtTHPConv.Text & strQUOT
             file = "-j " & strQUOT & path & strBAK & "*.jpg" & strQUOT
             cmd &= " " & file & " -d"
             file = strQUOT & path & strBAK & filename & ".thp" & strQUOT
             cmd &= " " & file
-            Else
+        Else
+            'If audio, convert jpg frames and add audio file
+            '"C:\THPConvDir\THPConv.exe" -j "C:\WorkingDir\*.jpg" -s "C:\WorkingDir\filename.wav" -d "C:\WorkingDir\filename.thp"
             cmd = strQUOT & txtTHPConv.Text & strQUOT
             file = "-j " & strQUOT & path & strBAK & "*.jpg" & strQUOT
             cmd &= " " & file
-                file = strQUOT & path & strBAK & filename & ".wav" & strQUOT
-                cmd &= " -s " & file
-                file = strQUOT & path & strBAK & filename & ".thp" & strQUOT
-                cmd &= " -d " & file
-            End If
-            startInfo.FileName = cmd
-            shell.StartInfo = startInfo
-            shell.Start()
-            shell.WaitForExit()
-            shell.Close()
+            file = strQUOT & path & strBAK & filename & ".wav" & strQUOT
+            cmd &= " -s " & file
+            file = strQUOT & path & strBAK & filename & ".thp" & strQUOT
+            cmd &= " -d " & file
+        End If
 
-            MsgBox("THP rendered! Now cleaning up...", MsgBoxStyle.OkOnly, "Success!")
+        'Run cmd
+        startInfo.FileName = cmd
+        shell.StartInfo = startInfo
+        shell.Start()
+        shell.WaitForExit()
+        shell.Close()
+
+        'Step 12
+        MsgBox("THP rendered! Now cleaning up...", MsgBoxStyle.OkOnly, "Success!")
         CleanUp(path, filename, r, c, m, hasPad, False)
-            MsgBox("Done!", MsgBoxStyle.OkOnly, "Tada!")
+
+        'Step 13: Done!
+        MsgBox("Done!", MsgBoxStyle.OkOnly, "Tada!")
     End Sub
 
     ''' <summary>
@@ -1094,7 +1264,7 @@ Public Class Main
     Private Sub CleanUp(ByVal Path As String, ByVal filename As String, ByVal r As Byte, ByVal c As Byte, ByVal m As Byte, ByVal Haspad As Boolean, ByVal justBMPs As Boolean)
 
         'Generic iterators
-        Dim i As Byte       'Rows
+        'Dim i As Byte       'Rows
         Dim j As Byte       'Cols
         Dim k As Byte       'Multiplicity
         Dim File As String  'File to check against/to delete/to whatever
@@ -1214,20 +1384,42 @@ Public Class Main
     ''' </summary>
     ''' <remarks></remarks>
     Private Sub chkRipString()
-        Dim D As Dims                                                                       'Dims for video padding
-        D.width = Val(txtVP_W.Text)                                                         'Get padding width
-        D.height = Val(txtVP_H.Text)                                                        'Get height width
-
-        Dim hasPad As Boolean = False                                                       'Does THP video has padding?
-        If D.width <> 0 And D.height <> 0 Then hasPad = True 'If Padding dims aren't zero, it does have padding
+        Dim hasPad As Boolean = THPHasPad()                                                 'Does THP video has padding?
 
         'If doesn't have padding and the chkbox is checked, force box to unset (just AVI/WAV)
         If hasPad = False And chkRip_Type.Checked = True Then chkRip_Type.Checked = False
 
-        Dim hasAudio As Boolean = BoolStrToBool(txtA_A.Text)            'Does the video have audio? (Is its field "True"?)
+        Dim hasAudio As Boolean = THPHasAudio()
         Dim strFalse As String = "Rip to" & strNL & "AVI"                  'String to use when check box is false ("Rip to\nAVI" by default)
         If hasAudio = True Then strFalse = "Rip to" & strNL & "AVI+WAV" '  'If video has audio, change false string to "Rip to\nAVI+WAV"
         Dim strTrue As String = strFalse & "," & strNL & "dummy"           'String to use when check box is true. This will be the false string + ",\nDummy" for dummy ripping7
         ChkString(strTrue, strFalse, chkRip_Type)                       'Change the checkbox text as appropriately based on state
     End Sub
+
+    ''' <summary>
+    ''' Does this current THP have padding?
+    ''' </summary>
+    ''' <returns>Padding?</returns>
+    ''' <remarks></remarks>
+    Private Function THPHasPad() As Boolean
+        Dim outp As Boolean = False         'Output
+        Dim d As Dims                       'Dims
+        d.width = Val(txtVP_W.Text)         'Width=Video padding width
+        d.height = Val(txtVP_H.Text)        'Height=Video padding height
+
+        'If both dims are not zero, then hasPadding
+        If d.width <> 0 And d.height <> 0 Then outp = True
+        Return outp
+    End Function
+
+    ''' <summary>
+    ''' Does this current THP has audio?
+    ''' </summary>
+    ''' <returns>Audio?</returns>
+    ''' <remarks></remarks>
+    Private Function THPHasAudio() As Boolean
+        Dim has As String = txtA_A.Text                 'Get hasAudio field as string
+        Dim hasAudio As Boolean = BoolStrToBool(has)    'Does vid have audio? (Convert has to bool)
+        Return hasAudio
+    End Function
 End Class
