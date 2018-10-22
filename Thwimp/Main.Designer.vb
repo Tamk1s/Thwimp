@@ -26,13 +26,13 @@ Partial Class Main
         Me.LoadTHPRoot = New System.Windows.Forms.FolderBrowserDialog()
         Me.TabTHP = New System.Windows.Forms.TabPage()
         Me.grpTHPEnc = New System.Windows.Forms.GroupBox()
+        Me.txtTE_D = New System.Windows.Forms.MaskedTextBox()
+        Me.txtTE_F = New System.Windows.Forms.MaskedTextBox()
         Me.chkTE_wav = New System.Windows.Forms.CheckBox()
         Me.chkTE_Dum = New System.Windows.Forms.CheckBox()
-        Me.txtTE_D = New System.Windows.Forms.TextBox()
         Me.lblTE_D = New System.Windows.Forms.Label()
         Me.btnTE_Enc = New System.Windows.Forms.Button()
         Me.chkTE_A1 = New System.Windows.Forms.CheckBox()
-        Me.txtTE_F = New System.Windows.Forms.TextBox()
         Me.chkTE_A2 = New System.Windows.Forms.CheckBox()
         Me.lblTE_F = New System.Windows.Forms.Label()
         Me.chkTE_A3 = New System.Windows.Forms.CheckBox()
@@ -52,12 +52,12 @@ Partial Class Main
         Me.grpTHPDec = New System.Windows.Forms.GroupBox()
         Me.chkRip_Type = New System.Windows.Forms.CheckBox()
         Me.grpTHPDec_Crop = New System.Windows.Forms.GroupBox()
-        Me.txtTD_CH = New System.Windows.Forms.TextBox()
-        Me.txtTD_CY = New System.Windows.Forms.TextBox()
+        Me.txtTD_CH = New System.Windows.Forms.MaskedTextBox()
+        Me.txtTD_CY = New System.Windows.Forms.MaskedTextBox()
+        Me.txtTD_CW = New System.Windows.Forms.MaskedTextBox()
         Me.lblTD_CH = New System.Windows.Forms.Label()
+        Me.txtTD_CX = New System.Windows.Forms.MaskedTextBox()
         Me.lblTD_CY = New System.Windows.Forms.Label()
-        Me.txtTD_CW = New System.Windows.Forms.TextBox()
-        Me.txtTD_CX = New System.Windows.Forms.TextBox()
         Me.lblTD_CW = New System.Windows.Forms.Label()
         Me.lblTD_CX = New System.Windows.Forms.Label()
         Me.btnRip = New System.Windows.Forms.Button()
@@ -180,13 +180,13 @@ Partial Class Main
         '
         'grpTHPEnc
         '
+        Me.grpTHPEnc.Controls.Add(Me.txtTE_D)
+        Me.grpTHPEnc.Controls.Add(Me.txtTE_F)
         Me.grpTHPEnc.Controls.Add(Me.chkTE_wav)
         Me.grpTHPEnc.Controls.Add(Me.chkTE_Dum)
-        Me.grpTHPEnc.Controls.Add(Me.txtTE_D)
         Me.grpTHPEnc.Controls.Add(Me.lblTE_D)
         Me.grpTHPEnc.Controls.Add(Me.btnTE_Enc)
         Me.grpTHPEnc.Controls.Add(Me.chkTE_A1)
-        Me.grpTHPEnc.Controls.Add(Me.txtTE_F)
         Me.grpTHPEnc.Controls.Add(Me.chkTE_A2)
         Me.grpTHPEnc.Controls.Add(Me.lblTE_F)
         Me.grpTHPEnc.Controls.Add(Me.chkTE_A3)
@@ -210,6 +210,22 @@ Partial Class Main
         Me.grpTHPEnc.TabStop = False
         Me.grpTHPEnc.Text = "THP Encoder"
         '
+        'txtTE_D
+        '
+        Me.txtTE_D.Location = New System.Drawing.Point(178, 73)
+        Me.txtTE_D.Mask = "0"
+        Me.txtTE_D.Name = "txtTE_D"
+        Me.txtTE_D.Size = New System.Drawing.Size(20, 22)
+        Me.txtTE_D.TabIndex = 1
+        '
+        'txtTE_F
+        '
+        Me.txtTE_F.Location = New System.Drawing.Point(150, 46)
+        Me.txtTE_F.Mask = "0000"
+        Me.txtTE_F.Name = "txtTE_F"
+        Me.txtTE_F.Size = New System.Drawing.Size(48, 22)
+        Me.txtTE_F.TabIndex = 0
+        '
         'chkTE_wav
         '
         Me.chkTE_wav.AutoSize = True
@@ -231,14 +247,6 @@ Partial Class Main
         Me.chkTE_Dum.TabStop = False
         Me.chkTE_Dum.Text = "dummy"
         Me.chkTE_Dum.UseVisualStyleBackColor = True
-        '
-        'txtTE_D
-        '
-        Me.txtTE_D.Location = New System.Drawing.Point(178, 74)
-        Me.txtTE_D.Name = "txtTE_D"
-        Me.txtTE_D.Size = New System.Drawing.Size(20, 22)
-        Me.txtTE_D.TabIndex = 1
-        Me.txtTE_D.Text = "8"
         '
         'lblTE_D
         '
@@ -268,14 +276,6 @@ Partial Class Main
         Me.chkTE_A1.TabStop = False
         Me.chkTE_A1.Text = "A1"
         Me.chkTE_A1.UseVisualStyleBackColor = True
-        '
-        'txtTE_F
-        '
-        Me.txtTE_F.Location = New System.Drawing.Point(150, 46)
-        Me.txtTE_F.Name = "txtTE_F"
-        Me.txtTE_F.Size = New System.Drawing.Size(48, 22)
-        Me.txtTE_F.TabIndex = 0
-        Me.txtTE_F.Text = "1234"
         '
         'chkTE_A2
         '
@@ -473,10 +473,10 @@ Partial Class Main
         '
         Me.grpTHPDec_Crop.Controls.Add(Me.txtTD_CH)
         Me.grpTHPDec_Crop.Controls.Add(Me.txtTD_CY)
-        Me.grpTHPDec_Crop.Controls.Add(Me.lblTD_CH)
-        Me.grpTHPDec_Crop.Controls.Add(Me.lblTD_CY)
         Me.grpTHPDec_Crop.Controls.Add(Me.txtTD_CW)
+        Me.grpTHPDec_Crop.Controls.Add(Me.lblTD_CH)
         Me.grpTHPDec_Crop.Controls.Add(Me.txtTD_CX)
+        Me.grpTHPDec_Crop.Controls.Add(Me.lblTD_CY)
         Me.grpTHPDec_Crop.Controls.Add(Me.lblTD_CW)
         Me.grpTHPDec_Crop.Controls.Add(Me.lblTD_CX)
         Me.grpTHPDec_Crop.Location = New System.Drawing.Point(6, 106)
@@ -489,18 +489,26 @@ Partial Class Main
         'txtTD_CH
         '
         Me.txtTD_CH.Location = New System.Drawing.Point(189, 51)
+        Me.txtTD_CH.Mask = "0000"
         Me.txtTD_CH.Name = "txtTD_CH"
         Me.txtTD_CH.Size = New System.Drawing.Size(46, 22)
         Me.txtTD_CH.TabIndex = 3
-        Me.txtTD_CH.Text = "1234"
         '
         'txtTD_CY
         '
-        Me.txtTD_CY.Location = New System.Drawing.Point(189, 21)
+        Me.txtTD_CY.Location = New System.Drawing.Point(189, 23)
+        Me.txtTD_CY.Mask = "0000"
         Me.txtTD_CY.Name = "txtTD_CY"
         Me.txtTD_CY.Size = New System.Drawing.Size(46, 22)
         Me.txtTD_CY.TabIndex = 1
-        Me.txtTD_CY.Text = "1234"
+        '
+        'txtTD_CW
+        '
+        Me.txtTD_CW.Location = New System.Drawing.Point(90, 51)
+        Me.txtTD_CW.Mask = "0000"
+        Me.txtTD_CW.Name = "txtTD_CW"
+        Me.txtTD_CW.Size = New System.Drawing.Size(46, 22)
+        Me.txtTD_CW.TabIndex = 2
         '
         'lblTD_CH
         '
@@ -511,6 +519,14 @@ Partial Class Main
         Me.lblTD_CH.TabIndex = 29
         Me.lblTD_CH.Text = "Height:"
         '
+        'txtTD_CX
+        '
+        Me.txtTD_CX.Location = New System.Drawing.Point(90, 23)
+        Me.txtTD_CX.Mask = "0000"
+        Me.txtTD_CX.Name = "txtTD_CX"
+        Me.txtTD_CX.Size = New System.Drawing.Size(46, 22)
+        Me.txtTD_CX.TabIndex = 0
+        '
         'lblTD_CY
         '
         Me.lblTD_CY.AutoSize = True
@@ -519,22 +535,6 @@ Partial Class Main
         Me.lblTD_CY.Size = New System.Drawing.Size(49, 17)
         Me.lblTD_CY.TabIndex = 28
         Me.lblTD_CY.Text = "Y-pos:"
-        '
-        'txtTD_CW
-        '
-        Me.txtTD_CW.Location = New System.Drawing.Point(85, 51)
-        Me.txtTD_CW.Name = "txtTD_CW"
-        Me.txtTD_CW.Size = New System.Drawing.Size(46, 22)
-        Me.txtTD_CW.TabIndex = 2
-        Me.txtTD_CW.Text = "1234"
-        '
-        'txtTD_CX
-        '
-        Me.txtTD_CX.Location = New System.Drawing.Point(85, 23)
-        Me.txtTD_CX.Name = "txtTD_CX"
-        Me.txtTD_CX.Size = New System.Drawing.Size(46, 22)
-        Me.txtTD_CX.TabIndex = 0
-        Me.txtTD_CX.Text = "1234"
         '
         'lblTD_CW
         '
@@ -1457,12 +1457,8 @@ Partial Class Main
     Friend WithEvents txtFDesc As System.Windows.Forms.TextBox
     Friend WithEvents grpTHPDec As System.Windows.Forms.GroupBox
     Friend WithEvents grpTHPDec_Crop As System.Windows.Forms.GroupBox
-    Friend WithEvents txtTD_CH As System.Windows.Forms.TextBox
-    Friend WithEvents txtTD_CY As System.Windows.Forms.TextBox
     Friend WithEvents lblTD_CH As System.Windows.Forms.Label
     Friend WithEvents lblTD_CY As System.Windows.Forms.Label
-    Friend WithEvents txtTD_CW As System.Windows.Forms.TextBox
-    Friend WithEvents txtTD_CX As System.Windows.Forms.TextBox
     Friend WithEvents lblTD_CW As System.Windows.Forms.Label
     Friend WithEvents lblTD_CX As System.Windows.Forms.Label
     Friend WithEvents btnRip As System.Windows.Forms.Button
@@ -1486,7 +1482,6 @@ Partial Class Main
     Friend WithEvents chkTE_A1 As System.Windows.Forms.CheckBox
     Friend WithEvents grpTHPEnc As System.Windows.Forms.GroupBox
     Friend WithEvents btnTE_Enc As System.Windows.Forms.Button
-    Friend WithEvents txtTE_F As System.Windows.Forms.TextBox
     Friend WithEvents lblTE_F As System.Windows.Forms.Label
     Friend WithEvents lblVS_P As System.Windows.Forms.Label
     Friend WithEvents txtVP_H As System.Windows.Forms.TextBox
@@ -1495,9 +1490,14 @@ Partial Class Main
     Friend WithEvents ofdRip As System.Windows.Forms.OpenFileDialog
     Friend WithEvents ofdOutput As System.Windows.Forms.FolderBrowserDialog
     Friend WithEvents lblTE_D As System.Windows.Forms.Label
-    Friend WithEvents txtTE_D As System.Windows.Forms.TextBox
     Friend WithEvents chkTE_Dum As System.Windows.Forms.CheckBox
     Friend WithEvents PictureBox1 As System.Windows.Forms.PictureBox
     Friend WithEvents chkRip_Type As System.Windows.Forms.CheckBox
     Friend WithEvents chkTE_wav As System.Windows.Forms.CheckBox
+    Friend WithEvents txtTE_D As System.Windows.Forms.MaskedTextBox
+    Friend WithEvents txtTE_F As System.Windows.Forms.MaskedTextBox
+    Friend WithEvents txtTD_CH As System.Windows.Forms.MaskedTextBox
+    Friend WithEvents txtTD_CY As System.Windows.Forms.MaskedTextBox
+    Friend WithEvents txtTD_CW As System.Windows.Forms.MaskedTextBox
+    Friend WithEvents txtTD_CX As System.Windows.Forms.MaskedTextBox
 End Class
