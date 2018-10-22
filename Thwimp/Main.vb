@@ -1214,7 +1214,6 @@ Public Class Main
     ''' </summary>
     ''' <remarks></remarks>
     Private Sub chkRipString()
-        Dim NL As String = strNL                                              'New line char
         Dim D As Dims                                                                       'Dims for video padding
         D.width = Val(txtVP_W.Text)                                                         'Get padding width
         D.height = Val(txtVP_H.Text)                                                        'Get height width
@@ -1226,9 +1225,9 @@ Public Class Main
         If hasPad = False And chkRip_Type.Checked = True Then chkRip_Type.Checked = False
 
         Dim hasAudio As Boolean = BoolStrToBool(txtA_A.Text)            'Does the video have audio? (Is its field "True"?)
-        Dim strFalse As String = "Rip to" & NL & "AVI"                  'String to use when check box is false ("Rip to\nAVI" by default)
-        If hasAudio = True Then strFalse = "Rip to" & NL & "AVI+WAV" '  'If video has audio, change false string to "Rip to\nAVI+WAV"
-        Dim strTrue As String = strFalse & "," & NL & "dummy"           'String to use when check box is true. This will be the false string + ",\nDummy" for dummy ripping7
+        Dim strFalse As String = "Rip to" & strNL & "AVI"                  'String to use when check box is false ("Rip to\nAVI" by default)
+        If hasAudio = True Then strFalse = "Rip to" & strNL & "AVI+WAV" '  'If video has audio, change false string to "Rip to\nAVI+WAV"
+        Dim strTrue As String = strFalse & "," & strNL & "dummy"           'String to use when check box is true. This will be the false string + ",\nDummy" for dummy ripping7
         ChkString(strTrue, strFalse, chkRip_Type)                       'Change the checkbox text as appropriately based on state
     End Sub
 End Class
