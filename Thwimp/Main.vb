@@ -1,15 +1,41 @@
-﻿Imports System.IO
+﻿'Thwimp - FOSS utility for ripping, viewing, and creating THP video files for Mario Kart Wii
+'Copyright (C) 2018 Tamkis
+
+'This program is free software: you can redistribute it and/or modify
+'it under the terms of the GNU General Public License as published by
+'the Free Software Foundation, either version 3 of the License, or
+'(at your option) any later version.
+
+'This program is distributed in the hope that it will be useful,
+'but WITHOUT ANY WARRANTY; without even the implied warranty of
+'MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+'GNU General Public License for more details.
+
+'You should have received a copy of the GNU General Public License
+'along with this program.  If not, see <http://www.gnu.org/licenses/>.
+'
+'Email: tamkis@eaglesoftltd.com
+
+
+
+
+
+'!@ Bugs to fix later:
+'1. Apparently control ripping is off by 2 frames for cup_select.
+'   This may be an error by N* in the video itself?
+'   Just use the appropriate dummy files provided in the project archive for now
+'2. Sometimes speed is slightly variable on the video playback. This is due to using uncompressed AVIs
+'   during the 12-step multi-stage passes, and some of the subvideos having dims not with a mult of 16 during v/hstacking, concateneating, etc.
+'   Read https://ffmpeg.org/pipermail/ffmpeg-user/2017-October/037501.html .
+'   Not much I can do to fix this I'm afraid without a refactor :(
+
+
+
+
+Imports System.IO
 Imports System.Runtime.InteropServices
 
-Public Class Main
-    '!@ Bugs to fix later:
-    '1. Apparently control ripping is off by 2 frames for cup_select.
-    '   This may be an error by N* in the video itself?
-    '   Just use the appropriate dummy files provided in the project archive for now
-    '2. Sometimes speed is slightly variable on the video playback. This is due to using uncompressed AVIs
-    '   during the 12-step multi-stage passes, and some of the subvideos having dims not with a mult of 16 during v/hstacking, concateneating, etc.
-    '   Read https://ffmpeg.org/pipermail/ffmpeg-user/2017-October/037501.html . Not much I can do to fix this I'm afraid without a refactor :(
-
+Public Class Main    
     'Global constants
 
     'Characters
@@ -99,7 +125,7 @@ Public Class Main
     End Structure
     '========================
 
-    'APP Setup code
+    'APP Setup code/THP Combo Box/Important THP struct stuff
 
     ''' <summary>
     ''' Application setup code onLoad
@@ -295,88 +321,6 @@ Public Class Main
         End Try
     End Sub
 
-    '===========================
-    'Options Tab stuff
-
-    ''' <summary>
-    ''' 'Handles clicking of About button, showing the box
-    ''' </summary>
-    ''' <param name="sender"></param>
-    ''' <param name="e"></param>
-    ''' <remarks></remarks>
-    Private Sub btnAbout_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnAbout.Click
-        Try
-            My.Computer.Audio.Play(My.Resources.EagleSoft, AudioPlayMode.Background)    'Play "EagleSoft Ltd"
-            About.ShowDialog()                                                          'Show the about box
-        Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error with showing About box!")
-        End Try
-    End Sub
-
-    ''' <summary>
-    ''' Hnadles loading the THP root dir
-    ''' </summary>
-    ''' <param name="sender"></param>
-    ''' <param name="e"></param>
-    ''' <remarks></remarks>
-    Private Sub btnLoadRoot_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnBrowseRoot.Click
-        Try
-            'Load the LoadTHPRoot Load Dialog Box, user selects root directory of THP
-            If LoadTHPRoot.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
-            txtRoot.Text = LoadTHPRoot.SelectedPath    'Dump the path into the textbox, for later retrieval
-            CheckPathsSet()                             'Handle enabling THP Tab
-        Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btnLoadRoot_Click!")
-        End Try
-    End Sub
-
-    ''' <summary>
-    ''' Handles loading the FFMPeg exe path
-    ''' </summary>
-    ''' <param name="sender"></param>
-    ''' <param name="e"></param>
-    ''' <remarks></remarks>
-    Private Sub btnBrowseFFMpeg_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnBrowseFFMpeg.Click
-        Try
-            'Load the LoadFMPegRoot Load Dialog Box, user selects root directory of FFMpeg exes
-            If LoadFMPegRoot.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
-            txtFFMpeg.Text = LoadFMPegRoot.SelectedPath    'Dump the path into the textbox, for later retrieval
-            CheckPathsSet()                             'Handle enabling THP Tab
-        Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btnBrowseFFMpeg_Click!")
-        End Try
-    End Sub
-    ''' <summary>
-    ''' Handles loading the THPConv exe file
-    ''' </summary>
-    ''' <param name="sender"></param>
-    ''' <param name="e"></param>
-    ''' <remarks></remarks>
-    Private Sub btnBrowseTHPConv_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnBrowseTHPConv.Click
-        'Load the LoadTHPConv ofd, user selects thpconv.exe
-        Try
-            If LoadTHPConv.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
-            txtTHPConv.Text = LoadTHPConv.FileName      'Dump the path into the textbox, for later retrieval
-            CheckPathsSet()                             'Handle enabling THP Tab
-        Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btnBrowseTHPConv_Click!")
-        End Try
-    End Sub
-
-    ''' <summary>
-    ''' If the options have been filled in, enable elements in THP tab
-    ''' </summary>
-    ''' <remarks></remarks>
-    Private Sub CheckPathsSet()
-        'Options det to be filled if something
-        If (txtRoot.Text <> Nothing) And (txtFFMpeg.Text <> Nothing) And (txtTHPConv.Text <> Nothing) Then
-            'Make everything in the THP tab visible now (THPFile lable and combo box, whole THP Info group box)
-            lblTHPFile.Visible = True
-            cmbTHP.Visible = True
-            grpTHPInfo.Visible = True
-        End If
-    End Sub
-
     ''' <summary>
     ''' Handles dumping the data from the data files (now in RAM) into the appropriate fields for the THPInfo Group box, when the combo box has been changed
     ''' </summary>
@@ -444,277 +388,120 @@ Public Class Main
     End Sub
 
     ''' <summary>
-    ''' Handles the checkbox array depiction of naming conventions for THP encoding
+    ''' Does this THP have padding?
     ''' </summary>
+    ''' <returns>Padding?</returns>
     ''' <remarks></remarks>
-    Private Sub HandleArrState()
-        Dim Boxes(6, 2) As System.Windows.Forms.CheckBox    'Array of 6x2 check boxes
-        Dim Dum As System.Windows.Forms.CheckBox            'Dummy check box (for padding)
-        Dim Wav As System.Windows.Forms.CheckBox            'Wav check box (for audio wav file)
-
-        'Init the array. In A1N MS Excel notation, Alpha=row, Number=Col
-        Boxes(1, 1) = chkTE_A1
-        Boxes(2, 1) = chkTE_A2
-        Boxes(3, 1) = chkTE_A3
-        Boxes(4, 1) = chkTE_A4
-        Boxes(5, 1) = chkTE_A5
-        Boxes(6, 1) = chkTE_A6
-        Boxes(1, 2) = chkTE_B1
-        Boxes(2, 2) = chkTE_B2
-        Boxes(3, 2) = chkTE_B3
-        Boxes(4, 2) = chkTE_B4
-        Boxes(5, 2) = chkTE_B5
-        Boxes(6, 2) = chkTE_B6
-        'Wav and dummy boxes
-        Dum = chkTE_Dum
-        Wav = chkTE_wav
-
-        'Generic iterators
-        Dim i As Byte = 0
-        Dim j As Byte = 0
-
+    Private Function THPHasPad() As Boolean
+        Dim outp As Boolean = False                 'Output
         Try
-            'Update the checked and enabled states of the array based on the video data 
-            'Amount of rows in video, columns, and multiplicity            
-            Dim r As Byte = TryParseErr_Byte(txtArr_R.Text)
-            Dim c As Byte = TryParseErr_Byte(txtArr_C.Text)
-            Dim m As Byte = TryParseErr_Byte(txtVM_M.Text)
-            Dim state As Boolean = False                    'Generic bool
+            Dim d As Dims                               'Dims
+            d.width = TryParseErr_UShort(txtVP_W.Text)  'Width=Video padding width
+            d.height = TryParseErr_UShort(txtVP_H.Text) 'Height=Video padding height
 
-            For i = 1 To 6 Step 1                           'Iterate through all rows (1-6)
-                For j = 1 To 2 Step 1                       'Iterate through all cols (1-2)
-                    If r = 0 And c = 0 Then
-                        'If a dummy entry in combo box was selected, then r & c of array will be 0. Set all boxes to unchecked/disabled
-                        state = False
-                    Else
-                        If i <= r And j <= c Then
-                            'If i and j iterators (row/col) are within
-                            'the amount of rows and col for this video, 
-                            'then cell is used. Check & enable the boxes
-                            state = True
-                        Else
-                            'Otherwise unused, uncheck and disable
-                            state = False
-                        End If
-                    End If
-
-                    'Update the checked/enabled states as appropriately
-                    Boxes(i, j).Checked = state
-                    Boxes(i, j).Enabled = state
-                Next j
-            Next i
-
-            'Handle dummy checkbox states
-            state = THPHasPad()
-            Dum.Checked = state
-            Dum.Enabled = state
-
-            'Handle wav checkbox states
-            state = BoolStrToBool(txtA_A.Text)    'If "True" then true
-            'Update the wav checkbox states
-            Wav.Checked = state
-            Wav.Enabled = state
-
-            'Handle the multiplicity box (the m values)
-            'If only m=1, then "_1", else "_1\nto\nM"
-            If m = 1 Then txtTE_M.Text = "_1" Else txtTE_M.Text = "_1" & strNL & "to" & strNL & "_" & m.ToString()
-            'Update the text
-            txtTE_F.Text = txtVF_S.Text
+            'If both dims are not zero, then hasPadding
+            If d.width <> 0 And d.height <> 0 Then outp = True
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in HandleArrState()!")
-        End Try
-    End Sub
-
-    '---------------------
-    'DOS file path functions
-
-    ''' <summary>
-    ''' Given a full file path, returns the directory
-    ''' </summary>
-    ''' <param name="strPath">Full file path</param>
-    ''' <returns>File path</returns>
-    ''' <remarks></remarks>
-    Public Function FileDir(ByVal strPath As String) As String        
-        Dim strOut As String = ""       'Output
-        Try
-            Dim strFile As String = ""      'The file itself (ie, File.ext)        
-            strFile = FileAndExt(strPath)   'Get the file+extension
-
-            'From the full file path, replace the file+ext with nothing, to get file directory; return
-            strOut = Replace(strPath, strFile, "")            
-        Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in FileDir()!")
-        End Try
-        Return strOut
-    End Function
-
-    ''' <summary>
-    ''' Given a full file path, returns filepath with changed file extension
-    ''' </summary>
-    ''' <param name="strPath">Full file path</param>
-    ''' <param name="strOldExt">Old extension</param>
-    ''' <param name="strNewExt">New extension</param>
-    ''' <returns>Full file with new extension</returns>
-    ''' <remarks></remarks>
-    Public Function FileChangeExt(ByVal strPath As String, ByVal strOldExt As String, ByVal strNewExt As String)
-        'Get the file+ext from the file path, replace old extension with new extension
-        FileChangeExt = Replace(FileAndExt(strPath), strOldExt, strNewExt)
-    End Function
-
-    ''' <summary>
-    ''' Given a full file path, returns the filename+ext
-    ''' </summary>
-    ''' <param name="strPath">Full file path</param>
-    ''' <returns>Filename+ext</returns>
-    ''' <remarks></remarks>
-    Public Function FileAndExt(ByVal strPath As String) As String
-        Dim outp As String = ""
-
-        Try
-            Dim shtPos(255) As UShort   'The recorded positions of the strBAK character(s) in strPath
-            Dim shtStart As UShort      'The start position inside strPath
-            Dim blnFound As Boolean     'Flag which determines if a strBAK character was found
-            Dim bytItems As Byte        'The amount of strBAK characters found
-
-            Dim shtLen As UShort        'The length of the strPath
-            Dim shtFileLen As UShort    'The length of the file+ext
-
-            bytItems = 1
-            blnFound = False
-            shtStart = 1
-
-            Do
-                shtPos(bytItems) = InStr(shtStart, strPath, strBAK) 'Find the next strBAK character, record its position in array
-                If shtPos(bytItems) <> 0 Then
-                    'If strBAK is found
-                    blnFound = True
-                    shtStart = shtPos(bytItems) + 1 'Set shtStart to one past the position of the found strBAK character
-                    bytItems += 1                   'Increment the amount of strBAK characters found
-                Else
-                    'if strBAK NOT found, trigger flag to exit loop
-                    blnFound = False
-                End If
-            Loop Until blnFound = False 'Loop until strBAK is NOT found
-
-            shtLen = Len(strPath) 'Get the length of the filepath
-            shtFileLen = shtLen - shtPos(bytItems - 1)  'Set the length of the file+ext
-            outp = Mid(strPath, (shtPos(bytItems - 1)) + 1, shtFileLen) 'Extract the file+ext
-        Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in FileAndExt")
+            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in THPHasPad()")
         End Try
         Return outp
     End Function
 
     ''' <summary>
-    ''' Writes File.txt at Path with list of Files (rel dirs).
+    ''' Does this THP have audio?
     ''' </summary>
-    ''' <param name="Path">Directory</param>
-    ''' <param name="Files">Array of filenames</param>
-    ''' <remarks>Used for -i param for ffmpeg.exe</remarks>
-    Private Sub WriteTxtFile(ByVal Path As String, ByRef Files() As String)
-        Try
-            Dim TextFile As String = Path & strBAK & "File.txt" 'The filepath to write
-            'If the textfile exists, remove it for clean slate
-            If My.Computer.FileSystem.FileExists(TextFile) Then My.Computer.FileSystem.DeleteFile(TextFile)
-
-            Dim xFileData As StreamWriter           'Streamwriter object to write File.txt
-            xFileData = File.CreateText(TextFile)   'Create File.txt
-
-            Dim i As Byte = 0                       'Generic iterator
-            Dim count As Byte = Files.Length - 1    'Count of files in list (0-based)
-            Dim line As String = ""                 'Line to write to file
-
-            'Iterate through the files, 0 to count
-            For i = 0 To count Step 1
-                line = "file " & Files(i)   'Line = "file myFilename.blah"
-                xFileData.WriteLine(line)   'Write the line
-            Next i
-            'Close and dispose the SW
-            xFileData.Close()
-            xFileData.Dispose()
-            xFileData = Nothing
-        Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "File IO error in WriteTxtFile!")
-        End Try
-    End Sub
-
-    ''' <summary>
-    ''' Deletes files from a folder based on a DOS search spec
-    ''' </summary>
-    ''' <param name="Folder">Folder to search</param>
-    ''' <param name="type">Search spec</param>
-    ''' <remarks>
-    ''' Like del cmd. For stuff like del *.pdf.
-    ''' https://stackoverflow.com/questions/25429791/how-do-i-delete-all-files-of-a-particular-type-from-a-folder
-    ''' </remarks>
-    Private Sub DeleteFilesFromFolder(ByVal Folder As String, ByVal type As String)
-        'If folder exists
-        Try
-            If Directory.Exists(Folder) Then
-                'Iterate through all files that match spec, delete them
-                For Each _file As String In Directory.GetFiles(Folder, type)
-                    File.Delete(_file)
-                Next _file
-            End If
-        Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "File IO error in DeleteFilesFromFolder!")
-        End Try
-    End Sub
-
-    ''' <summary>
-    ''' Like DeleteFIlesFromFolder, but for sequentially named files, deletes files past a limit
-    ''' </summary>
-    ''' <param name="Folder">Folder to search</param>
-    ''' <param name="type">Search spec</param>
-    ''' <param name="limit">Index limit</param>
+    ''' <returns>Audio?</returns>
     ''' <remarks></remarks>
-    Private Sub DeleteExtraFilesFromFolder(ByVal Folder As String, ByVal type As String, ByVal limit As UShort)
-        'If folder exists
-        Try
-            If Directory.Exists(Folder) Then
-                Dim i As UShort = 1                                             'Generic counter
-                For Each _file As String In Directory.GetFiles(Folder, type)
-                    If i > limit Then File.Delete(_file) '                       If iterator is above limit (extra file), delete it
-                    i += 1                                                      'Incremen
-                Next _file
-            End If
-        Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "File IO error in DeleteExtraFilesFromFolder!")
-        End Try
-    End Sub
-
-    '================
-    'Cast helper funcs
-
-    Private Function BitToBool(ByVal inp As Byte) As Boolean
-        Dim outp As Boolean = False
-        If inp = 1 Then outp = True
-        Return outp
+    Private Function THPHasAudio() As Boolean
+        Dim has As String = txtA_A.Text                 'Get hasAudio field as string
+        Dim hasAudio As Boolean = BoolStrToBool(has)    'Does vid have audio? (Convert has to bool)
+        Return hasAudio
     End Function
 
-    'Converts String with "True" or "False" into appropriate boolean value
-    'In = Boolean String
-    'Out = Boolean value
-    Private Function BoolStrToBool(ByVal inp As String) As Boolean
-        Dim outp As Boolean = False      'Output value
-        If inp = "True" Then outp = True 'If "True" then true
-        Return outp
-    End Function
+    '===========================
+    'Options Tab stuff
 
     ''' <summary>
-    ''' Changes a boolean checkbox's string based on state
+    ''' Hnadles loading the THP root dir
     ''' </summary>
-    ''' <param name="T">True string</param>
-    ''' <param name="F">False string</param>
-    ''' <param name="box">Checkbox</param>
+    ''' <param name="sender"></param>
+    ''' <param name="e"></param>
     ''' <remarks></remarks>
-    Private Sub ChkString(ByVal T As String, ByVal F As String, ByRef box As System.Windows.Forms.CheckBox)
-        Dim v As String
-        If box.Checked = True Then v = T Else v = F
-        box.Text = v
+    Private Sub btnLoadRoot_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnBrowseRoot.Click
+        Try
+            'Load the LoadTHPRoot Load Dialog Box, user selects root directory of THP
+            If LoadTHPRoot.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
+            txtRoot.Text = LoadTHPRoot.SelectedPath    'Dump the path into the textbox, for later retrieval
+            CheckPathsSet()                             'Handle enabling THP Tab
+        Catch ex As Exception
+            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btnLoadRoot_Click!")
+        End Try
     End Sub
 
-    '================
+    ''' <summary>
+    ''' Handles loading the FFMPeg exe path
+    ''' </summary>
+    ''' <param name="sender"></param>
+    ''' <param name="e"></param>
+    ''' <remarks></remarks>
+    Private Sub btnBrowseFFMpeg_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnBrowseFFMpeg.Click
+        Try
+            'Load the LoadFMPegRoot Load Dialog Box, user selects root directory of FFMpeg exes
+            If LoadFMPegRoot.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
+            txtFFMpeg.Text = LoadFMPegRoot.SelectedPath    'Dump the path into the textbox, for later retrieval
+            CheckPathsSet()                             'Handle enabling THP Tab
+        Catch ex As Exception
+            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btnBrowseFFMpeg_Click!")
+        End Try
+    End Sub
+    ''' <summary>
+    ''' Handles loading the THPConv exe file
+    ''' </summary>
+    ''' <param name="sender"></param>
+    ''' <param name="e"></param>
+    ''' <remarks></remarks>
+    Private Sub btnBrowseTHPConv_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnBrowseTHPConv.Click
+        'Load the LoadTHPConv ofd, user selects thpconv.exe
+        Try
+            If LoadTHPConv.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
+            txtTHPConv.Text = LoadTHPConv.FileName      'Dump the path into the textbox, for later retrieval
+            CheckPathsSet()                             'Handle enabling THP Tab
+        Catch ex As Exception
+            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btnBrowseTHPConv_Click!")
+        End Try
+    End Sub
+
+    ''' <summary>
+    ''' If the options have been filled in, enable elements in THP tab
+    ''' </summary>
+    ''' <remarks></remarks>
+    Private Sub CheckPathsSet()
+        'Options det to be filled if something
+        If (txtRoot.Text <> Nothing) And (txtFFMpeg.Text <> Nothing) And (txtTHPConv.Text <> Nothing) Then
+            'Make everything in the THP tab visible now (THPFile lable and combo box, whole THP Info group box)
+            lblTHPFile.Visible = True
+            cmbTHP.Visible = True
+            grpTHPInfo.Visible = True
+        End If
+    End Sub
+
+    ''' <summary>
+    ''' 'Handles clicking of About button, showing the box
+    ''' </summary>
+    ''' <param name="sender"></param>
+    ''' <param name="e"></param>
+    ''' <remarks></remarks>
+    Private Sub btnAbout_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnAbout.Click
+        Try
+            My.Computer.Audio.Play(My.Resources.EagleSoft, AudioPlayMode.Background)    'Play "EagleSoft Ltd"
+            About.ShowDialog()                                                          'Show the about box
+        Catch ex As Exception
+            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error with showing About box!")
+        End Try
+    End Sub
+
+    '===========================
+    'THP Viewer/Ripper group box
 
     ''' <summary>
     ''' Handle THP playback
@@ -879,7 +666,7 @@ Public Class Main
                 'Delete all extra "dummyTemp_%0Nd.bmp" files
                 file = FileDir(outFile)                 'file = C:\WorkingDir
                 file2 = "dummyTemp*.bmp"                'file2 = dummyTemp*.bmp
-                DeleteFilesFromFolder(file,file2)
+                DeleteFilesFromFolder(file, file2)
             End If
 
             'Thwimp kicks dat Koopa shell away!
@@ -890,49 +677,185 @@ Public Class Main
         End Try
     End Sub
 
-    'If any of the checkboxes in the THP_Enc group box array have been changed, maintain the current state for the THP file.
-    Private Sub chkTE_A1_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkTE_A1.CheckedChanged
-        HandleArrState()
+
+    Private Sub chkRip_Type_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRip_Type.CheckedChanged
+        'Update the rip type string and crop values onCheck of chkRip
+        chkRipString()
+        chkRipValues()
     End Sub
-    Private Sub chkTE_A2_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkTE_A2.CheckedChanged
-        HandleArrState()
+    ''' <summary>
+    ''' Changes the default rip values for the Crop box based on the chkRip type checkbox state
+    ''' </summary>
+    ''' <remarks></remarks>
+    Private Sub chkRipValues()
+        Try
+            If chkRip_Type.Checked = True Then
+                'If ripping AVI(+WAV) and dummies
+                Dim size As Dims                                                'Size of the crop area
+                Dim pos As Dims                                                 'Position of the TL corner of crop area            
+                size.width = TryParseErr_UShort(txtVP_W.Text)                   'Width = Padding width
+                size.height = TryParseErr_UShort(txtVP_H.Text)                  'Height = Padding height
+                pos.width = 0                                                   'Start at x=0
+                pos.height = TryParseErr_UShort(txtTDims_H.Text) - size.height  'Start at y=Total video height - padding height
+
+                'Set the values into the text boxes as appropriately (xpos, ypos, width, height
+                txtTD_CX.Text = pos.width
+                txtTD_CY.Text = pos.height
+                txtTD_CW.Text = size.width
+                txtTD_CH.Text = size.height
+            Else
+                'If ripping just AVI(+wav)
+                'Set the values into the text boxes as appropriately (xpos=0, ypos=0, width=total vid width, height=total vid height).
+                'Rips whole video, no cropping
+                txtTD_CX.Text = 0
+                txtTD_CY.Text = 0
+                txtTD_CW.Text = txtTDims_W.Text
+                txtTD_CH.Text = txtTDims_H.Text
+            End If
+        Catch ex As Exception
+            MsgBox(ex.Message, MsgBoxStyle.Critical, "Erorr in chkRipValues()!")
+        End Try
     End Sub
-    Private Sub chkTE_A3_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkTE_A3.CheckedChanged
-        HandleArrState()
+    ''' <summary>
+    ''' Changes text of Rip type check box as appropriately
+    ''' </summary>
+    ''' <remarks></remarks>
+    Private Sub chkRipString()
+        Try
+            Dim hasPad As Boolean = THPHasPad()                                                 'Does THP video has padding?
+
+            'If doesn't have padding and the chkbox is checked, force box to unset (just AVI/WAV)
+            If hasPad = False And chkRip_Type.Checked = True Then chkRip_Type.Checked = False
+
+            Dim hasAudio As Boolean = THPHasAudio()
+            Dim strFalse As String = "Rip to" & strNL & "AVI"                  'String to use when check box is false ("Rip to\nAVI" by default)
+            If hasAudio = True Then strFalse = "Rip to" & strNL & "AVI+WAV" '  'If video has audio, change false string to "Rip to\nAVI+WAV"
+            Dim strTrue As String = strFalse & "," & strNL & "dummy"           'String to use when check box is true. This will be the false string + ",\nDummy" for dummy ripping7
+            ChkString(strTrue, strFalse, chkRip_Type)                       'Change the checkbox text as appropriately based on state
+        Catch ex As Exception
+            MsgBox(ex.Message, MsgBoxStyle.Critical, "Erorr in chkRipString()!")
+        End Try
     End Sub
-    Private Sub chkTE_A4_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkTE_A4.CheckedChanged
-        HandleArrState()
+
+    ''' <summary>
+    ''' Keeps txtTD_CX in range for total vid width
+    ''' </summary>
+    ''' <param name="sender"></param>
+    ''' <param name="e"></param>
+    ''' <remarks></remarks>
+    Private Sub txtTD_CX_Validated(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles txtTD_CX.Validated
+        Try
+            Dim xmin As UShort = 0                                      'xmin = 0
+            Dim xmax As UShort = TryParseErr_UShort(txtTDims_W.Text)    'xmax = Total vid width
+            xmax -= 1                                                   'Make it 0-based. (Can't do a crop at xpos=xmax)
+            txtTD_CX.Text = KeepInRange(txtTD_CX.Text, xmin, xmax)      'Set string within numeric range
+            KeepWInRange()                                              'Keep W in range
+        Catch ex As Exception
+            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in txtTD_CX_Validated!")
+        End Try
     End Sub
-    Private Sub chkTE_A5_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkTE_A5.CheckedChanged
-        HandleArrState()
+    ''' <summary>
+    ''' Keeps txtTD_CY in range for total vid height
+    ''' </summary>
+    ''' <param name="sender"></param>
+    ''' <param name="e"></param>
+    ''' <remarks></remarks>
+    Private Sub txtTD_CY_Validated(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles txtTD_CY.Validated
+        Try
+            Dim ymin As UShort = 0                                      'ymin = 0
+            Dim ymax As UShort = TryParseErr_UShort(txtTDims_H.Text)    'ymax = Total vid height
+            ymax -= 1                                                   'Make it 0-based. (Can't do a crop at ypos=ymax)
+            txtTD_CY.Text = KeepInRange(txtTD_CY.Text, ymin, ymax)      'Set string within numeric range
+            KeepHInRange()                                              'Keep H in range
+        Catch ex As Exception
+            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in txtTD_CY_Validated!")
+        End Try
     End Sub
-    Private Sub chkTE_A6_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkTE_A6.CheckedChanged
-        HandleArrState()
+    ''' <summary>
+    ''' Keeps txtTD_CW in range for x offset and total vid width
+    ''' </summary>
+    ''' <param name="sender"></param>
+    ''' <param name="e"></param>
+    ''' <remarks></remarks>
+    Private Sub txtTD_CW_Validated(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles txtTD_CW.Validated
+        KeepWInRange()
     End Sub
-    Private Sub chkTE_B1_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkTE_B1.CheckedChanged
-        HandleArrState()
+    ''' <summary>
+    ''' Keeps txtTD_CH in range for y offset and total vid height
+    ''' </summary>
+    ''' <param name="sender"></param>
+    ''' <param name="e"></param>
+    ''' <remarks></remarks>
+    Private Sub txtTD_CH_Validated(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles txtTD_CH.Validated
+        KeepHInRange()
     End Sub
-    Private Sub chkTE_B2_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkTE_B2.CheckedChanged
-        HandleArrState()
+
+    ''' <summary>
+    ''' Keeps W of crop value in range
+    ''' </summary>
+    ''' <remarks></remarks>
+    Private Sub KeepWInRange()
+        Try
+            Dim wmin As UShort = 0                                  'wmin = 0
+            Dim w1 As UShort = TryParseErr_UShort(txtTD_CX.Text)    'a = xpos
+            Dim w2 As UShort = TryParseErr_UShort(txtTDims_W.Text)  'b = total video width
+            Dim wmax As UShort = w2 - w1                            'Get dif of b-a as wmax
+            txtTD_CW.Text = KeepInRange(txtTD_CW.Text, wmin, wmax)  'Keep w in range
+        Catch ex As Exception
+            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in KeepWInRange()")
+        End Try
     End Sub
-    Private Sub chkTE_B3_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkTE_B3.CheckedChanged
-        HandleArrState()
+
+    ''' <summary>
+    ''' Keeps H of crop value in range
+    ''' </summary>
+    ''' <remarks></remarks>
+    Private Sub KeepHInRange()
+        Try
+            Dim hmin As UShort = 0                                  'wmin = 0
+            Dim h1 As UShort = TryParseErr_UShort(txtTD_CY.Text)    'a = ypos
+            Dim h2 As UShort = TryParseErr_UShort(txtTDims_H.Text)  'b = total video height
+            Dim hmax As UShort = h2 - h1                            'Get dif of b-a as hmax
+            txtTD_CH.Text = KeepInRange(txtTD_CH.Text, hmin, hmax)  'Keep h in range
+        Catch ex As Exception
+            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in KeepHInRange()")
+        End Try
     End Sub
-    Private Sub chkTE_B4_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkTE_B4.CheckedChanged
-        HandleArrState()
-    End Sub
-    Private Sub chkTE_B5_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkTE_B5.CheckedChanged
-        HandleArrState()
-    End Sub
-    Private Sub chkTE_B6_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkTE_B6.CheckedChanged
-        HandleArrState()
-    End Sub
-    Private Sub chkTE_Dum_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkTE_Dum.CheckedChanged
-        HandleArrState()
-    End Sub
-    Private Sub chkTE_wav_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkTE_wav.CheckedChanged
-        HandleArrState()
-    End Sub
+
+    ''' <summary>
+    ''' Given a numeric text string, keeps it within range between min and max values
+    ''' </summary>
+    ''' <param name="inp">Numeric string</param>
+    ''' <param name="min">Min value</param>
+    ''' <param name="max">Max value</param>
+    ''' <returns>Numeric string in range</returns>
+    ''' <remarks></remarks>
+    Private Function KeepInRange(ByVal inp As String, ByVal min As UShort, ByVal max As UShort) As String
+        Dim outp As String = ""                             'Output
+        Try
+            Dim val As UShort = TryParseErr_UShort(inp)     'Get numeric value of input
+            Dim newVal As UShort = 0                        'New value to apply
+
+            'Keep newval between min and max, and if outside, use either newval=min or max appropriately
+            'If in range, newval=val
+            If val < min Then
+                newVal = min
+            ElseIf val > max Then
+                newVal = max
+            Else
+                newVal = val
+            End If
+            outp = newVal.ToString()                        'Set output as strinng of newval
+        Catch ex As Exception
+            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in KeepInRange func!")
+        End Try
+        Return outp
+    End Function
+
+
+
+    '===========================
+    'THP Encoder group box
 
     ''' <summary>
     ''' Handles encoding many input subvideos, a wav file, and dummy padding frames into a composite THP file.
@@ -940,7 +863,7 @@ Public Class Main
     ''' <param name="sender"></param>
     ''' <param name="e"></param>
     ''' <remarks>This the main feature of the program, and quite schmancy</remarks>
-    Private Sub btnTE_Enc_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnTE_Enc.Click        
+    Private Sub btnTE_Enc_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnTE_Enc.Click
         'Psuedo code of encoding process. Assume an array of subvideos with a multiplicity.
         'During these steps, AVI with an avcodec of rawvideo are used, in order to preserve highest quality output during the multiple passes.
         'YOU WILL need a lot of spare disk space during the processing for the temp files!
@@ -1457,7 +1380,6 @@ Public Class Main
     Private Sub txtTE_F_TextChange(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles txtTE_F.TextChanged
         UpdateTEDigs()
     End Sub
-
     ''' <summary>
     ''' Auto-updates the THP Encoder digits box for the 0-padding for the output JPEG frames.
     ''' Based on the amount of frames to limit each subvideo * multiplicity
@@ -1475,97 +1397,321 @@ Public Class Main
         End Try
     End Sub
 
-    Private Sub chkRip_Type_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRip_Type.CheckedChanged
-        'Update the rip type string and crop values onCheck of chkRip
-        chkRipString()
-        chkRipValues()
+    'If any of the checkboxes in the THP_Enc group box array have been changed, maintain the current state for the THP file.
+    Private Sub chkTE_A1_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkTE_A1.CheckedChanged
+        HandleArrState()
     End Sub
-
+    Private Sub chkTE_A2_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkTE_A2.CheckedChanged
+        HandleArrState()
+    End Sub
+    Private Sub chkTE_A3_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkTE_A3.CheckedChanged
+        HandleArrState()
+    End Sub
+    Private Sub chkTE_A4_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkTE_A4.CheckedChanged
+        HandleArrState()
+    End Sub
+    Private Sub chkTE_A5_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkTE_A5.CheckedChanged
+        HandleArrState()
+    End Sub
+    Private Sub chkTE_A6_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkTE_A6.CheckedChanged
+        HandleArrState()
+    End Sub
+    Private Sub chkTE_B1_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkTE_B1.CheckedChanged
+        HandleArrState()
+    End Sub
+    Private Sub chkTE_B2_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkTE_B2.CheckedChanged
+        HandleArrState()
+    End Sub
+    Private Sub chkTE_B3_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkTE_B3.CheckedChanged
+        HandleArrState()
+    End Sub
+    Private Sub chkTE_B4_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkTE_B4.CheckedChanged
+        HandleArrState()
+    End Sub
+    Private Sub chkTE_B5_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkTE_B5.CheckedChanged
+        HandleArrState()
+    End Sub
+    Private Sub chkTE_B6_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkTE_B6.CheckedChanged
+        HandleArrState()
+    End Sub
+    Private Sub chkTE_Dum_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkTE_Dum.CheckedChanged
+        HandleArrState()
+    End Sub
+    Private Sub chkTE_wav_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkTE_wav.CheckedChanged
+        HandleArrState()
+    End Sub
     ''' <summary>
-    ''' Changes the default rip values for the Crop box based on the chkRip type checkbox state
+    ''' Handles the checkbox array depiction of naming conventions for THP encoding
     ''' </summary>
     ''' <remarks></remarks>
-    Private Sub chkRipValues()
-        Try
-            If chkRip_Type.Checked = True Then
-                'If ripping AVI(+WAV) and dummies
-                Dim size As Dims                                                'Size of the crop area
-                Dim pos As Dims                                                 'Position of the TL corner of crop area            
-                size.width = TryParseErr_UShort(txtVP_W.Text)                   'Width = Padding width
-                size.height = TryParseErr_UShort(txtVP_H.Text)                  'Height = Padding height
-                pos.width = 0                                                   'Start at x=0
-                pos.height = TryParseErr_UShort(txtTDims_H.Text) - size.height  'Start at y=Total video height - padding height
+    Private Sub HandleArrState()
+        Dim Boxes(6, 2) As System.Windows.Forms.CheckBox    'Array of 6x2 check boxes
+        Dim Dum As System.Windows.Forms.CheckBox            'Dummy check box (for padding)
+        Dim Wav As System.Windows.Forms.CheckBox            'Wav check box (for audio wav file)
 
-                'Set the values into the text boxes as appropriately (xpos, ypos, width, height
-                txtTD_CX.Text = pos.width
-                txtTD_CY.Text = pos.height
-                txtTD_CW.Text = size.width
-                txtTD_CH.Text = size.height
-            Else
-                'If ripping just AVI(+wav)
-                'Set the values into the text boxes as appropriately (xpos=0, ypos=0, width=total vid width, height=total vid height).
-                'Rips whole video, no cropping
-                txtTD_CX.Text = 0
-                txtTD_CY.Text = 0
-                txtTD_CW.Text = txtTDims_W.Text
-                txtTD_CH.Text = txtTDims_H.Text
-            End If
+        'Init the array. In A1N MS Excel notation, Alpha=row, Number=Col
+        Boxes(1, 1) = chkTE_A1
+        Boxes(2, 1) = chkTE_A2
+        Boxes(3, 1) = chkTE_A3
+        Boxes(4, 1) = chkTE_A4
+        Boxes(5, 1) = chkTE_A5
+        Boxes(6, 1) = chkTE_A6
+        Boxes(1, 2) = chkTE_B1
+        Boxes(2, 2) = chkTE_B2
+        Boxes(3, 2) = chkTE_B3
+        Boxes(4, 2) = chkTE_B4
+        Boxes(5, 2) = chkTE_B5
+        Boxes(6, 2) = chkTE_B6
+        'Wav and dummy boxes
+        Dum = chkTE_Dum
+        Wav = chkTE_wav
+
+        'Generic iterators
+        Dim i As Byte = 0
+        Dim j As Byte = 0
+
+        Try
+            'Update the checked and enabled states of the array based on the video data 
+            'Amount of rows in video, columns, and multiplicity            
+            Dim r As Byte = TryParseErr_Byte(txtArr_R.Text)
+            Dim c As Byte = TryParseErr_Byte(txtArr_C.Text)
+            Dim m As Byte = TryParseErr_Byte(txtVM_M.Text)
+            Dim state As Boolean = False                    'Generic bool
+
+            For i = 1 To 6 Step 1                           'Iterate through all rows (1-6)
+                For j = 1 To 2 Step 1                       'Iterate through all cols (1-2)
+                    If r = 0 And c = 0 Then
+                        'If a dummy entry in combo box was selected, then r & c of array will be 0. Set all boxes to unchecked/disabled
+                        state = False
+                    Else
+                        If i <= r And j <= c Then
+                            'If i and j iterators (row/col) are within
+                            'the amount of rows and col for this video, 
+                            'then cell is used. Check & enable the boxes
+                            state = True
+                        Else
+                            'Otherwise unused, uncheck and disable
+                            state = False
+                        End If
+                    End If
+
+                    'Update the checked/enabled states as appropriately
+                    Boxes(i, j).Checked = state
+                    Boxes(i, j).Enabled = state
+                Next j
+            Next i
+
+            'Handle dummy checkbox states
+            state = THPHasPad()
+            Dum.Checked = state
+            Dum.Enabled = state
+
+            'Handle wav checkbox states
+            state = BoolStrToBool(txtA_A.Text)    'If "True" then true
+            'Update the wav checkbox states
+            Wav.Checked = state
+            Wav.Enabled = state
+
+            'Handle the multiplicity box (the m values)
+            'If only m=1, then "_1", else "_1\nto\nM"
+            If m = 1 Then txtTE_M.Text = "_1" Else txtTE_M.Text = "_1" & strNL & "to" & strNL & "_" & m.ToString()
+            'Update the text
+            txtTE_F.Text = txtVF_S.Text
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Erorr in chkRipValues()!")
+            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in HandleArrState()!")
         End Try
     End Sub
 
+
+
+    '===========================
+    'DOS file path functions
+
     ''' <summary>
-    ''' Changes text of Rip type check box as appropriately
+    ''' Given a full file path, returns the directory
     ''' </summary>
+    ''' <param name="strPath">Full file path</param>
+    ''' <returns>File path</returns>
     ''' <remarks></remarks>
-    Private Sub chkRipString()
+    Public Function FileDir(ByVal strPath As String) As String
+        Dim strOut As String = ""       'Output
         Try
-            Dim hasPad As Boolean = THPHasPad()                                                 'Does THP video has padding?
+            Dim strFile As String = ""      'The file itself (ie, File.ext)        
+            strFile = FileAndExt(strPath)   'Get the file+extension
 
-            'If doesn't have padding and the chkbox is checked, force box to unset (just AVI/WAV)
-            If hasPad = False And chkRip_Type.Checked = True Then chkRip_Type.Checked = False
-
-            Dim hasAudio As Boolean = THPHasAudio()
-            Dim strFalse As String = "Rip to" & strNL & "AVI"                  'String to use when check box is false ("Rip to\nAVI" by default)
-            If hasAudio = True Then strFalse = "Rip to" & strNL & "AVI+WAV" '  'If video has audio, change false string to "Rip to\nAVI+WAV"
-            Dim strTrue As String = strFalse & "," & strNL & "dummy"           'String to use when check box is true. This will be the false string + ",\nDummy" for dummy ripping7
-            ChkString(strTrue, strFalse, chkRip_Type)                       'Change the checkbox text as appropriately based on state
+            'From the full file path, replace the file+ext with nothing, to get file directory; return
+            strOut = Replace(strPath, strFile, "")
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Erorr in chkRipString()!")
+            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in FileDir()!")
         End Try
-    End Sub
+        Return strOut
+    End Function
 
     ''' <summary>
-    ''' Does this current THP have padding?
+    ''' Given a full file path, returns filepath with changed file extension
     ''' </summary>
-    ''' <returns>Padding?</returns>
+    ''' <param name="strPath">Full file path</param>
+    ''' <param name="strOldExt">Old extension</param>
+    ''' <param name="strNewExt">New extension</param>
+    ''' <returns>Full file with new extension</returns>
     ''' <remarks></remarks>
-    Private Function THPHasPad() As Boolean
-        Dim outp As Boolean = False                 'Output
-        Try
-            Dim d As Dims                               'Dims
-            d.width = TryParseErr_UShort(txtVP_W.Text)  'Width=Video padding width
-            d.height = TryParseErr_UShort(txtVP_H.Text) 'Height=Video padding height
+    Public Function FileChangeExt(ByVal strPath As String, ByVal strOldExt As String, ByVal strNewExt As String)
+        'Get the file+ext from the file path, replace old extension with new extension
+        FileChangeExt = Replace(FileAndExt(strPath), strOldExt, strNewExt)
+    End Function
 
-            'If both dims are not zero, then hasPadding
-            If d.width <> 0 And d.height <> 0 Then outp = True            
+    ''' <summary>
+    ''' Given a full file path, returns the filename+ext
+    ''' </summary>
+    ''' <param name="strPath">Full file path</param>
+    ''' <returns>Filename+ext</returns>
+    ''' <remarks></remarks>
+    Public Function FileAndExt(ByVal strPath As String) As String
+        Dim outp As String = ""
+
+        Try
+            Dim shtPos(255) As UShort   'The recorded positions of the strBAK character(s) in strPath
+            Dim shtStart As UShort      'The start position inside strPath
+            Dim blnFound As Boolean     'Flag which determines if a strBAK character was found
+            Dim bytItems As Byte        'The amount of strBAK characters found
+
+            Dim shtLen As UShort        'The length of the strPath
+            Dim shtFileLen As UShort    'The length of the file+ext
+
+            bytItems = 1
+            blnFound = False
+            shtStart = 1
+
+            Do
+                shtPos(bytItems) = InStr(shtStart, strPath, strBAK) 'Find the next strBAK character, record its position in array
+                If shtPos(bytItems) <> 0 Then
+                    'If strBAK is found
+                    blnFound = True
+                    shtStart = shtPos(bytItems) + 1 'Set shtStart to one past the position of the found strBAK character
+                    bytItems += 1                   'Increment the amount of strBAK characters found
+                Else
+                    'if strBAK NOT found, trigger flag to exit loop
+                    blnFound = False
+                End If
+            Loop Until blnFound = False 'Loop until strBAK is NOT found
+
+            shtLen = Len(strPath) 'Get the length of the filepath
+            shtFileLen = shtLen - shtPos(bytItems - 1)  'Set the length of the file+ext
+            outp = Mid(strPath, (shtPos(bytItems - 1)) + 1, shtFileLen) 'Extract the file+ext
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in THPHasPad()")
+            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in FileAndExt")
         End Try
         Return outp
     End Function
 
     ''' <summary>
-    ''' Does this current THP has audio?
+    ''' Writes File.txt at Path with list of Files (rel dirs).
     ''' </summary>
-    ''' <returns>Audio?</returns>
+    ''' <param name="Path">Directory</param>
+    ''' <param name="Files">Array of filenames</param>
+    ''' <remarks>Used for -i param for ffmpeg.exe</remarks>
+    Private Sub WriteTxtFile(ByVal Path As String, ByRef Files() As String)
+        Try
+            Dim TextFile As String = Path & strBAK & "File.txt" 'The filepath to write
+            'If the textfile exists, remove it for clean slate
+            If My.Computer.FileSystem.FileExists(TextFile) Then My.Computer.FileSystem.DeleteFile(TextFile)
+
+            Dim xFileData As StreamWriter           'Streamwriter object to write File.txt
+            xFileData = File.CreateText(TextFile)   'Create File.txt
+
+            Dim i As Byte = 0                       'Generic iterator
+            Dim count As Byte = Files.Length - 1    'Count of files in list (0-based)
+            Dim line As String = ""                 'Line to write to file
+
+            'Iterate through the files, 0 to count
+            For i = 0 To count Step 1
+                line = "file " & Files(i)   'Line = "file myFilename.blah"
+                xFileData.WriteLine(line)   'Write the line
+            Next i
+            'Close and dispose the SW
+            xFileData.Close()
+            xFileData.Dispose()
+            xFileData = Nothing
+        Catch ex As Exception
+            MsgBox(ex.Message, MsgBoxStyle.Critical, "File IO error in WriteTxtFile!")
+        End Try
+    End Sub
+
+    ''' <summary>
+    ''' Deletes files from a folder based on a DOS search spec
+    ''' </summary>
+    ''' <param name="Folder">Folder to search</param>
+    ''' <param name="type">Search spec</param>
+    ''' <remarks>
+    ''' Like del cmd. For stuff like del *.pdf.
+    ''' https://stackoverflow.com/questions/25429791/how-do-i-delete-all-files-of-a-particular-type-from-a-folder
+    ''' </remarks>
+    Private Sub DeleteFilesFromFolder(ByVal Folder As String, ByVal type As String)
+        'If folder exists
+        Try
+            If Directory.Exists(Folder) Then
+                'Iterate through all files that match spec, delete them
+                For Each _file As String In Directory.GetFiles(Folder, type)
+                    File.Delete(_file)
+                Next _file
+            End If
+        Catch ex As Exception
+            MsgBox(ex.Message, MsgBoxStyle.Critical, "File IO error in DeleteFilesFromFolder!")
+        End Try
+    End Sub
+
+    ''' <summary>
+    ''' Like DeleteFIlesFromFolder, but for sequentially named files, deletes files past a limit
+    ''' </summary>
+    ''' <param name="Folder">Folder to search</param>
+    ''' <param name="type">Search spec</param>
+    ''' <param name="limit">Index limit</param>
     ''' <remarks></remarks>
-    Private Function THPHasAudio() As Boolean
-        Dim has As String = txtA_A.Text                 'Get hasAudio field as string
-        Dim hasAudio As Boolean = BoolStrToBool(has)    'Does vid have audio? (Convert has to bool)
-        Return hasAudio
+    Private Sub DeleteExtraFilesFromFolder(ByVal Folder As String, ByVal type As String, ByVal limit As UShort)
+        'If folder exists
+        Try
+            If Directory.Exists(Folder) Then
+                Dim i As UShort = 1                                             'Generic counter
+                For Each _file As String In Directory.GetFiles(Folder, type)
+                    If i > limit Then File.Delete(_file) '                       If iterator is above limit (extra file), delete it
+                    i += 1                                                      'Incremen
+                Next _file
+            End If
+        Catch ex As Exception
+            MsgBox(ex.Message, MsgBoxStyle.Critical, "File IO error in DeleteExtraFilesFromFolder!")
+        End Try
+    End Sub
+
+    '================
+    'Cast helper funcs
+
+    Private Function BitToBool(ByVal inp As Byte) As Boolean
+        Dim outp As Boolean = False
+        If inp = 1 Then outp = True
+        Return outp
     End Function
+
+    'Converts String with "True" or "False" into appropriate boolean value
+    'In = Boolean String
+    'Out = Boolean value
+    Private Function BoolStrToBool(ByVal inp As String) As Boolean
+        Dim outp As Boolean = False      'Output value
+        If inp = "True" Then outp = True 'If "True" then true
+        Return outp
+    End Function
+
+    ''' <summary>
+    ''' Changes a boolean checkbox's string based on state
+    ''' </summary>
+    ''' <param name="T">True string</param>
+    ''' <param name="F">False string</param>
+    ''' <param name="box">Checkbox</param>
+    ''' <remarks></remarks>
+    Private Sub ChkString(ByVal T As String, ByVal F As String, ByRef box As System.Windows.Forms.CheckBox)
+        Dim v As String
+        If box.Checked = True Then v = T Else v = F
+        box.Text = v
+    End Sub
 
     ''' <summary>
     ''' Try parsing a string as byte; if fail, throw error
@@ -1607,121 +1753,6 @@ Public Class Main
         If result = False Then
             Throw New System.Exception("Error parsing string into Single")
         End If
-        Return outp
-    End Function
-
-    ''' <summary>
-    ''' Keeps txtTD_CX in range for total vid width
-    ''' </summary>
-    ''' <param name="sender"></param>
-    ''' <param name="e"></param>
-    ''' <remarks></remarks>
-    Private Sub txtTD_CX_Validated(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles txtTD_CX.Validated
-        Try
-            Dim xmin As UShort = 0                                      'xmin = 0
-            Dim xmax As UShort = TryParseErr_UShort(txtTDims_W.Text)    'xmax = Total vid width
-            xmax -= 1                                                   'Make it 0-based. (Can't do a crop at xpos=xmax)
-            txtTD_CX.Text = KeepInRange(txtTD_CX.Text, xmin, xmax)      'Set string within numeric range
-            KeepWInRange()                                              'Keep W in range
-        Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in txtTD_CX_Validated!")
-        End Try
-    End Sub
-    ''' <summary>
-    ''' Keeps txtTD_CY in range for total vid height
-    ''' </summary>
-    ''' <param name="sender"></param>
-    ''' <param name="e"></param>
-    ''' <remarks></remarks>
-    Private Sub txtTD_CY_Validated(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles txtTD_CY.Validated
-        Try
-            Dim ymin As UShort = 0                                      'ymin = 0
-            Dim ymax As UShort = TryParseErr_UShort(txtTDims_H.Text)    'ymax = Total vid height
-            ymax -= 1                                                   'Make it 0-based. (Can't do a crop at ypos=ymax)
-            txtTD_CY.Text = KeepInRange(txtTD_CY.Text, ymin, ymax)      'Set string within numeric range
-            KeepHInRange()                                              'Keep H in range
-        Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in txtTD_CY_Validated!")
-        End Try
-    End Sub
-    ''' <summary>
-    ''' Keeps txtTD_CW in range for x offset and total vid width
-    ''' </summary>
-    ''' <param name="sender"></param>
-    ''' <param name="e"></param>
-    ''' <remarks></remarks>
-    Private Sub txtTD_CW_Validated(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles txtTD_CW.Validated
-        KeepWInRange()
-    End Sub
-    ''' <summary>
-    ''' Keeps txtTD_CH in range for y offset and total vid height
-    ''' </summary>
-    ''' <param name="sender"></param>
-    ''' <param name="e"></param>
-    ''' <remarks></remarks>
-    Private Sub txtTD_CH_Validated(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles txtTD_CH.Validated
-        KeepHInRange()
-    End Sub
-
-    ''' <summary>
-    ''' Keeps W of crop value in range
-    ''' </summary>
-    ''' <remarks></remarks>
-    Private Sub KeepWInRange()
-        Try
-            Dim wmin As UShort = 0                                  'wmin = 0
-            Dim w1 As UShort = TryParseErr_UShort(txtTD_CX.Text)    'a = xpos
-            Dim w2 As UShort = TryParseErr_UShort(txtTDims_W.Text)  'b = total video width
-            Dim wmax As UShort = w2 - w1                            'Get dif of b-a as wmax
-            txtTD_CW.Text = KeepInRange(txtTD_CW.Text, wmin, wmax)  'Keep w in range
-        Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in KeepWInRange()")
-        End Try
-    End Sub
-
-    ''' <summary>
-    ''' Keeps H of crop value in range
-    ''' </summary>
-    ''' <remarks></remarks>
-    Private Sub KeepHInRange()
-        Try
-            Dim hmin As UShort = 0                                  'wmin = 0
-            Dim h1 As UShort = TryParseErr_UShort(txtTD_CY.Text)    'a = ypos
-            Dim h2 As UShort = TryParseErr_UShort(txtTDims_H.Text)  'b = total video height
-            Dim hmax As UShort = h2 - h1                            'Get dif of b-a as hmax
-            txtTD_CH.Text = KeepInRange(txtTD_CH.Text, hmin, hmax)  'Keep h in range
-        Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in KeepHInRange()")
-        End Try
-    End Sub
-
-    ''' <summary>
-    ''' Given a numeric text string, keeps it within range between min and max values
-    ''' </summary>
-    ''' <param name="inp">Numeric string</param>
-    ''' <param name="min">Min value</param>
-    ''' <param name="max">Max value</param>
-    ''' <returns>Numeric string in range</returns>
-    ''' <remarks></remarks>
-    Private Function KeepInRange(ByVal inp As String, ByVal min As UShort, ByVal max As UShort) As String
-        Dim outp As String = ""                             'Output
-        Try
-            Dim val As UShort = TryParseErr_UShort(inp)     'Get numeric value of input
-            Dim newVal As UShort = 0                        'New value to apply
-
-            'Keep newval between min and max, and if outside, use either newval=min or max appropriately
-            'If in range, newval=val
-            If val < min Then
-                newVal = min
-            ElseIf val > max Then
-                newVal = max
-            Else
-                newVal = val
-            End If
-            outp = newVal.ToString()                        'Set output as strinng of newval
-        Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in KeepInRange func!")
-        End Try
         Return outp
     End Function
 End Class
