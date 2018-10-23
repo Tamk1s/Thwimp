@@ -101,9 +101,9 @@ Partial Class Main
         Me.txtArr_R = New System.Windows.Forms.TextBox()
         Me.lblArr_C = New System.Windows.Forms.Label()
         Me.lblArr_R = New System.Windows.Forms.Label()
-        Me.txtV_TSubs = New System.Windows.Forms.TextBox()
         Me.gVMult = New System.Windows.Forms.GroupBox()
         Me.lblVM_M = New System.Windows.Forms.Label()
+        Me.txtV_TSubs = New System.Windows.Forms.TextBox()
         Me.txtVM_M = New System.Windows.Forms.TextBox()
         Me.lblV_TSubs = New System.Windows.Forms.Label()
         Me.lblFDesc = New System.Windows.Forms.Label()
@@ -979,16 +979,6 @@ Partial Class Main
         Me.lblArr_R.TabIndex = 10
         Me.lblArr_R.Text = "R"
         '
-        'txtV_TSubs
-        '
-        Me.txtV_TSubs.Location = New System.Drawing.Point(74, 43)
-        Me.txtV_TSubs.Name = "txtV_TSubs"
-        Me.txtV_TSubs.ReadOnly = True
-        Me.txtV_TSubs.Size = New System.Drawing.Size(43, 22)
-        Me.txtV_TSubs.TabIndex = 15
-        Me.txtV_TSubs.TabStop = False
-        Me.txtV_TSubs.Text = "12"
-        '
         'gVMult
         '
         Me.gVMult.Controls.Add(Me.lblVM_M)
@@ -1010,6 +1000,16 @@ Partial Class Main
         Me.lblVM_M.Size = New System.Drawing.Size(37, 17)
         Me.lblVM_M.TabIndex = 12
         Me.lblVM_M.Text = "Multi"
+        '
+        'txtV_TSubs
+        '
+        Me.txtV_TSubs.Location = New System.Drawing.Point(74, 43)
+        Me.txtV_TSubs.Name = "txtV_TSubs"
+        Me.txtV_TSubs.ReadOnly = True
+        Me.txtV_TSubs.Size = New System.Drawing.Size(43, 22)
+        Me.txtV_TSubs.TabIndex = 15
+        Me.txtV_TSubs.TabStop = False
+        Me.txtV_TSubs.Text = "12"
         '
         'txtVM_M
         '
