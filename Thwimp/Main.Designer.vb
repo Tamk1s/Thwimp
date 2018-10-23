@@ -117,6 +117,9 @@ Partial Class Main
         Me.txtFDesc = New System.Windows.Forms.TextBox()
         Me.cmbTHP = New System.Windows.Forms.ComboBox()
         Me.TabOptions = New System.Windows.Forms.TabPage()
+        Me.btniView = New System.Windows.Forms.Button()
+        Me.txtiView = New System.Windows.Forms.TextBox()
+        Me.lbliView = New System.Windows.Forms.Label()
         Me.PictureBox1 = New System.Windows.Forms.PictureBox()
         Me.lblTHPConv = New System.Windows.Forms.Label()
         Me.picOptions = New System.Windows.Forms.PictureBox()
@@ -134,6 +137,9 @@ Partial Class Main
         Me.LoadTHPConv = New System.Windows.Forms.OpenFileDialog()
         Me.ofdRip = New System.Windows.Forms.OpenFileDialog()
         Me.ofdOutput = New System.Windows.Forms.FolderBrowserDialog()
+        Me.LoadiView = New System.Windows.Forms.OpenFileDialog()
+        Me.nudTE_jpgq = New System.Windows.Forms.NumericUpDown()
+        Me.lblTE_jpgq = New System.Windows.Forms.Label()
         Me.TabTHP.SuspendLayout()
         Me.grpTHPEnc.SuspendLayout()
         Me.grpTHPDec.SuspendLayout()
@@ -153,6 +159,7 @@ Partial Class Main
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.picOptions, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.tabApp.SuspendLayout()
+        CType(Me.nudTE_jpgq, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'LoadTHPRoot
@@ -178,6 +185,8 @@ Partial Class Main
         '
         'grpTHPEnc
         '
+        Me.grpTHPEnc.Controls.Add(Me.lblTE_jpgq)
+        Me.grpTHPEnc.Controls.Add(Me.nudTE_jpgq)
         Me.grpTHPEnc.Controls.Add(Me.txtTE_D)
         Me.grpTHPEnc.Controls.Add(Me.txtTE_F)
         Me.grpTHPEnc.Controls.Add(Me.chkTE_wav)
@@ -210,7 +219,7 @@ Partial Class Main
         '
         'txtTE_D
         '
-        Me.txtTE_D.Location = New System.Drawing.Point(178, 73)
+        Me.txtTE_D.Location = New System.Drawing.Point(202, 90)
         Me.txtTE_D.Mask = "0"
         Me.txtTE_D.Name = "txtTE_D"
         Me.txtTE_D.Size = New System.Drawing.Size(20, 22)
@@ -218,7 +227,7 @@ Partial Class Main
         '
         'txtTE_F
         '
-        Me.txtTE_F.Location = New System.Drawing.Point(150, 46)
+        Me.txtTE_F.Location = New System.Drawing.Point(174, 63)
         Me.txtTE_F.Mask = "0000"
         Me.txtTE_F.Name = "txtTE_F"
         Me.txtTE_F.Size = New System.Drawing.Size(48, 22)
@@ -227,7 +236,7 @@ Partial Class Main
         'chkTE_wav
         '
         Me.chkTE_wav.AutoSize = True
-        Me.chkTE_wav.Location = New System.Drawing.Point(150, 178)
+        Me.chkTE_wav.Location = New System.Drawing.Point(44, 197)
         Me.chkTE_wav.Name = "chkTE_wav"
         Me.chkTE_wav.Size = New System.Drawing.Size(54, 21)
         Me.chkTE_wav.TabIndex = 45
@@ -238,18 +247,18 @@ Partial Class Main
         'chkTE_Dum
         '
         Me.chkTE_Dum.AutoSize = True
-        Me.chkTE_Dum.Location = New System.Drawing.Point(150, 151)
+        Me.chkTE_Dum.Location = New System.Drawing.Point(97, 197)
         Me.chkTE_Dum.Name = "chkTE_Dum"
-        Me.chkTE_Dum.Size = New System.Drawing.Size(75, 21)
+        Me.chkTE_Dum.Size = New System.Drawing.Size(57, 21)
         Me.chkTE_Dum.TabIndex = 44
         Me.chkTE_Dum.TabStop = False
-        Me.chkTE_Dum.Text = "dummy"
+        Me.chkTE_Dum.Text = "dum"
         Me.chkTE_Dum.UseVisualStyleBackColor = True
         '
         'lblTE_D
         '
         Me.lblTE_D.AutoSize = True
-        Me.lblTE_D.Location = New System.Drawing.Point(147, 76)
+        Me.lblTE_D.Location = New System.Drawing.Point(160, 93)
         Me.lblTE_D.Name = "lblTE_D"
         Me.lblTE_D.Size = New System.Drawing.Size(36, 17)
         Me.lblTE_D.TabIndex = 42
@@ -257,9 +266,9 @@ Partial Class Main
         '
         'btnTE_Enc
         '
-        Me.btnTE_Enc.Location = New System.Drawing.Point(150, 98)
+        Me.btnTE_Enc.Location = New System.Drawing.Point(150, 168)
         Me.btnTE_Enc.Name = "btnTE_Enc"
-        Me.btnTE_Enc.Size = New System.Drawing.Size(72, 53)
+        Me.btnTE_Enc.Size = New System.Drawing.Size(72, 44)
         Me.btnTE_Enc.TabIndex = 2
         Me.btnTE_Enc.Text = "&Encode"
         Me.btnTE_Enc.UseVisualStyleBackColor = True
@@ -267,7 +276,7 @@ Partial Class Main
         'chkTE_A1
         '
         Me.chkTE_A1.AutoSize = True
-        Me.chkTE_A1.Location = New System.Drawing.Point(44, 45)
+        Me.chkTE_A1.Location = New System.Drawing.Point(44, 40)
         Me.chkTE_A1.Name = "chkTE_A1"
         Me.chkTE_A1.Size = New System.Drawing.Size(47, 21)
         Me.chkTE_A1.TabIndex = 26
@@ -278,7 +287,7 @@ Partial Class Main
         'chkTE_A2
         '
         Me.chkTE_A2.AutoSize = True
-        Me.chkTE_A2.Location = New System.Drawing.Point(44, 70)
+        Me.chkTE_A2.Location = New System.Drawing.Point(44, 65)
         Me.chkTE_A2.Name = "chkTE_A2"
         Me.chkTE_A2.Size = New System.Drawing.Size(47, 21)
         Me.chkTE_A2.TabIndex = 27
@@ -289,16 +298,16 @@ Partial Class Main
         'lblTE_F
         '
         Me.lblTE_F.AutoSize = True
-        Me.lblTE_F.Location = New System.Drawing.Point(133, 23)
+        Me.lblTE_F.Location = New System.Drawing.Point(174, 26)
         Me.lblTE_F.Name = "lblTE_F"
-        Me.lblTE_F.Size = New System.Drawing.Size(89, 17)
+        Me.lblTE_F.Size = New System.Drawing.Size(48, 34)
         Me.lblTE_F.TabIndex = 41
-        Me.lblTE_F.Text = "Trunc Frame"
+        Me.lblTE_F.Text = "Trunc" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "Frame"
         '
         'chkTE_A3
         '
         Me.chkTE_A3.AutoSize = True
-        Me.chkTE_A3.Location = New System.Drawing.Point(44, 97)
+        Me.chkTE_A3.Location = New System.Drawing.Point(44, 92)
         Me.chkTE_A3.Name = "chkTE_A3"
         Me.chkTE_A3.Size = New System.Drawing.Size(47, 21)
         Me.chkTE_A3.TabIndex = 28
@@ -309,7 +318,7 @@ Partial Class Main
         'chkTE_A4
         '
         Me.chkTE_A4.AutoSize = True
-        Me.chkTE_A4.Location = New System.Drawing.Point(44, 124)
+        Me.chkTE_A4.Location = New System.Drawing.Point(44, 119)
         Me.chkTE_A4.Name = "chkTE_A4"
         Me.chkTE_A4.Size = New System.Drawing.Size(47, 21)
         Me.chkTE_A4.TabIndex = 29
@@ -320,7 +329,7 @@ Partial Class Main
         'chkTE_A5
         '
         Me.chkTE_A5.AutoSize = True
-        Me.chkTE_A5.Location = New System.Drawing.Point(44, 151)
+        Me.chkTE_A5.Location = New System.Drawing.Point(44, 146)
         Me.chkTE_A5.Name = "chkTE_A5"
         Me.chkTE_A5.Size = New System.Drawing.Size(47, 21)
         Me.chkTE_A5.TabIndex = 30
@@ -330,7 +339,7 @@ Partial Class Main
         '
         'txtTE_M
         '
-        Me.txtTE_M.Location = New System.Drawing.Point(6, 107)
+        Me.txtTE_M.Location = New System.Drawing.Point(6, 102)
         Me.txtTE_M.Multiline = True
         Me.txtTE_M.Name = "txtTE_M"
         Me.txtTE_M.ReadOnly = True
@@ -342,7 +351,7 @@ Partial Class Main
         'chkTE_A6
         '
         Me.chkTE_A6.AutoSize = True
-        Me.chkTE_A6.Location = New System.Drawing.Point(44, 178)
+        Me.chkTE_A6.Location = New System.Drawing.Point(44, 173)
         Me.chkTE_A6.Name = "chkTE_A6"
         Me.chkTE_A6.Size = New System.Drawing.Size(47, 21)
         Me.chkTE_A6.TabIndex = 31
@@ -353,7 +362,7 @@ Partial Class Main
         'lblTE_M
         '
         Me.lblTE_M.AutoSize = True
-        Me.lblTE_M.Location = New System.Drawing.Point(3, 84)
+        Me.lblTE_M.Location = New System.Drawing.Point(3, 79)
         Me.lblTE_M.Name = "lblTE_M"
         Me.lblTE_M.Size = New System.Drawing.Size(37, 17)
         Me.lblTE_M.TabIndex = 40
@@ -362,7 +371,7 @@ Partial Class Main
         'chkTE_B1
         '
         Me.chkTE_B1.AutoSize = True
-        Me.chkTE_B1.Location = New System.Drawing.Point(97, 43)
+        Me.chkTE_B1.Location = New System.Drawing.Point(97, 38)
         Me.chkTE_B1.Name = "chkTE_B1"
         Me.chkTE_B1.Size = New System.Drawing.Size(47, 21)
         Me.chkTE_B1.TabIndex = 32
@@ -373,7 +382,7 @@ Partial Class Main
         'lblTE_C
         '
         Me.lblTE_C.AutoSize = True
-        Me.lblTE_C.Location = New System.Drawing.Point(60, 19)
+        Me.lblTE_C.Location = New System.Drawing.Point(60, 18)
         Me.lblTE_C.Name = "lblTE_C"
         Me.lblTE_C.Size = New System.Drawing.Size(55, 17)
         Me.lblTE_C.TabIndex = 39
@@ -382,7 +391,7 @@ Partial Class Main
         'chkTE_B2
         '
         Me.chkTE_B2.AutoSize = True
-        Me.chkTE_B2.Location = New System.Drawing.Point(97, 70)
+        Me.chkTE_B2.Location = New System.Drawing.Point(97, 65)
         Me.chkTE_B2.Name = "chkTE_B2"
         Me.chkTE_B2.Size = New System.Drawing.Size(47, 21)
         Me.chkTE_B2.TabIndex = 33
@@ -393,7 +402,7 @@ Partial Class Main
         'lblTE_R
         '
         Me.lblTE_R.AutoSize = True
-        Me.lblTE_R.Location = New System.Drawing.Point(3, 46)
+        Me.lblTE_R.Location = New System.Drawing.Point(3, 41)
         Me.lblTE_R.Name = "lblTE_R"
         Me.lblTE_R.Size = New System.Drawing.Size(35, 17)
         Me.lblTE_R.TabIndex = 38
@@ -402,7 +411,7 @@ Partial Class Main
         'chkTE_B3
         '
         Me.chkTE_B3.AutoSize = True
-        Me.chkTE_B3.Location = New System.Drawing.Point(97, 97)
+        Me.chkTE_B3.Location = New System.Drawing.Point(97, 92)
         Me.chkTE_B3.Name = "chkTE_B3"
         Me.chkTE_B3.Size = New System.Drawing.Size(47, 21)
         Me.chkTE_B3.TabIndex = 34
@@ -413,7 +422,7 @@ Partial Class Main
         'chkTE_B6
         '
         Me.chkTE_B6.AutoSize = True
-        Me.chkTE_B6.Location = New System.Drawing.Point(97, 178)
+        Me.chkTE_B6.Location = New System.Drawing.Point(97, 173)
         Me.chkTE_B6.Name = "chkTE_B6"
         Me.chkTE_B6.Size = New System.Drawing.Size(47, 21)
         Me.chkTE_B6.TabIndex = 37
@@ -424,7 +433,7 @@ Partial Class Main
         'chkTE_B4
         '
         Me.chkTE_B4.AutoSize = True
-        Me.chkTE_B4.Location = New System.Drawing.Point(97, 124)
+        Me.chkTE_B4.Location = New System.Drawing.Point(97, 119)
         Me.chkTE_B4.Name = "chkTE_B4"
         Me.chkTE_B4.Size = New System.Drawing.Size(47, 21)
         Me.chkTE_B4.TabIndex = 35
@@ -435,7 +444,7 @@ Partial Class Main
         'chkTE_B5
         '
         Me.chkTE_B5.AutoSize = True
-        Me.chkTE_B5.Location = New System.Drawing.Point(97, 151)
+        Me.chkTE_B5.Location = New System.Drawing.Point(97, 146)
         Me.chkTE_B5.Name = "chkTE_B5"
         Me.chkTE_B5.Size = New System.Drawing.Size(47, 21)
         Me.chkTE_B5.TabIndex = 36
@@ -1134,6 +1143,9 @@ Partial Class Main
         '
         'TabOptions
         '
+        Me.TabOptions.Controls.Add(Me.btniView)
+        Me.TabOptions.Controls.Add(Me.txtiView)
+        Me.TabOptions.Controls.Add(Me.lbliView)
         Me.TabOptions.Controls.Add(Me.PictureBox1)
         Me.TabOptions.Controls.Add(Me.lblTHPConv)
         Me.TabOptions.Controls.Add(Me.picOptions)
@@ -1155,10 +1167,40 @@ Partial Class Main
         Me.TabOptions.Text = "Options"
         Me.TabOptions.UseVisualStyleBackColor = True
         '
+        'btniView
+        '
+        Me.btniView.Location = New System.Drawing.Point(448, 91)
+        Me.btniView.Margin = New System.Windows.Forms.Padding(4)
+        Me.btniView.Name = "btniView"
+        Me.btniView.Size = New System.Drawing.Size(97, 27)
+        Me.btniView.TabIndex = 42
+        Me.btniView.Text = "Br&owse"
+        Me.btniView.UseVisualStyleBackColor = True
+        '
+        'txtiView
+        '
+        Me.txtiView.Location = New System.Drawing.Point(116, 96)
+        Me.txtiView.Margin = New System.Windows.Forms.Padding(4)
+        Me.txtiView.Name = "txtiView"
+        Me.txtiView.ReadOnly = True
+        Me.txtiView.Size = New System.Drawing.Size(324, 22)
+        Me.txtiView.TabIndex = 44
+        Me.txtiView.TabStop = False
+        '
+        'lbliView
+        '
+        Me.lbliView.AutoSize = True
+        Me.lbliView.Location = New System.Drawing.Point(43, 99)
+        Me.lbliView.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
+        Me.lbliView.Name = "lbliView"
+        Me.lbliView.Size = New System.Drawing.Size(63, 17)
+        Me.lbliView.TabIndex = 43
+        Me.lbliView.Text = "Irfanview"
+        '
         'PictureBox1
         '
         Me.PictureBox1.Image = CType(resources.GetObject("PictureBox1.Image"), System.Drawing.Image)
-        Me.PictureBox1.Location = New System.Drawing.Point(116, 281)
+        Me.PictureBox1.Location = New System.Drawing.Point(116, 320)
         Me.PictureBox1.Margin = New System.Windows.Forms.Padding(4)
         Me.PictureBox1.Name = "PictureBox1"
         Me.PictureBox1.Size = New System.Drawing.Size(324, 304)
@@ -1169,7 +1211,7 @@ Partial Class Main
         'lblTHPConv
         '
         Me.lblTHPConv.AutoSize = True
-        Me.lblTHPConv.Location = New System.Drawing.Point(13, 105)
+        Me.lblTHPConv.Location = New System.Drawing.Point(13, 134)
         Me.lblTHPConv.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.lblTHPConv.Name = "lblTHPConv"
         Me.lblTHPConv.Size = New System.Drawing.Size(95, 17)
@@ -1179,7 +1221,7 @@ Partial Class Main
         'picOptions
         '
         Me.picOptions.Image = CType(resources.GetObject("picOptions.Image"), System.Drawing.Image)
-        Me.picOptions.Location = New System.Drawing.Point(313, 144)
+        Me.picOptions.Location = New System.Drawing.Point(313, 183)
         Me.picOptions.Margin = New System.Windows.Forms.Padding(4)
         Me.picOptions.Name = "picOptions"
         Me.picOptions.Size = New System.Drawing.Size(127, 112)
@@ -1189,7 +1231,7 @@ Partial Class Main
         '
         'btnAbout
         '
-        Me.btnAbout.Location = New System.Drawing.Point(116, 144)
+        Me.btnAbout.Location = New System.Drawing.Point(116, 183)
         Me.btnAbout.Margin = New System.Windows.Forms.Padding(4)
         Me.btnAbout.Name = "btnAbout"
         Me.btnAbout.Size = New System.Drawing.Size(127, 112)
@@ -1199,17 +1241,17 @@ Partial Class Main
         '
         'btnBrowseTHPConv
         '
-        Me.btnBrowseTHPConv.Location = New System.Drawing.Point(448, 97)
+        Me.btnBrowseTHPConv.Location = New System.Drawing.Point(448, 126)
         Me.btnBrowseTHPConv.Margin = New System.Windows.Forms.Padding(4)
         Me.btnBrowseTHPConv.Name = "btnBrowseTHPConv"
         Me.btnBrowseTHPConv.Size = New System.Drawing.Size(97, 27)
         Me.btnBrowseTHPConv.TabIndex = 2
-        Me.btnBrowseTHPConv.Text = "Br&owse"
+        Me.btnBrowseTHPConv.Text = "Bro&wse"
         Me.btnBrowseTHPConv.UseVisualStyleBackColor = True
         '
         'txtTHPConv
         '
-        Me.txtTHPConv.Location = New System.Drawing.Point(116, 102)
+        Me.txtTHPConv.Location = New System.Drawing.Point(116, 131)
         Me.txtTHPConv.Margin = New System.Windows.Forms.Padding(4)
         Me.txtTHPConv.Name = "txtTHPConv"
         Me.txtTHPConv.ReadOnly = True
@@ -1305,14 +1347,39 @@ Partial Class Main
         'ofdRip
         '
         Me.ofdRip.CheckFileExists = False
-        Me.ofdRip.DefaultExt = "avi"
+        Me.ofdRip.DefaultExt = "mp4"
         Me.ofdRip.FileName = "Please select path and base file name for output"
-        Me.ofdRip.Filter = "AVI Video |*.avi"
+        Me.ofdRip.Filter = "MP4 Video |*.mp4"
         '
         'ofdOutput
         '
         Me.ofdOutput.Description = "Select the directory with the appropriately named input files"
         Me.ofdOutput.ShowNewFolderButton = False
+        '
+        'LoadiView
+        '
+        Me.LoadiView.DefaultExt = "exe"
+        Me.LoadiView.FileName = "i_view32.exe"
+        Me.LoadiView.Filter = "Irfanview Executable|i_view32.exe"
+        Me.LoadiView.InitialDirectory = "C:\Program Files (x86)"
+        '
+        'nudTE_jpgq
+        '
+        Me.nudTE_jpgq.Location = New System.Drawing.Point(170, 140)
+        Me.nudTE_jpgq.Name = "nudTE_jpgq"
+        Me.nudTE_jpgq.Size = New System.Drawing.Size(52, 22)
+        Me.nudTE_jpgq.TabIndex = 46
+        Me.nudTE_jpgq.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
+        Me.nudTE_jpgq.Value = New Decimal(New Integer() {100, 0, 0, 0})
+        '
+        'lblTE_jpgq
+        '
+        Me.lblTE_jpgq.AutoSize = True
+        Me.lblTE_jpgq.Location = New System.Drawing.Point(139, 120)
+        Me.lblTE_jpgq.Name = "lblTE_jpgq"
+        Me.lblTE_jpgq.Size = New System.Drawing.Size(83, 17)
+        Me.lblTE_jpgq.TabIndex = 47
+        Me.lblTE_jpgq.Text = "JPG Quality"
         '
         'Main
         '
@@ -1359,6 +1426,7 @@ Partial Class Main
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.picOptions, System.ComponentModel.ISupportInitialize).EndInit()
         Me.tabApp.ResumeLayout(False)
+        CType(Me.nudTE_jpgq, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
 
     End Sub
@@ -1474,4 +1542,10 @@ Partial Class Main
     Friend WithEvents txtTD_CY As System.Windows.Forms.MaskedTextBox
     Friend WithEvents txtTD_CW As System.Windows.Forms.MaskedTextBox
     Friend WithEvents txtTD_CX As System.Windows.Forms.MaskedTextBox
+    Friend WithEvents btniView As System.Windows.Forms.Button
+    Friend WithEvents txtiView As System.Windows.Forms.TextBox
+    Friend WithEvents lbliView As System.Windows.Forms.Label
+    Friend WithEvents LoadiView As System.Windows.Forms.OpenFileDialog
+    Friend WithEvents lblTE_jpgq As System.Windows.Forms.Label
+    Friend WithEvents nudTE_jpgq As System.Windows.Forms.NumericUpDown
 End Class
