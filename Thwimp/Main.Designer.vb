@@ -573,6 +573,8 @@ Partial Class Main
         'chkRip_DSound
         '
         Me.chkRip_DSound.AutoSize = True
+        Me.chkRip_DSound.Checked = True
+        Me.chkRip_DSound.CheckState = System.Windows.Forms.CheckState.Checked
         Me.chkRip_DSound.Location = New System.Drawing.Point(6, 23)
         Me.chkRip_DSound.Name = "chkRip_DSound"
         Me.chkRip_DSound.Size = New System.Drawing.Size(116, 21)
@@ -1366,6 +1368,7 @@ Partial Class Main
         'nudTE_jpgq
         '
         Me.nudTE_jpgq.Location = New System.Drawing.Point(170, 140)
+        Me.nudTE_jpgq.Minimum = New Decimal(New Integer() {1, 0, 0, 0})
         Me.nudTE_jpgq.Name = "nudTE_jpgq"
         Me.nudTE_jpgq.Size = New System.Drawing.Size(52, 22)
         Me.nudTE_jpgq.TabIndex = 46
