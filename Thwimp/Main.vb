@@ -371,6 +371,7 @@ Public Class Main
             HandleArrState()                                'Show naming conventions for this THP file
             chkRipString()                                  'Update THPEnc rip type text
             chkRipValues()                                  'Update the default THPEnc Crop values based on the chkRip type value
+            HandleRipTimeMasks()                            'Updates the masks for the start/end lengths for ripping (time)
             txtTE_D.Text = txtVF_T.Text.Length.ToString()   'Set default value in THPEnc for digits, based on the string.length of the video's total frames
         Catch ex As Exception
             MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in cmbTHP_SelectedIndexChanged!")
@@ -525,7 +526,7 @@ Public Class Main
             'If DirectSound option checked, set SDL_AUDIODRIVE = directsound. This is a workaround to a ffmpeg bug to allow audio
             If chkRip_DSound.Checked = True Then
                 'https://social.msdn.microsoft.com/Forums/vstudio/en-US/a18210d7-44f4-4895-8bcc-d3d1d26719e5/setting-environment-variable-from-vbnet?forum=netfxbcl
-                'set SDL_AUDIODRIVER=directsound            
+                'set SDL_AUDIODRIVER=directsound
                 startInfo.EnvironmentVariables("SDL_AUDIODRIVER") = "directsound"
             End If
 
@@ -562,14 +563,17 @@ Public Class Main
             Dim file2 As String = ""
             Dim type As Boolean = chkRip_Type.Checked           'Type of ripping to do. False=MP4(+WAV), True=MP4(+Wav)+Dummy
             newFile = newFile.Replace(".thp", "")               'Remove extension from newFile, just get filename-ext
-            ofdRip.FileName = newFile                           'Set ofd box filename to newFile
+
+            Dim suffix As String = GetCellFrameName()           'Suffix for cell name (if any)
+            ofdRip.FileName = newFile & suffix                  'Set ofd box filename to newFile & suffix
             ofdRip.InitialDirectory = initDir                   'Set ofd init dir to initDir
 
             'Show the DBox
             If ofdRip.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
-            Dim outFile As String = ofdRip.FileName             'Output file. C:\PathToFile\file.mp4
-            Dim outPath As String = FileDir(outFile)            'Output path. Path of outFile
-            Dim outFilename As String = FileAndExt(outFile)     'Output filename. Filename.mp4
+            Dim outFile As String = ofdRip.FileName                 'Output file. C:\PathToFile\file.mp4
+            Dim tempFile As String = FileDir(outFile) & "temp.mp4"  'Temp file
+            Dim outPath As String = FileDir(outFile)                'Output path. Path of outFile
+            Dim outFilename As String = FileAndExt(outFile)         'Output filename. Filename.mp4
 
             'Video Conv: ffmpeg -i input_video.mp4 output.mp4
             'https://video.stackexchange.com/questions/4563/how-can-i-crop-a-video-with-ffmpeg
@@ -577,17 +581,22 @@ Public Class Main
             'https://www.bugcodemaster.com/article/extract-audio-video-using-ffmpeg
             'Audio Extraction: ffmpeg -i input_video.mp4 -vn output_audio.mp3
 
+            'https://superuser.com/questions/459313/how-to-cut-at-exact-frames-using-ffmpeg
+            'Cut video from start to end frame: -vf select="between(n\,200\,300),setpts=PTS-STARTPTS"
+
             Dim cmd As String = ""                              'Command to run
             Dim x As String = txtTD_CX.Text                     'Crop xpos
             Dim y As String = txtTD_CY.Text                     'Crop ypos
             Dim w As String = txtTD_CW.Text                     'Crop width
             Dim h As String = txtTD_CH.Text                     'Crop height
+            Dim _start As UShort = txtTD_FS.Text                'frame start
+            Dim _end As UShort = txtTD_FE.Text                  'frame end
 
-            'Convert THP to MP4. Encoded THP to H264 MP4 with crop filter
+            'Step 1: Convert THP to temp MP4. Encoded THP to H264 MP4 with crop filter
             '"C:\FFMPegPath\ffmpeg.exe"
             cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT
             ' -i C:\PathToTHP\DIRtoTHP\file.thp -vcodec h264 -y -filter:v "crop=out_w:out_h:x:y" "C:\OutputDir\output.mp4"
-            cmd &= " -i " & strQUOT & inFile & strQUOT & " -vcodec h264 -y -filter:v " & strQUOT & "crop=" & w & ":" & h & ":" & x & ":" & y & strQUOT & " " & strQUOT & outFile & strQUOT
+            cmd &= " -i " & strQUOT & inFile & strQUOT & " -vcodec h264 -y -filter:v " & strQUOT & "crop=" & w & ":" & h & ":" & x & ":" & y & strQUOT & " " & strQUOT & tempFile & strQUOT
 
             'Run the cmd
             Dim startInfo As ProcessStartInfo
@@ -595,6 +604,22 @@ Public Class Main
             startInfo.FileName = cmd
             startInfo.UseShellExecute = False
             Dim shell As Process
+            shell = New Process
+            shell.StartInfo = startInfo
+            shell.Start()
+            shell.WaitForExit()
+
+            'Step 2: Convert temp mp4 to final MP4, cutting between start and end frames
+            '"C:\FFMPegPath\ffmpeg.exe"
+            cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT
+            ' -y -i C:\PathToTHP\DIRtoTHP\file.thp -vcodec h264 -an -vf select="between(n\,start_frame\,end_frame),setpts=PTS-STARTPTS" "C:\OutputDir\output.mp4"
+            cmd &= " -y -i " & strQUOT & tempFile & strQUOT & " -vcodec h264 -an -vf select=" & strQUOT & "between(n" & strBAK & "," & _start & strBAK & "," & _end & "),setpts=PTS-STARTPTS" & strQUOT
+            cmd &= " " & strQUOT & outFile & strQUOT
+
+            'Run the cmd
+            startInfo = New ProcessStartInfo
+            startInfo.FileName = cmd
+            startInfo.UseShellExecute = False
             shell = New Process
             shell.StartInfo = startInfo
             shell.Start()
@@ -675,6 +700,9 @@ Public Class Main
                 DeleteFilesFromFolder(file, file2)
             End If
 
+            'Delete temp.mp4
+            DeleteFilesFromFolder(FileDir(outFile), "temp.mp4")
+
             'Thwimp kicks dat Koopa shell away!
             shell.Close()
             MsgBox("Video ripped!", MsgBoxStyle.Information, "Success!")
@@ -739,7 +767,7 @@ Public Class Main
             Dim strTrue As String = strFalse & "," & strNL & "dummy"           'String to use when check box is true. This will be the false string + ",\nDummy" for dummy ripping7
             ChkString(strTrue, strFalse, chkRip_Type)                       'Change the checkbox text as appropriately based on state
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Erorr in chkRipString()!")
+            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in chkRipString()!")
         End Try
     End Sub
 
@@ -829,6 +857,320 @@ Public Class Main
     End Sub
 
     ''' <summary>
+    ''' Updates the start/end time frame masks, based on the THP total frame length
+    ''' </summary>
+    Private Sub HandleRipTimeMasks()
+        Try
+            Dim length As Byte = txtVF_T.Text.Length    'Get length as byte for total frames in video
+            Dim mask As String = StrDup(length, "0")    'The mask, set to length of 0s
+            'Update the start/end masks
+            txtTD_FS.Mask = mask
+            txtTD_FE.Mask = mask
+
+            'Force the mult NUD to 0, to fire an event to update the default start/end frame values for ripping whole video
+            'This doesn't seem to always want to fire; forcibly call the function
+            nudTD_M.Value = 0
+            nudTD_M_ChangeMe()
+        Catch ex As Exception
+            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in HandleRipTimeMasks()!")
+        End Try
+    End Sub
+
+    Private Sub nudTD_M_ValueChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles nudTD_M.ValueChanged
+        nudTD_M_ChangeMe()
+    End Sub
+    ''' <summary>
+    ''' Updates the default start/end frame rip values when the multiplicity NUD is changed, and the chkRipM value
+    ''' </summary>
+    ''' <remarks></remarks>
+    Private Sub nudTD_M_ChangeMe()
+        Try
+            Dim m As Byte = TryParseErr_Byte(nudTD_M.Value)         'Current multiplicity index
+            Dim mult As UShort = TryParseErr_UShort(txtVF_S.Text)   'Amount of frames in a subvideo
+            Dim _start As UShort = 1                                'Start frame
+            Dim _end As UShort = 2                                  'End frame
+            Dim ma As Byte = 0                                      'Start multiplicity index
+            Dim mb As Byte = 1                                      'End multiplicity index
+
+            'Flag to indicate bugfix. THPs with only one frame can use either m=0 (all frames, file named [file].mp4),
+            'or m=1 (1st and only frame, file named "file_A1_1.mp4").
+            'Flag inidicates to fix an off-by-one error if m=1 for this special case for the end time frame            
+            Dim SingleBugfix As Boolean = False
+            'If nud has a min of 0 and max of 1, then special bugfix
+            If nudTD_M.Minimum = 0 And nudTD_M.Maximum = 1 Then SingleBugfix = True
+
+            'Zero is special case meaning to rip all frames (frame 1 to total)
+            Dim singleM As Boolean = True                           'Rip only one multiplicity?
+            If m = 0 Then singleM = False 'If m=0, ripping multiple Ms
+            If singleM = False Then
+                'Set range from 1 to final frame
+                _start = 1
+                _end = TryParseErr_Single(txtVF_T.Text)
+            Else
+                mb = nudTD_M.Value                                  'mult index in box
+                ma = mb - 1                                         'index-- (0-based mult index)
+                _start = ma * mult                                  'start = (start index * frame mult)
+                If _start = 0 Then _start = 1 '1st frame is one-based; set to 1 if 0
+                _end = mb * mult                                    'end = (end index * frame mult) - 1
+
+                'Only decrement by one if not the special bugfix
+                If SingleBugfix = False Then _end = _end - 1
+            End If
+
+            'Update the start/frame text values, chkRipM state/text
+            chkRipM_Change(singleM)
+            txtTD_FS.Text = _start.ToString()
+            txtTD_FE.Text = _end.ToString()
+        Catch ex As Exception
+            'MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in nudTD_M_ValueChanged()!")
+        End Try
+    End Sub
+
+    ''' <summary>
+    ''' Changes checked value and text of chkRipM
+    ''' </summary>
+    ''' <param name="val">New state</param>
+    ''' <remarks></remarks>
+    Private Sub chkRipM_Change(ByVal val As Boolean)
+        Dim s As String = ""        'Da string to set to
+        Dim f As String = "All"     'false string
+        Dim t As String = "Single"  'true string
+        chkRipM.Checked = val       'Set state to value
+
+        If val = False Then s = f Else s = t 'Get right string
+        chkRipM.Text = s                     'Set new string
+    End Sub
+
+    ''' <summary>
+    ''' Keeps the frame start rip value within range (start={start|(1≤start≤total ∩ start&lt;end})
+    ''' </summary>
+    ''' <param name="sender"></param>
+    ''' <param name="e"></param>
+    ''' <remarks></remarks>
+    Private Sub txtTD_FS_ValidatedByVal(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles txtTD_FS.Validated
+        Try
+            '1st statement
+            Dim smin As UShort = 1                                      'smin = 1
+            Dim smax As UShort = TryParseErr_UShort(txtVF_T.Text)       'smax = Total amt of frames in vid
+            Dim _end As UShort = TryParseErr_UShort(txtTD_FE.Text)      'end frame length
+            txtTD_FS.Text = KeepInRange(txtTD_FS.Text, smin, smax)      'Set string within numeric range
+
+            '2nd statement
+            smin = 1
+            smax = _end - 1
+            txtTD_FS.Text = KeepInRange(txtTD_FS.Text, smin, smax)      'Set string within numeric range
+        Catch ex As Exception
+            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in txtTD_FS_Validated!")
+        End Try
+    End Sub
+
+    ''' <summary>
+    ''' Keeps the frame end rip value within range (end={end|(1≤end≤total ∩ end&gt;start})
+    ''' </summary>
+    ''' <param name="sender"></param>
+    ''' <param name="e"></param>
+    ''' <remarks></remarks>
+    Private Sub txtTD_FE_Validated(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles txtTD_FE.Validated
+        Try
+            '1st statement
+            Dim emin As UShort = 1                                      'emin = 1
+            Dim emax As UShort = TryParseErr_UShort(txtVF_T.Text)       'emax = Total amt of frames in vid
+            Dim _start As UShort = TryParseErr_UShort(txtTD_FS.Text)    'start frame length
+            txtTD_FE.Text = KeepInRange(txtTD_FE.Text, emin, emax)      'Set string within numeric range
+
+            '2nd statement
+            emin = _start + 1
+            txtTD_FE.Text = KeepInRange(txtTD_FE.Text, emin, emax)      'Set string within numeric range
+        Catch ex As Exception
+            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in txtTD_FE_Validated!")
+        End Try
+    End Sub
+
+    ''' <summary>
+    ''' Update the pos/size of the crop box params based on the video cell selected for THP Decoding
+    ''' </summary>
+    Private Sub radTD_A1_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles radTD_A1.CheckedChanged
+        If radTD_A1.Checked = True Then HandleTimeFrameCell(1, 1, 0)
+    End Sub
+    Private Sub radTD_A2_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles radTD_A2.CheckedChanged
+        If radTD_A2.Checked = True Then HandleTimeFrameCell(2, 1, 0)
+    End Sub
+    Private Sub radTD_A3_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles radTD_A3.CheckedChanged
+        If radTD_A3.Checked = True Then HandleTimeFrameCell(3, 1, 0)
+    End Sub
+    Private Sub radTD_A4_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles radTD_A4.CheckedChanged
+        If radTD_A4.Checked = True Then HandleTimeFrameCell(4, 1, 0)
+    End Sub
+    Private Sub radTD_A5_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles radTD_A5.CheckedChanged
+        If radTD_A5.Checked = True Then HandleTimeFrameCell(5, 1, 0)
+    End Sub
+    Private Sub radTD_A6_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles radTD_A6.CheckedChanged
+        If radTD_A6.Checked = True Then HandleTimeFrameCell(6, 1, 0)
+    End Sub
+    Private Sub radTD_B1_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles radTD_B1.CheckedChanged
+        If radTD_B1.Checked = True Then HandleTimeFrameCell(1, 2, 0)
+    End Sub
+    Private Sub radTD_B2_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles radTD_B2.CheckedChanged
+        If radTD_B2.Checked = True Then HandleTimeFrameCell(2, 2, 0)
+    End Sub
+    Private Sub radTD_B3_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles radTD_B3.CheckedChanged
+        If radTD_B3.Checked = True Then HandleTimeFrameCell(3, 2, 0)
+    End Sub
+    Private Sub radTD_B4_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles radTD_B4.CheckedChanged
+        If radTD_B4.Checked = True Then HandleTimeFrameCell(4, 2, 0)
+    End Sub
+    Private Sub radTD_B5_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles radTD_B5.CheckedChanged
+        If radTD_B5.Checked = True Then HandleTimeFrameCell(5, 2, 0)
+    End Sub
+    Private Sub radTD_B6_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles radTD_B6.CheckedChanged
+        If radTD_B6.Checked = True Then HandleTimeFrameCell(6, 2, 0)
+    End Sub
+    Private Sub radTD_Dum_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles radTD_Dum.CheckedChanged
+        If radTD_Dum.Checked = True Then HandleTimeFrameCell(0, 0, -1)
+    End Sub
+    Private Sub radTD_All_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles radTD_All.CheckedChanged
+        If radTD_All.Checked = True Then HandleTimeFrameCell(0, 0, 1)
+    End Sub
+
+    ''' <summary>
+    ''' Function which handles updating the start/end frame counts based on the radio button array for individual THP cells
+    ''' </summary>
+    ''' <param name="row">1-based ID of row</param>
+    ''' <param name="col">1-based ID of col</param>
+    ''' <param name="special">Special radio button. -1=dum, 0=use r/c pair, 1=All</param>
+    ''' <remarks></remarks>
+    Private Sub HandleTimeFrameCell(ByVal row As Byte, ByVal col As Byte, ByVal special As SByte)
+        Try
+            'Total size of the THP video
+            Dim VidTSize As Dims
+            VidTSize.width = TryParseErr_UShort(txtTDims_W.Text)    'Tot Width
+            VidTSize.height = TryParseErr_UShort(txtTDims_H.Text)   'Tot Height
+
+            'Frame size of the THP subvideo cells
+            Dim VidFSize As Dims
+            VidFSize.width = TryParseErr_UShort(txtVS_W.Text)    'Frame Width
+            VidFSize.height = TryParseErr_UShort(txtVS_H.Text)   'Frame Height
+
+            'Padding size of the THP video cells
+            Dim PadSize As Dims
+            PadSize.width = TryParseErr_UShort(txtVP_W.Text)     'Pad Width
+            PadSize.height = TryParseErr_UShort(txtVP_H.Text)    'Pad Height
+
+            'Crop box params to change
+            Dim pos As Dims                                     'X/Y Position for cropping. This is zero-based!
+            Dim size As Dims                                    'Size for cropping
+
+            If special = 0 Then
+                'Handle row/col pair
+
+                'Set appropriate pos
+                pos.width = (col - 1) * VidFSize.width          'Width = 0-based_col * frame_width
+                pos.height = (row - 1) * VidFSize.height        'Width = 0-based_row * frame_height
+                'Set appropriate size. Always frame size for this option
+                size.width = VidFSize.width
+                size.height = VidFSize.height
+            ElseIf special = -1 Then
+                'Handle dummy
+
+                pos.width = 0                                   'Start at x=0
+                pos.height = VidTSize.height - PadSize.height   'Start at y=Total video height - padding height
+                'Set size to padsize
+                size.width = PadSize.width
+                size.height = PadSize.height
+            Else
+                'Handle All. At origin, full vid size
+
+                pos.width = 0
+                pos.height = 0
+                'Set size to total video size
+                size.width = VidTSize.width
+                size.height = VidTSize.height
+            End If
+
+            'Update the text boxes as appropriate with the new, adjusted params
+            txtTD_CX.Text = pos.width.ToString()
+            txtTD_CY.Text = pos.height.ToString()
+            txtTD_CW.Text = size.width.ToString()
+            txtTD_CH.Text = size.height.ToString()
+        Catch ex As Exception
+            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in HandleTimeFrameCell()!")
+        End Try
+    End Sub
+
+    ''' <summary>
+    ''' Gets the suffix name and mult for the current selected frame cell in the decoder/ripper group box.
+    ''' Used for setting the default filename when ripping
+    ''' </summary>
+    ''' <returns>Suffix for checked video cell/special</returns>
+    Private Function GetCellFrameName() As String
+        Dim nameResult As String = ""                       'String result of cell name (cell+suffix)
+        Dim suffix As String = ""                           'Multiplicity suffix
+        Try
+            'Array of radio buttons (A1N notation)
+            Dim Rads(6, 2) As System.Windows.Forms.RadioButton
+            Rads(1, 1) = radTD_A1
+            Rads(2, 1) = radTD_A2
+            Rads(3, 1) = radTD_A3
+            Rads(4, 1) = radTD_A4
+            Rads(5, 1) = radTD_A5
+            Rads(6, 1) = radTD_A6
+            Rads(1, 2) = radTD_B1
+            Rads(2, 2) = radTD_B2
+            Rads(3, 2) = radTD_B3
+            Rads(4, 2) = radTD_B4
+            Rads(5, 2) = radTD_B5
+            Rads(6, 2) = radTD_B6
+            Dim Rad_Dum = radTD_Dum 'Dummy radio button
+            Dim Rad_All = radTD_All 'All radio button
+
+            'Corresponding Names for each radio button
+            Dim names(6, 2) As String
+            names(1, 1) = "_A1"
+            names(2, 1) = "_A2"
+            names(3, 1) = "_A3"
+            names(4, 1) = "_A4"
+            names(5, 1) = "_A5"
+            names(6, 1) = "_A6"
+            names(1, 2) = "_B1"
+            names(2, 2) = "_B2"
+            names(3, 2) = "_B3"
+            names(4, 2) = "_B4"
+            names(5, 2) = "_B5"
+            names(6, 2) = "_B6"
+            Dim name_dum As String = "_Dum" 'Dummy name
+            'No suffix for "All"
+
+            Dim c As Byte = 1               'Column iterator
+            Dim r As Byte = 1               'Row iterator
+            Dim result As Boolean = False   'Result escape flag
+
+            'Iterate through all columns then rows, until find a checked button; then escape
+            For c = 1 To 2
+                For r = 1 To 6
+                    result = Rads(r, c).Checked
+                    If result = True Then Exit For
+                Next r
+                If result = True Then Exit For
+            Next c
+
+            'If no results, then check dummy radio button
+            If result = False Then
+                If Rad_Dum.Checked = True Then nameResult = name_dum 'If dummy checked, set to dummy cell name
+                If nudTD_M.Value <> 0 Then suffix = "_" & TryParseErr_Byte(nudTD_M.Value)
+                'If check fails, assume "All" button, which is null cell name
+            Else
+                'If a normal array result was found, fetch appropriate name
+                nameResult = names(r, c)
+                If nudTD_M.Value <> 0 Then suffix = "_" & TryParseErr_Byte(nudTD_M.Value)
+            End If
+        Catch ex As Exception
+            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in GetCellFrameName()!")
+        End Try
+        nameResult = nameResult & suffix
+        Return nameResult
+    End Function
+
+    ''' <summary>
     ''' Given a numeric text string, keeps it within range between min and max values
     ''' </summary>
     ''' <param name="inp">Numeric string</param>
@@ -884,10 +1226,11 @@ Public Class Main
         '7.  If video has padding, vstack the video in step 5 ("filename.mp4") with the composite dummy
         '    video in step 6 ("dummy.mp4") into a file called "final.mp4".
         '    MoveFile "final.mp4"->"filename.mp4"                
+        '7.2 Convert filename.mp4 to yuv420p format
         '8.  Convert final video ("filename.mp4") into BMP frames, padded to N digits ("frame_%0Nd.bmp")
         '8.1 Convert BMP frames into JPG frames, using irfanview, and the JPG Quality value
         '9.  Check the output directory, and delete any extra jpg frames past the framelimit (frames * m).
-        '10. The jpg files and the audio file (if applicable, "filename.wav") are converted into "filename.thp" with THPConv
+        '10. The jpg files and the audio file (if applicable, "filename.wav") are converted into "filename.thp" with THPConv at proper framerate
         '11. Cleanup() is run to delete all temporary files from steps 0-10 during the conversion
         '12. Done!
 
@@ -966,6 +1309,7 @@ Public Class Main
             Dim parms(6) As String                                  'Array of generic string parameters for cmd string building. Usually used for v/hstacking N videos.
             Dim parm As String                                      'Usually the concatenation of the elements in the parms array
             Dim frames As UShort = TryParseErr_UShort(txtTE_F.Text) 'The amount of frames to limit each subvideo to
+            Dim FPS As Single = TryParseErr_Single(txtVC_F.Text)    'The framerate FPS as single
 
             'Array of suffixes for the naming conventions in MS Excel A1N notation (Row, Column)
             'It is hardcoded to 6x2, since the components of each length dimension don't go any larger than this
@@ -998,7 +1342,7 @@ Public Class Main
                     Dim dgs As String = StrDup(dg, "0")         'A .ToString() format string, limiting to N digits
                     cnt = 0                       'Generic iterator
 
-                    'Convert dummy still images for the current multiplicity to a videos.
+                    'Convert dummy still images for the current multiplicity to a video.
                     'Do this by copying the image to many sequentially named files,
                     'then render all frames as .mp4 video
 
@@ -1009,15 +1353,15 @@ Public Class Main
                         My.Computer.FileSystem.CopyFile(file, file2)                                        'Copy file to file2
                     Next cnt
 
-                    'Convert bmp files to MP4: ffmpeg -f image2 -framerate FPS -i image_%03d.bmp test.mp4
-                    cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT & " -y"                                    '"C:\FFMPegPath\FFMPeg.exe" -y
-                    Dim rate As Single = TryParseErr_Single(txtVC_F.Text)                                                   'FPS as single
-                    cmd &= " -f image2 -framerate " & rate                                                                  ' -f image2 -framerate FPS
+                    'Convert bmp files to MP4: ffmpeg -f image2 -i image_%03d.bmp test.mp4
+                    cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT & " -y"                                    '"C:\FFMPegPath\FFMPeg.exe" -y                    
+                    cmd &= " -f image2"                                                                                     ' -f image2
 
                     file = strQUOT & path & strBAK & "dummy_" & k.ToString() & "_%0" & dg.ToString() & "d.bmp" & strQUOT
                     cmd &= " -i " & file                                                                                    ' -i "C:\WorkingDir\dummy_M_%0Nd.bmp"
-                    file = strQUOT & path & strBAK & "dummy_" & k.ToString() & ".mp4" & strQUOT
-                    cmd &= " -vcodec h264 " & file                                                                           ' -vcodec h264 "C:\WorkingDir\dummy_N.mp4"
+
+                    file = strQUOT & path & strBAK & "dummy_" & k.ToString() & ".mp4" & strQUOT                             ' -fm  -vcodec h264 -framerate RR.RR & C:\Path\dummy_N.pm4
+                    cmd &= " -vcodec h264 -framerate " & FPS & " " & file
 
                     'Run cmd
                     startInfo.FileName = cmd
@@ -1287,21 +1631,23 @@ Public Class Main
             'Do Step 10
             Dim hasAudio As Boolean = THPHasAudio()
             If hasAudio = False Then
-                'If no audio, just convert jpg frames into THP using THPConv
-                '"C:\THPConvDir\THPConv.exe" -j "C:\WorkingDir\*.jpg" -d "C:\WorkingDir\filename.thp"
+                'If no audio, just convert jpg frames into THP using THPConv at appropriate framerate
+                '"C:\THPConvDir\THPConv.exe" -j "C:\WorkingDir\*.jpg" -r RR.RR -d "C:\WorkingDir\filename.thp"
                 cmd = strQUOT & txtTHPConv.Text & strQUOT
                 file = "-j " & strQUOT & path & strBAK & "*.jpg" & strQUOT
-                cmd &= " " & file & " -d"
-                file = strQUOT & path & strBAK & filename & ".thp" & strQUOT
                 cmd &= " " & file
+                cmd &= " -r " & FPS.ToString("F2")
+                file = strQUOT & path & strBAK & filename & ".thp" & strQUOT
+                cmd &= " -d " & file
             Else
-                'If audio, convert jpg frames and add audio file
-                '"C:\THPConvDir\THPConv.exe" -j "C:\WorkingDir\*.jpg" -s "C:\WorkingDir\filename.wav" -d "C:\WorkingDir\filename.thp"
+                'If audio, convert jpg frames and add audio file at appropriate framerate
+                '"C:\THPConvDir\THPConv.exe" -j "C:\WorkingDir\*.jpg" -s "C:\WorkingDir\filename.wav" -r RR.RR -d "C:\WorkingDir\filename.thp"
                 cmd = strQUOT & txtTHPConv.Text & strQUOT
                 file = "-j " & strQUOT & path & strBAK & "*.jpg" & strQUOT
                 cmd &= " " & file
                 file = strQUOT & path & strBAK & filename & ".wav" & strQUOT
                 cmd &= " -s " & file
+                cmd &= " -r " & FPS.ToString("F2")
                 file = strQUOT & path & strBAK & filename & ".thp" & strQUOT
                 cmd &= " -d " & file
             End If
@@ -1466,36 +1812,62 @@ Public Class Main
     Private Sub chkTE_wav_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkTE_wav.CheckedChanged
         HandleArrState()
     End Sub
+
     ''' <summary>
-    ''' Handles the checkbox array depiction of naming conventions for THP encoding
+    ''' Handles the checkbox array depiction of naming conventions for THP encoding, and radio buttons for cells for THP Decoding
+    ''' Also updates multiplicity NUD for ripping (time)
     ''' </summary>
     ''' <remarks></remarks>
     Private Sub HandleArrState()
-        Dim Boxes(6, 2) As System.Windows.Forms.CheckBox    'Array of 6x2 check boxes
-        Dim Dum As System.Windows.Forms.CheckBox            'Dummy check box (for padding)
-        Dim Wav As System.Windows.Forms.CheckBox            'Wav check box (for audio wav file)
+        'Encoding array
+        Dim Enc_Boxes(6, 2) As System.Windows.Forms.CheckBox    'Array of 6x2 check boxes for THP encoding
+        Dim Enc_Dum As System.Windows.Forms.CheckBox            'Dummy check box (for padding)
+        Dim Enc_Wav As System.Windows.Forms.CheckBox            'Wav check box (for audio wav file)
 
-        'Init the array. In A1N MS Excel notation, Alpha=row, Number=Col
-        Boxes(1, 1) = chkTE_A1
-        Boxes(2, 1) = chkTE_A2
-        Boxes(3, 1) = chkTE_A3
-        Boxes(4, 1) = chkTE_A4
-        Boxes(5, 1) = chkTE_A5
-        Boxes(6, 1) = chkTE_A6
-        Boxes(1, 2) = chkTE_B1
-        Boxes(2, 2) = chkTE_B2
-        Boxes(3, 2) = chkTE_B3
-        Boxes(4, 2) = chkTE_B4
-        Boxes(5, 2) = chkTE_B5
-        Boxes(6, 2) = chkTE_B6
+        'Decoding array
+        Dim Dec_Rads(6, 2) As System.Windows.Forms.RadioButton  'Array of 6x2 radio buttons for THP decoding
+        Dim Dec_Dum As System.Windows.Forms.RadioButton         'Dummy radio button (for padding)
+        Dim Dec_All As System.Windows.Forms.RadioButton         'Radio button for all
+
+        'Init the encoding array. In A1N MS Excel notation, Alpha=row, Number=Col
+        Enc_Boxes(1, 1) = chkTE_A1
+        Enc_Boxes(2, 1) = chkTE_A2
+        Enc_Boxes(3, 1) = chkTE_A3
+        Enc_Boxes(4, 1) = chkTE_A4
+        Enc_Boxes(5, 1) = chkTE_A5
+        Enc_Boxes(6, 1) = chkTE_A6
+        Enc_Boxes(1, 2) = chkTE_B1
+        Enc_Boxes(2, 2) = chkTE_B2
+        Enc_Boxes(3, 2) = chkTE_B3
+        Enc_Boxes(4, 2) = chkTE_B4
+        Enc_Boxes(5, 2) = chkTE_B5
+        Enc_Boxes(6, 2) = chkTE_B6
         'Wav and dummy boxes
-        Dum = chkTE_Dum
-        Wav = chkTE_wav
+        Enc_Dum = chkTE_Dum
+        Enc_Wav = chkTE_wav
+
+        'Init the decoding array. In A1N MS Excel notation, Alpha=row, Number=Col
+        Dec_Rads(1, 1) = radTD_A1
+        Dec_Rads(2, 1) = radTD_A2
+        Dec_Rads(3, 1) = radTD_A3
+        Dec_Rads(4, 1) = radTD_A4
+        Dec_Rads(5, 1) = radTD_A5
+        Dec_Rads(6, 1) = radTD_A6
+        Dec_Rads(1, 2) = radTD_B1
+        Dec_Rads(2, 2) = radTD_B2
+        Dec_Rads(3, 2) = radTD_B3
+        Dec_Rads(4, 2) = radTD_B4
+        Dec_Rads(5, 2) = radTD_B5
+        Dec_Rads(6, 2) = radTD_B6
+        'Dummy and all chks
+        Dec_Dum = radTD_Dum
+        Dec_All = radTD_All
 
         'Generic iterators
         Dim i As Byte = 0
         Dim j As Byte = 0
 
+        'Handle Encoding stuff
         Try
             'Update the checked and enabled states of the array based on the video data 
             'Amount of rows in video, columns, and multiplicity            
@@ -1507,13 +1879,13 @@ Public Class Main
             For i = 1 To 6 Step 1                           'Iterate through all rows (1-6)
                 For j = 1 To 2 Step 1                       'Iterate through all cols (1-2)
                     If r = 0 And c = 0 Then
-                        'If a dummy entry in combo box was selected, then r & c of array will be 0. Set all boxes to unchecked/disabled
+                        'If a dummy entry in combo box was selected, then r & c of array will be 0. Set all chks/boxes to unchecked/disabled
                         state = False
                     Else
                         If i <= r And j <= c Then
                             'If i and j iterators (row/col) are within
                             'the amount of rows and col for this video, 
-                            'then cell is used. Check & enable the boxes
+                            'then cell is used. Check & enable
                             state = True
                         Else
                             'Otherwise unused, uncheck and disable
@@ -1521,28 +1893,50 @@ Public Class Main
                         End If
                     End If
 
-                    'Update the checked/enabled states as appropriately
-                    Boxes(i, j).Checked = state
-                    Boxes(i, j).Enabled = state
+                    'Update the checked/enabled states as appropriately for the Enc boxes
+                    Enc_Boxes(i, j).Checked = state
+                    Enc_Boxes(i, j).Enabled = state
+
+                    'Always set the radio buttons as unchecked
+                    Dec_Rads(i, j).Checked = False
+                    Dec_Rads(i, j).Enabled = state
                 Next j
             Next i
+            '"All radio" button is always enabled and checked by default
+            Dec_All.Checked = True
+            Dec_All.Enabled = True
 
-            'Handle dummy checkbox states
+
+            'Handle dummy checkbox/chk states
             state = THPHasPad()
-            Dum.Checked = state
-            Dum.Enabled = state
+            Enc_Dum.Checked = state
+            Enc_Dum.Enabled = state
+            Dec_Dum.Checked = False 'Dummy is never set by default
+            Dec_Dum.Enabled = state
 
             'Handle wav checkbox states
             state = BoolStrToBool(txtA_A.Text)    'If "True" then true
             'Update the wav checkbox states
-            Wav.Checked = state
-            Wav.Enabled = state
+            Enc_Wav.Checked = state
+            Enc_Wav.Enabled = state
 
-            'Handle the multiplicity box (the m values)
+            'Handle the multiplicity box (the m values), and mult for time ripping
             'If only m=1, then "_1", else "_1\nto\nM"
-            If m = 1 Then txtTE_M.Text = "_1" Else txtTE_M.Text = "_1" & strNL & "to" & strNL & "_" & m.ToString()
-            'Update the text
-            txtTE_F.Text = txtVF_S.Text
+            If m = 1 Then
+                txtTE_M.Text = "_1"
+
+                'Set range to 0 to 1. 0=all frames (no suffixes), 1=only frame (_1 suffix, for naming convention nitpickery)
+                nudTD_M.Minimum = 0
+                nudTD_M.Maximum = 1
+            Else
+                'Update the text multi box
+                txtTE_M.Text = "_1" & strNL & "to" & strNL & "_" & m.ToString()
+                txtTE_F.Text = txtVF_S.Text
+
+                'Update the time rip NUD
+                nudTD_M.Minimum = 0
+                nudTD_M.Maximum = m
+            End If
         Catch ex As Exception
             MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in HandleArrState()!")
         End Try
@@ -1719,7 +2113,7 @@ Public Class Main
         Dim cnt As UShort = 0                                               'Amount of files
         Try
             'If folder exists
-            If Directory.Exists(Folder) Then                
+            If Directory.Exists(Folder) Then
                 Dim Files() As String = Directory.GetFiles(Folder, type)    'Get array of files meeting spec
                 cnt = Files.Count()                                         'Get count of files meeting spec
             End If
