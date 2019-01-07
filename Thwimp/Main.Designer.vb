@@ -52,7 +52,6 @@ Partial Class Main
         Me.chkTE_B4 = New System.Windows.Forms.CheckBox()
         Me.chkTE_B5 = New System.Windows.Forms.CheckBox()
         Me.grpTHPDec = New System.Windows.Forms.GroupBox()
-        Me.chkRip_Type = New System.Windows.Forms.CheckBox()
         Me.grpTHPDec_Crop = New System.Windows.Forms.GroupBox()
         Me.txtTD_S = New System.Windows.Forms.Label()
         Me.radTD_All = New System.Windows.Forms.RadioButton()
@@ -164,6 +163,7 @@ Partial Class Main
         Me.ofdRip = New System.Windows.Forms.OpenFileDialog()
         Me.ofdOutput = New System.Windows.Forms.FolderBrowserDialog()
         Me.LoadiView = New System.Windows.Forms.OpenFileDialog()
+        Me.chkRipDumF = New System.Windows.Forms.CheckBox()
         Me.TabTHP.SuspendLayout()
         Me.grpTHPEnc.SuspendLayout()
         CType(Me.nudTE_jpgq, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -524,7 +524,6 @@ Partial Class Main
         '
         'grpTHPDec
         '
-        Me.grpTHPDec.Controls.Add(Me.chkRip_Type)
         Me.grpTHPDec.Controls.Add(Me.grpTHPDec_Crop)
         Me.grpTHPDec.Controls.Add(Me.btnRip)
         Me.grpTHPDec.Controls.Add(Me.chkRip_DSound)
@@ -537,19 +536,9 @@ Partial Class Main
         Me.grpTHPDec.TabStop = False
         Me.grpTHPDec.Text = "THP Viewer/Ripper"
         '
-        'chkRip_Type
-        '
-        Me.chkRip_Type.AutoSize = True
-        Me.chkRip_Type.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.chkRip_Type.Location = New System.Drawing.Point(6, 37)
-        Me.chkRip_Type.Name = "chkRip_Type"
-        Me.chkRip_Type.Size = New System.Drawing.Size(99, 21)
-        Me.chkRip_Type.TabIndex = 1
-        Me.chkRip_Type.Text = "Rip to MP4"
-        Me.chkRip_Type.UseVisualStyleBackColor = True
-        '
         'grpTHPDec_Crop
         '
+        Me.grpTHPDec_Crop.Controls.Add(Me.chkRipDumF)
         Me.grpTHPDec_Crop.Controls.Add(Me.txtTD_S)
         Me.grpTHPDec_Crop.Controls.Add(Me.radTD_All)
         Me.grpTHPDec_Crop.Controls.Add(Me.radTD_Dum)
@@ -952,7 +941,7 @@ Partial Class Main
         Me.chkRip_DSound.Checked = True
         Me.chkRip_DSound.CheckState = System.Windows.Forms.CheckState.Checked
         Me.chkRip_DSound.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.chkRip_DSound.Location = New System.Drawing.Point(6, 14)
+        Me.chkRip_DSound.Location = New System.Drawing.Point(6, 40)
         Me.chkRip_DSound.Name = "chkRip_DSound"
         Me.chkRip_DSound.Size = New System.Drawing.Size(116, 21)
         Me.chkRip_DSound.TabIndex = 0
@@ -1798,6 +1787,20 @@ Partial Class Main
         Me.LoadiView.Filter = "Irfanview Executable|i_view32.exe"
         Me.LoadiView.InitialDirectory = "C:\Program Files (x86)"
         '
+        'chkRipDumF
+        '
+        Me.chkRipDumF.AutoCheck = False
+        Me.chkRipDumF.AutoSize = True
+        Me.chkRipDumF.Enabled = False
+        Me.chkRipDumF.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.chkRipDumF.Location = New System.Drawing.Point(23, 144)
+        Me.chkRipDumF.Name = "chkRipDumF"
+        Me.chkRipDumF.Size = New System.Drawing.Size(77, 38)
+        Me.chkRipDumF.TabIndex = 65
+        Me.chkRipDumF.TabStop = False
+        Me.chkRipDumF.Text = "Dum" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "Frames"
+        Me.chkRipDumF.UseVisualStyleBackColor = True
+        '
         'Main
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(8.0!, 16.0!)
@@ -1952,7 +1955,6 @@ Partial Class Main
     Friend WithEvents lblTE_D As System.Windows.Forms.Label
     Friend WithEvents chkTE_Dum As System.Windows.Forms.CheckBox
     Friend WithEvents PictureBox1 As System.Windows.Forms.PictureBox
-    Friend WithEvents chkRip_Type As System.Windows.Forms.CheckBox
     Friend WithEvents chkTE_wav As System.Windows.Forms.CheckBox
     Friend WithEvents txtTE_D As System.Windows.Forms.MaskedTextBox
     Friend WithEvents txtTE_F As System.Windows.Forms.MaskedTextBox
@@ -1990,4 +1992,5 @@ Partial Class Main
     Friend WithEvents radTD_Dum As System.Windows.Forms.RadioButton
     Friend WithEvents radTD_All As System.Windows.Forms.RadioButton
     Friend WithEvents txtTD_S As System.Windows.Forms.Label
+    Friend WithEvents chkRipDumF As System.Windows.Forms.CheckBox
 End Class

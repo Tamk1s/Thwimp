@@ -1,5 +1,5 @@
 ﻿'Thwimp - FOSS utility for ripping, viewing, and creating THP video files for Mario Kart Wii
-'Copyright (C) 2018 Tamkis
+'Copyright (C) 2018-2019 Tamkis
 
 'This program is free software: you can redistribute it and/or modify
 'it under the terms of the GNU General Public License as published by
@@ -14,13 +14,7 @@
 'You should have received a copy of the GNU General Public License
 'along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '
-'Email: tamkis@eaglesoftltd.com
-
-
-'!@ Bugs to fix later:
-'1. Apparently control ripping is off by 2 frames for cup_select.
-'   This may be an error by N* in the video itself?
-'   Just use the appropriate dummy files provided in the project archive for now
+'Email: tamkis[at]eaglesoftltd.com
 
 Imports System.IO
 Imports System.Runtime.InteropServices
@@ -369,8 +363,6 @@ Public Class Main
 
             'Prepare THPEnc/Dec fields
             HandleArrState()                                'Show naming conventions for this THP file
-            chkRipString()                                  'Update THPEnc rip type text
-            chkRipValues()                                  'Update the default THPEnc Crop values based on the chkRip type value
             HandleRipTimeMasks()                            'Updates the masks for the start/end lengths for ripping (time)
             txtTE_D.Text = txtVF_T.Text.Length.ToString()   'Set default value in THPEnc for digits, based on the string.length of the video's total frames
         Catch ex As Exception
@@ -523,6 +515,7 @@ Public Class Main
             Dim startInfo As ProcessStartInfo
             startInfo = New ProcessStartInfo
 
+            'Bug info: https://forum.videohelp.com/threads/388189-ffplay-WASAPI-can-t-initialize-audio-client-error
             'If DirectSound option checked, set SDL_AUDIODRIVE = directsound. This is a workaround to a ffmpeg bug to allow audio
             If chkRip_DSound.Checked = True Then
                 'https://social.msdn.microsoft.com/Forums/vstudio/en-US/a18210d7-44f4-4895-8bcc-d3d1d26719e5/setting-environment-variable-from-vbnet?forum=netfxbcl
@@ -561,7 +554,7 @@ Public Class Main
             Dim newFile As String = FileAndExt(cmbTHP.Text)     'New file. "Filename.thp" from inFile
             Dim file As String = ""
             Dim file2 As String = ""
-            Dim type As Boolean = chkRip_Type.Checked           'Type of ripping to do. False=MP4(+WAV), True=MP4(+Wav)+Dummy
+            Dim type As Boolean = chkRipDumF.Checked            'Type of ripping to do. True=Rip dummy frames
             newFile = newFile.Replace(".thp", "")               'Remove extension from newFile, just get filename-ext
 
             Dim suffix As String = GetCellFrameName()           'Suffix for cell name (if any)
@@ -592,11 +585,24 @@ Public Class Main
             Dim _start As UShort = txtTD_FS.Text                'frame start
             Dim _end As UShort = txtTD_FE.Text                  'frame end
 
+            'User-error:
+            'If chkRipDumF is checked (therefore, multiplicity=0 and Dum radio button),
+            'and start/end frames do not match THP vids' min/max, throw error.
+            'This will force users to set those values as such, to ensure ripping of dummy frames work
+            'I'm lazy :P
+            If type = True Then
+                Dim min As UShort = 1
+                Dim max As UShort = TryParseErr_UShort(txtVF_T.Text)
+                If _start <> min Or _end <> max Then
+                    Throw New System.Exception("When ripping the dummy frames with a multiplicity of 0, please ensure the start/end timeframe values equal the THP video's min/max frame values! This will allow proper ripping of each unique dummy frame for each multiplicity.")
+                End If
+            End If
+
             'Step 1: Convert THP to temp MP4. Encoded THP to H264 MP4 with crop filter
             '"C:\FFMPegPath\ffmpeg.exe"
             cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT
             ' -i C:\PathToTHP\DIRtoTHP\file.thp -vcodec h264 -y -filter:v "crop=out_w:out_h:x:y" "C:\OutputDir\output.mp4"
-            cmd &= " -i " & strQUOT & inFile & strQUOT & " -vcodec h264 -y -filter:v " & strQUOT & "crop=" & w & ":" & h & ":" & x & ":" & y & strQUOT & " " & strQUOT & tempFile & strQUOT
+            cmd &= " -y -i " & strQUOT & inFile & strQUOT & " -vcodec h264 -filter:v " & strQUOT & "crop=" & w & ":" & h & ":" & x & ":" & y & strQUOT & " " & strQUOT & tempFile & strQUOT
 
             'Run the cmd
             Dim startInfo As ProcessStartInfo
@@ -640,17 +646,19 @@ Public Class Main
                 '"C:\FFMPegPath\FFMPEG.exe"
                 cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT
                 ' -i "C:\PathToTHP\DIRtoTHP\file.thp" -vn "C:\OutputDir\file.wav"
-                cmd &= " -i " & strQUOT & inFile & strQUOT & " -vn " & strQUOT & outFile.Replace(".mp4", ".wav") & strQUOT
-
+                cmd &= " -y -i " & strQUOT & inFile & strQUOT & " -vn "
+                cmd &= strQUOT & outPath & FileAndExt(inFile).Replace(".thp", ".wav") & strQUOT
                 'Run the cmd
                 startInfo.FileName = cmd
                 shell.StartInfo = startInfo
                 shell.Start()
                 shell.WaitForExit()
+
+
             End If
 
             If type = True Then
-                'If ripping MP4(+wav)+dummy ctrl frames.
+                'If ripping dummy ctrl frames.
                 'Convert the cropped MP4 file (cropped to the ctrl area) to bmp frames ("dummyTemp_%0Nd.bmp"),
                 'Keep only 1st frame for each multiplicty, rename to "dummy_N.bmp", delete excess frames
 
@@ -708,66 +716,6 @@ Public Class Main
             MsgBox("Video ripped!", MsgBoxStyle.Information, "Success!")
         Catch ex As Exception
             MsgBox(ex.Message, MsgBoxStyle.Critical, "Error during ripping!")
-        End Try
-    End Sub
-
-
-    Private Sub chkRip_Type_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRip_Type.CheckedChanged
-        'Update the rip type string and crop values onCheck of chkRip
-        chkRipString()
-        chkRipValues()
-    End Sub
-    ''' <summary>
-    ''' Changes the default rip values for the Crop box based on the chkRip type checkbox state
-    ''' </summary>
-    ''' <remarks></remarks>
-    Private Sub chkRipValues()
-        Try
-            If chkRip_Type.Checked = True Then
-                'If ripping MP4(+WAV) and dummies
-                Dim size As Dims                                                'Size of the crop area
-                Dim pos As Dims                                                 'Position of the TL corner of crop area            
-                size.width = TryParseErr_UShort(txtVP_W.Text)                   'Width = Padding width
-                size.height = TryParseErr_UShort(txtVP_H.Text)                  'Height = Padding height
-                pos.width = 0                                                   'Start at x=0
-                pos.height = TryParseErr_UShort(txtTDims_H.Text) - size.height  'Start at y=Total video height - padding height
-
-                'Set the values into the text boxes as appropriately (xpos, ypos, width, height
-                txtTD_CX.Text = pos.width
-                txtTD_CY.Text = pos.height
-                txtTD_CW.Text = size.width
-                txtTD_CH.Text = size.height
-            Else
-                'If ripping just MP4(+wav)
-                'Set the values into the text boxes as appropriately (xpos=0, ypos=0, width=total vid width, height=total vid height).
-                'Rips whole video, no cropping
-                txtTD_CX.Text = 0
-                txtTD_CY.Text = 0
-                txtTD_CW.Text = txtTDims_W.Text
-                txtTD_CH.Text = txtTDims_H.Text
-            End If
-        Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Erorr in chkRipValues()!")
-        End Try
-    End Sub
-    ''' <summary>
-    ''' Changes text of Rip type check box as appropriately
-    ''' </summary>
-    ''' <remarks></remarks>
-    Private Sub chkRipString()
-        Try
-            Dim hasPad As Boolean = THPHasPad()                                                 'Does THP video has padding?
-
-            'If doesn't have padding and the chkbox is checked, force box to unset (just MP4/WAV)
-            If hasPad = False And chkRip_Type.Checked = True Then chkRip_Type.Checked = False
-
-            Dim hasAudio As Boolean = THPHasAudio()
-            Dim strFalse As String = "Rip to" & strNL & "MP4"                  'String to use when check box is false ("Rip to\nMP4" by default)
-            If hasAudio = True Then strFalse = "Rip to" & strNL & "MP4+WAV" '  'If video has audio, change false string to "Rip to\nMP4+WAV"
-            Dim strTrue As String = strFalse & "," & strNL & "dummy"           'String to use when check box is true. This will be the false string + ",\nDummy" for dummy ripping7
-            ChkString(strTrue, strFalse, chkRip_Type)                       'Change the checkbox text as appropriately based on state
-        Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in chkRipString()!")
         End Try
     End Sub
 
@@ -880,7 +828,7 @@ Public Class Main
         nudTD_M_ChangeMe()
     End Sub
     ''' <summary>
-    ''' Updates the default start/end frame rip values when the multiplicity NUD is changed, and the chkRipM value
+    ''' Updates the default start/end frame rip values when the multiplicity NUD is changed, the chkRipM value, and the chkRipDumF value
     ''' </summary>
     ''' <remarks></remarks>
     Private Sub nudTD_M_ChangeMe()
@@ -901,11 +849,13 @@ Public Class Main
 
             'Zero is special case meaning to rip all frames (frame 1 to total)
             Dim singleM As Boolean = True                           'Rip only one multiplicity?
+            Dim dumF As Boolean = False                             'Rip dummy frames?
             If m = 0 Then singleM = False 'If m=0, ripping multiple Ms
             If singleM = False Then
                 'Set range from 1 to final frame
                 _start = 1
                 _end = TryParseErr_Single(txtVF_T.Text)
+                If radTD_Dum.Checked = True Then dumF = True 'If dummy rad is checked, then set dumF flag
             Else
                 mb = nudTD_M.Value                                  'mult index in box
                 ma = mb - 1                                         'index-- (0-based mult index)
@@ -917,8 +867,9 @@ Public Class Main
                 If SingleBugfix = False Then _end = _end - 1
             End If
 
-            'Update the start/frame text values, chkRipM state/text
+            'Update the start/end frame text values, chkRipM state/text, chkRipDumF
             chkRipM_Change(singleM)
+            chkRipDumF.Checked = dumF
             txtTD_FS.Text = _start.ToString()
             txtTD_FE.Text = _end.ToString()
         Catch ex As Exception
@@ -932,13 +883,8 @@ Public Class Main
     ''' <param name="val">New state</param>
     ''' <remarks></remarks>
     Private Sub chkRipM_Change(ByVal val As Boolean)
-        Dim s As String = ""        'Da string to set to
-        Dim f As String = "All"     'false string
-        Dim t As String = "Single"  'true string
-        chkRipM.Checked = val       'Set state to value
-
-        If val = False Then s = f Else s = t 'Get right string
-        chkRipM.Text = s                     'Set new string
+        chkRipM.Checked = val
+        ChkString("Single", "All", chkRipM)
     End Sub
 
     ''' <summary>
@@ -1024,12 +970,14 @@ Public Class Main
     End Sub
     Private Sub radTD_B6_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles radTD_B6.CheckedChanged
         If radTD_B6.Checked = True Then HandleTimeFrameCell(6, 2, 0)
-    End Sub
-    Private Sub radTD_Dum_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles radTD_Dum.CheckedChanged
-        If radTD_Dum.Checked = True Then HandleTimeFrameCell(0, 0, -1)
-    End Sub
+    End Sub    
     Private Sub radTD_All_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles radTD_All.CheckedChanged
         If radTD_All.Checked = True Then HandleTimeFrameCell(0, 0, 1)
+    End Sub
+
+    Private Sub radTD_Dum_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles radTD_Dum.CheckedChanged
+        If radTD_Dum.Checked = True Then HandleTimeFrameCell(0, 0, -1)
+        nudTD_M_ChangeMe()  'Additionally force-run this, to set the chkRipDumF box if necessary
     End Sub
 
     ''' <summary>
