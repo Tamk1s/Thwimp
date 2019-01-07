@@ -75,6 +75,7 @@ It was created in order to help MKWii modders to create high-quality, original T
     		- Position of white rectangle determines which row (which track) is highlighted in the menus when a cup is selected
 
 ![cup_select.thp](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/cup_select.png)
+
 After doing what this program does for my projects (manually and painfully via batch files), I created Thwimp in order to automate the THP creation process for complex videos like the ones above. The application was used to create the custom THPs in my [Hover Pack project](http://wiki.tockdom.com/wiki/Hover_Pack)
 
 
@@ -95,6 +96,8 @@ As mentioned earlier, Thwimp uses some FOSS and other Command Line tools for pro
 
 Before doing **anything** in the utility, goto the "Options" tab of the application and set your paths. Do this by clicking the "Browse" buttons beside each item and navigating to the appropriate places with the file dialog boxes that appear.
 
+![Options](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/Options.png)
+
 **Paths to set:**
 1. THP Root
 	- Path containing the original Nintendo THP video files for viewing/ripping
@@ -113,8 +116,6 @@ Before doing **anything** in the utility, goto the "Options" tab of the applicat
     - A command line tool used to encode jpg frames and a wav file into a Nintendo THP video. 
     - **Do not ask me where to obtain this!**
 
-![Options](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/Options.png)
-
 The "About" button displays information about the current build of this application. After setting all of your paths, the elements in the "THP" tab will be available!
 
 ![About](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/About.png)
@@ -126,6 +127,8 @@ At the top of the THP tab will be a dropdown box. Use this to select which THP f
 #### THP Info:
 
 The "THP Info" group box gives statistical information about each original, Nintendo THP video in Mario Kart Wii. You will need this information in order to create appropriately formatted input files for THP encoding!
+
+![THP Info](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/THP.png)
 
 **Video:**
  - Total dims
@@ -197,11 +200,11 @@ The "THP Info" group box gives statistical information about each original, Nint
 	- How the THP video is formatted
 	- THP file's usage/purpose in-game
 
-![THP Info](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/THP.png)
-
 #### THP Viewer/Ripper
 
 The "THP Viewer/Ripper" group box allows one to view/convert the THP to audio/video files. This group box has the following settings/form elements:
+
+![THP Viewer/Ripper](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/THP.png)
 
 - "DirectSound?" checkbox
 	- Use DirectSound as the SDL_SOUNDDRIVER value for audio playback?
@@ -256,8 +259,6 @@ The "THP Viewer/Ripper" group box allows one to view/convert the THP to audio/vi
 				- Indicates if unique dummy frames will be ripped as BMP files
 				- Only enabled when the "Dum" radio button is selected
 
-![THP Viewer/Ripper](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/THP.png)
-
 Tweak the settings as appropriately and use the "View" or "Rip" buttons to play a THP or convert it, respectively. Pressing the "rip" button will ask the user to select an output directory and base filename for the converted files; by default, the path is at the location of the original THP, and the filename is "[thp_filename]_suffix", where suffix is the appropriate one based on the A1N naming notation for the input files used for encoding (see "THP Encoder section"). If the original THP video has an audio stream, it will automatically be ripped with an crop setting option and named appropriately. Dummy/control frames will be ripped automatically and named appropriately if the THP video has padding/control frames, if the "Dum" radio button is selected, if the multiplicity is set to 0, and if the start/end frame values are set to the original video's min/max values.
 
 **Files are ripped from THP video files in the following formats:**
@@ -283,6 +284,8 @@ The input files have a base filename of [thp_filename].ext . Videos should have 
 Consider if we have a THP video file (named "test.thp") that is a 2x2 array of subvideos with 3 multiplicities, padding, and audio. For the 1st multiplicity, the top left subvideo will be named "test_A1_1.mp4", the top right "test_B1_1.mp4", the bottom left "test_A2_1.mp4", and the bottom right "test_B2_1.mp4" . For the 2nd multiplicity, these same subvideos would be named "test_A1_2.mp4", "test_B1_2.mp4", and so on. The audio file is applied to the entire THP video, and would be named "test.wav" . The padding frames are named slightly different. The frame for the 1st multiplicity would be "dummy_1.bmp", the 2nd "dummy_2.bmp", and so on. The subvideos for each multiplicity should have the same dimensions as shown in the "subvid dims" fields and have the same, appropriate amount of frames. The padding should have the same dimensions as shown in the "Subvid dims" group box, and be formatted as described in the "Ctrl desc" field.
 
 ![Naming Convention scheme](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/naming_test_thp.png)
+
+![THP Encoder](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/THP.png)
   
 - **THP Encoder settings:**
 	- Trunc Frame
@@ -310,13 +313,11 @@ Consider if we have a THP video file (named "test.thp") that is a 2x2 array of s
 				- High visual quality
 				- Low streaming bandwidth quality
 				- (Large THP filesize, less artifacts)
-		
-![THP Encoder](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/THP.png)
 
 After setting your encoding settings, and clicking the "Encode" button, you will need to select the folder containing your appropriately named input files. The encoder will then begin processing your files; this will take some time. Make sure to have **significant amount free disk space** (a few GBs should be safe); some of the operations may produce a **large** amount of temporary files! After conversion, you will have a thp file in the input folder (named [thp_filename].thp), and all temporary files will be cleaned up!
 
 ##### **Streaming bandwidth notes:**
-An **very** important note about the JPG quality, final THP filesize, and video streaming. Odds are the THPs you will be creating will be used for either a [Riivolution](http://wiki.tockdom.com/wiki/Riivolution) filepatch or a [MKWiiki "My Stuff" mod](http://wiki.tockdom.com/wiki/My_Stuff) from the SD Card. Experimentation has shown that streaming THP videos from SD Card has a much smaller bandwidth than when streaming from DVD. You may notice when playing a THP video from SD Card that the video will stutter (both audibly and visually) when there is too much action during certain frames of video playback. (To test this fact out yourself, copy MKWii's original title.thp file into your "My Stuff" folder, in order to patch the DVD game to read that file from SD Card instead. You will notice video playback for the title video will stutter and lag when too much action occurs , due to lower data bandwidth on the SD Card. This experiment was tested with a [4GB Lexar SDHC Card](https://www.digitalcamerawarehouse.com.au/lexar-sdhc-card-4gb-class-4), the type that come with Original Nintendo 3DS XLs).
+A **very** important note about the JPG quality, final THP filesize, and video streaming. Odds are the THPs you will be creating will be used for either a [Riivolution](http://wiki.tockdom.com/wiki/Riivolution) filepatch or a [MKWiiki "My Stuff" mod](http://wiki.tockdom.com/wiki/My_Stuff) from the SD Card. Experimentation has shown that streaming THP videos from SD Card has a much smaller bandwidth than when streaming from DVD. You may notice when playing a THP video from SD Card that the video will stutter (both audibly and visually) when there is too much action during certain frames of video playback. (To test this fact out yourself, copy MKWii's original title.thp file into your "My Stuff" folder, in order to patch the DVD game to read that file from SD Card instead. You will notice video playback for the title video will stutter and lag when too much action occurs , due to lower data bandwidth on the SD Card. This experiment was tested with a [4GB Lexar SDHC Card](https://www.digitalcamerawarehouse.com.au/lexar-sdhc-card-4gb-class-4), the type that come with Original Nintendo 3DS XLs).
 
 In order to reduce lagging from too much bandwidth, use the JPG Quality field to generate JPG video frames with a good balance between visual quality and compression. Higher compression will lead to smaller overall THP video sizes, and to less data bandwidth being used to stream the video file (and thus smoother playback). You may also be able to get better playback quality with higher performance SD cards that are compatible with the Wii; however, do try to create THP files that would play well on lower performance SD cards, in order to cover high-quality playback for the least common denominator. For better performance, you can try burning your mod files and THPs to a DVD (via an [ISO Patcher](http://wiki.tockdom.com/wiki/ISO_Patcher)). Also of importance is keeping the THP filesize down. Some THP files from the original game will only accept replacement files so large (for example, during the creation of my Hover Pack, battle_retro.thp crashed in-game when it was ~300MB large). Most replacement THP files should work with a total frame size > than the original to an extent. Some with a total frame length < than the original may need padded or looped to the original frame count. (Example, title.thp must be the same frame count; using a shorter video than the original will loop, and a longer one will cut out prematurely.)
 
