@@ -3,6 +3,7 @@
 ![Thwimp logo](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/Thwimp/Resources/thwimp.png)
 
 By [Tamkis/EagleSoft Ltd.](http://www.eaglesoftltd.com)
+
 [Thwimp Project Page](http://www.eaglesoftltd.com/retro/Nintendo-Wii/thwimp)
 
 ## Table of contents
