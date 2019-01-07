@@ -402,7 +402,7 @@ Development of the 1st release was from October 19-23, 2018. It was based on my 
 ## 6. Known Issues
  - Encoding THP videos may get desynced
  	- Read "Streaming bandwidth notes" subsection in Section 3 (How to use it) about this issue.
- - Trimming a THP video and then it with audio will not have the audio file trimmed.
+ - Trimming a THP video and then ripping it with audio will not have the audio file trimmed.
 	- Feature not planned to be implemented. (Not easy to do with FFMPEG)
  
 ## 7. Credits:
