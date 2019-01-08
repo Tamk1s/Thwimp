@@ -10,7 +10,7 @@ By [Tamkis/EagleSoft Ltd.](http://www.eaglesoftltd.com)
 
 [Video of latest version](https://youtu.be/WMLOtY16AtA)
 
-[v1.1/Video tutorial](https://youtu.be/IINyrm6pJBg)
+[v1.0/Video tutorial](https://youtu.be/IINyrm6pJBg)
 
 
 ## Table of contents
