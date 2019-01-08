@@ -5,6 +5,9 @@
 By [Tamkis/EagleSoft Ltd.](http://www.eaglesoftltd.com)
 
 [Thwimp Project Page](http://www.eaglesoftltd.com/retro/Nintendo-Wii/thwimp)
+[MKWiiki article](http://wiki.tockdom.com/wiki/Thwimp)
+[Video of latest version](https://youtu.be/WMLOtY16AtA)
+[v1.1/Video tutorial](https://youtu.be/IINyrm6pJBg)
 
 ## Table of contents
 
