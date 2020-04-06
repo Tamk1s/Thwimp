@@ -456,6 +456,24 @@ Public Class Main
     End Sub
 
     ''' <summary>
+    ''' Handles loading the FFPlay working directory
+    ''' </summary>
+    ''' <param name="sender"></param>
+    ''' <param name="e"></param>
+    ''' <remarks></remarks>
+    Private Sub btnBrowseFFPlayTemp_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnBrowseFFPlayTemp.Click
+        Try
+            'Load the LoadFFPlayWork Load Dialog Box, user selects working directory
+            'If txtRoot.Text <> Nothing Then LoadFFPlayWork.RootFolder = txtRoot.Text
+            If LoadFFPlayWork.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
+            txtFFPlayTemp.Text = LoadFFPlayWork.SelectedPath    'Dump the path into the textbox, for later retrieval
+            CheckPathsSet()                                     'Handle enabling THP Tab
+        Catch ex As Exception
+            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btnBrowseFFPlayTemp_Click!")
+        End Try
+    End Sub
+
+    ''' <summary>
     ''' Handles loading the THPConv exe file
     ''' </summary>
     ''' <param name="sender"></param>
@@ -478,7 +496,7 @@ Public Class Main
     ''' <remarks></remarks>
     Private Sub CheckPathsSet()
         'Options det to be filled if something
-        If (txtRoot.Text <> Nothing) And (txtFFMpeg.Text <> Nothing) And (txtiView.Text <> Nothing) And (txtTHPConv.Text <> Nothing) Then
+        If (txtRoot.Text <> Nothing) And (txtFFMpeg.Text <> Nothing) And (txtiView.Text <> Nothing) And (txtTHPConv.Text <> Nothing) And (txtFFPlayTemp.Text <> Nothing) Then
             'Make everything in the THP tab visible now (THPFile lable and combo box, whole THP Info group box)
             lblTHPFile.Visible = True
             cmbTHP.Visible = True
@@ -523,20 +541,169 @@ Public Class Main
                 startInfo.EnvironmentVariables("SDL_AUDIODRIVER") = "directsound"
             End If
 
-            Dim cmd As String = strQUOT & txtFFMpeg.Text & strBAK & exeFPlay & strQUOT  'FFPlay command "C:\FDIR\ffplay.exe"
-            Dim args As String = strQUOT & txtRoot.Text & cmbTHP.Text & strQUOT         'Arguments for FFPLlay "C:\Path\to\THPRoot\file.THP"
+            'audio/video filter data
+            Dim type As Boolean = chkRipDumF.Checked            'Type of ripping to do. True=Rip dummy frames
+            Dim x As String = txtTD_CX.Text                     'Crop xpos
+            Dim y As String = txtTD_CY.Text                     'Crop ypos
+            Dim w As String = txtTD_CW.Text                     'Crop width
+            Dim h As String = txtTD_CH.Text                     'Crop height
+            Dim _start As UShort = txtTD_FS.Text                'frame start
+            Dim _end As UShort = txtTD_FE.Text                  'frame end
+            Dim FPS As Single = txtVC_F.Text                    'FPS
 
-            'Run the cmd
-            startInfo.FileName = cmd & args
-            startInfo.UseShellExecute = False
+            'Audio info. In seconds (so start/end pt /FPS = seconds)
+            Dim _aStart As Single = _start / FPS                'audio start
+            Dim _aEnd As Single = _end / FPS                    'audio end
+
+            'User-error:
+            'If chkRipDumF is checked (therefore, multiplicity=0 and Dum radio button),
+            'and start/end frames do not match THP vids' min/max, throw error.
+            'This will force users to set those values as such, to ensure ripping of dummy frames work
+            'I'm lazy :P
+            If Type = True Then
+                Dim min As UShort = 1
+                Dim max As UShort = TryParseErr_UShort(txtVF_T.Text)
+                If _start <> min Or _end <> max Then
+                    Throw New System.Exception("When ripping the dummy frames with a multiplicity of 0, please ensure the start/end timeframe values equal the THP video's min/max frame values! This will allow proper ripping of each unique dummy frame for each multiplicity.")
+                End If
+            End If
+
+            Dim cmd As String   'EXE cmd
+            'File reg 1-3
+            Dim file As String
+            Dim file2 As String
+            Dim file3 As String
+            'Arguments
+            Dim args As String
+            'Shell process
             Dim shell As Process
-            shell = New Process
-            shell.StartInfo = startInfo
-            shell.Start()
-            shell.WaitForExit()
-            shell.Close()
+
+            Dim hasAudio As Boolean = THPHasAudio()
+            If hasAudio = False Then
+                'If THP does not have audio
+
+                'Just Playback file using crop settings and time frame settings
+                cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFPlay & strQUOT  'FFPlay command: "C:\FDIR\ffplay.exe"
+                file = " " & strQUOT & txtRoot.Text & cmbTHP.Text & strQUOT   'input file: "C:\THPDIR\file.THP"
+
+                'Arguments: input_file + -vf "crop=w:h:x:y,select=between(n\,start_frame\,end_frame),setpts=PTS-STARTPTS" & strQUOT
+                args = file & " -vf " & strQUOT & "crop=" & w & ":" & h & ":" & x & ":" & y & ",select=between(n" & strBAK & "," & _start & strBAK & "," & _end & "),setpts=PTS-STARTPTS" & strQUOT
+
+                'Run the cmd+args
+                startInfo.FileName = cmd & args
+                startInfo.UseShellExecute = False
+                shell = New Process
+                shell.StartInfo = startInfo
+                shell.Start()
+                shell.WaitForExit()
+                shell.Close()
+            Else
+                'If THP has audio, we must rip/convert audio and video streams as MP4
+                'with crop/time frame settings applied, and then re-merge for playback
+
+                'Has to be done like this, due to not FOSS THP encoder in FFMPEG/PLAY available
+                '(Thanks, N1nt3nd0 :( )
+
+                'Precise synchronized AV cutting:
+                'https://superuser.com/q/866144
+
+                'Playback steps:
+
+                'Step 1: Rip video only as mp4 (FFMPEG)
+                'Step 2: Rip audio only as mp4 (FFMPEG)
+                'Step 3: Merge both mp4 streams (FFMPEG)
+                'Step 4: playback final temp video (FFPLAY)
+
+                'Step 1: Rip video only as mp4 (FFMPEG)
+                'ffmpeg -i video.thp -y -an -vcodec h264 -vf "crop=w:h:x:y, select=between(n\,start_Frame\,end_frame),setpts=PTS-STARTPTS" video.mp4
+                cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT                    'FFMPEG command: "C:\FDIR\ffmpeg.exe"
+                file = strQUOT & txtRoot.Text & cmbTHP.Text & strQUOT                           'input file: "C:\THPDIR\file.THP"
+                file2 = strQUOT & txtFFPlayTemp.Text & strBAK & "video.mp4" & strQUOT           'Output file: "C:\THPPlayWorkDir\video.mp4"
+
+                'Args: -i input_file -y -an -vcodec h264 -vf "crop=w:h:x:y, select=between(n\,start_Frame\,end_frame),setpts=PTS-STARTPTS" output_File
+                args = " -i " & file & " -y -an -vcodec h264 -vf " & strQUOT & "crop=" & w & ":" & h & ":" & x & ":" & y & ",select=between(n" & strBAK & "," & _start & strBAK & "," & _end & "),setpts=PTS-STARTPTS" & strQUOT & " " & file2
+
+                'Run the cmd+args
+                startInfo.FileName = cmd & args
+                startInfo.UseShellExecute = False
+                shell = New Process
+                shell.StartInfo = startInfo
+                shell.Start()
+                shell.WaitForExit()
+                shell.Close()
+
+
+                'Step 2: Rip audio only as mp4 (FFMPEG)
+                'ffmpeg -i video.thp -vn -ss audio_Start -to audio_End audio.mp4
+                file2 = strQUOT & txtFFPlayTemp.Text & strBAK & "audio.mp4" & strQUOT   'output file: "C:\THPPlayWorkDir\audio.mp4"
+                'Args: -i input_file -vn -ss audio_Start -to audio_End output_file
+                'Note ToString("G9") format is the recommended one for "RoundTripping" a single
+                args = " -i " & file & " -y -vn -ss " & _aStart.ToString("G9") & " -to " & _aEnd.ToString("G9") & " " & file2
+
+                'Run the cmd+args
+                startInfo.FileName = cmd & args
+                startInfo.UseShellExecute = False
+                shell = New Process
+                shell.StartInfo = startInfo
+                shell.Start()
+                shell.WaitForExit()
+                shell.Close()
+
+
+                'Step 3: Merge both mp4 streams (FFMPEG)
+                'ffmpeg -i video.mp4 -i audio.mp4 -c:v copy -c:a copy temp.mp4
+                file = strQUOT & txtFFPlayTemp.Text & strBAK & "video.mp4" & strQUOT        'Input video file: "C:\FFPlayWorkDir\video.mp4"
+                file2 = strQUOT & txtFFPlayTemp.Text & strBAK & "audio.mp4" & strQUOT       'Input audio file: "C:\FFPlayWorkDir\audio.mp4"
+                file3 = strQUOT & txtFFPlayTemp.Text & strBAK & "temp.mp4" & strQUOT        'Output final video file: "C:\FFPlayWorkDir\temp.mp4"
+                args = " -i " & file & " -i " & file2 & " -y -c:v copy -c:a copy " & file3  'Args: -i video_input -i audio_input -c:v copy -c:a copy output_file
+
+                startInfo.FileName = cmd & args
+                startInfo.UseShellExecute = False
+                shell = New Process
+                shell.StartInfo = startInfo
+                shell.Start()
+                shell.WaitForExit()
+                shell.Close()
+
+
+                'Step 4: playback final video
+                'ffplay.exe "temp.mp4"
+                cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFPlay & strQUOT                'FFPlay command: "C:\FDIR\ffplay.exe"
+                file = " " & strQUOT & txtFFPlayTemp.Text & strBAK & "temp.mp4" & strQUOT   'Playback file: "C:\FFPlayWorkDir\temp.mp4"
+
+                startInfo.FileName = cmd & file
+                startInfo.UseShellExecute = False
+                shell = New Process
+                shell.StartInfo = startInfo
+                shell.Start()
+                shell.WaitForExit()
+                shell.Close()
+            End If
         Catch ex As Exception
             MsgBox(ex.Message, MsgBoxStyle.Critical, "Error during playback!")
+        End Try
+
+        'Cleanup temp playback files
+        CleanUp_Playback()
+    End Sub
+
+    ''' <summary>
+    ''' Cleanus up leftover FFPlay temp conversion playback files
+    ''' </summary>
+    ''' <remarks></remarks>
+    Private Sub CleanUp_Playback()
+        Try
+            'Delete "C:\FFPlayWorkDir\video.mp4", "\audio.mp4", and "temp.mp4" if exist
+
+            Dim FFPlayRoot As String = txtFFPlayTemp.Text & strBAK              'FFPlay directory
+            Dim File As String = strQUOT & FFPlayRoot & "video.mp4" & strQUOT   'Abs path to file to try deleting
+            If System.IO.File.Exists(File) Then My.Computer.FileSystem.DeleteFile(File)
+            File = strQUOT & FFPlayRoot & "audio.mp4" & strQUOT
+            If System.IO.File.Exists(File) Then My.Computer.FileSystem.DeleteFile(File)
+            File = strQUOT & FFPlayRoot & "temp.mp4" & strQUOT
+            If System.IO.File.Exists(File) Then My.Computer.FileSystem.DeleteFile(File)
+        Catch ex As Exception
+            MsgBox(ex.Message, MsgBoxStyle.Critical, "CleanUp_Playback error!")
         End Try
     End Sub
 
@@ -1699,6 +1866,9 @@ Public Class Main
                 If System.IO.File.Exists(File) Then My.Computer.FileSystem.DeleteFile(File)
                 File = Path & strBAK & "i_view32_temp.ini"
                 If System.IO.File.Exists(File) Then My.Computer.FileSystem.DeleteFile(File)
+
+                'Cleanup FFPLay playback
+                CleanUp_Playback()
             End If
         Catch ex As Exception
             MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in CleanUp!")

@@ -143,6 +143,9 @@ Partial Class Main
         Me.txtFDesc = New System.Windows.Forms.TextBox()
         Me.cmbTHP = New System.Windows.Forms.ComboBox()
         Me.TabOptions = New System.Windows.Forms.TabPage()
+        Me.lblFFPlayTemp = New System.Windows.Forms.Label()
+        Me.btnBrowseFFPlayTemp = New System.Windows.Forms.Button()
+        Me.txtFFPlayTemp = New System.Windows.Forms.TextBox()
         Me.btniView = New System.Windows.Forms.Button()
         Me.txtiView = New System.Windows.Forms.TextBox()
         Me.lbliView = New System.Windows.Forms.Label()
@@ -164,6 +167,7 @@ Partial Class Main
         Me.ofdRip = New System.Windows.Forms.OpenFileDialog()
         Me.ofdOutput = New System.Windows.Forms.FolderBrowserDialog()
         Me.LoadiView = New System.Windows.Forms.OpenFileDialog()
+        Me.LoadFFPlayWork = New System.Windows.Forms.FolderBrowserDialog()
         Me.TabTHP.SuspendLayout()
         Me.grpTHPEnc.SuspendLayout()
         CType(Me.nudTE_jpgq, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -1567,6 +1571,9 @@ Partial Class Main
         '
         'TabOptions
         '
+        Me.TabOptions.Controls.Add(Me.lblFFPlayTemp)
+        Me.TabOptions.Controls.Add(Me.btnBrowseFFPlayTemp)
+        Me.TabOptions.Controls.Add(Me.txtFFPlayTemp)
         Me.TabOptions.Controls.Add(Me.btniView)
         Me.TabOptions.Controls.Add(Me.txtiView)
         Me.TabOptions.Controls.Add(Me.lbliView)
@@ -1591,21 +1598,54 @@ Partial Class Main
         Me.TabOptions.Text = "Options"
         Me.TabOptions.UseVisualStyleBackColor = True
         '
+        'lblFFPlayTemp
+        '
+        Me.lblFFPlayTemp.AutoSize = True
+        Me.lblFFPlayTemp.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lblFFPlayTemp.Location = New System.Drawing.Point(42, 89)
+        Me.lblFFPlayTemp.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
+        Me.lblFFPlayTemp.Name = "lblFFPlayTemp"
+        Me.lblFFPlayTemp.Size = New System.Drawing.Size(66, 34)
+        Me.lblFFPlayTemp.TabIndex = 47
+        Me.lblFFPlayTemp.Text = "FFPlay" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "WorkDir"
+        '
+        'btnBrowseFFPlayTemp
+        '
+        Me.btnBrowseFFPlayTemp.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnBrowseFFPlayTemp.Location = New System.Drawing.Point(448, 89)
+        Me.btnBrowseFFPlayTemp.Margin = New System.Windows.Forms.Padding(4)
+        Me.btnBrowseFFPlayTemp.Name = "btnBrowseFFPlayTemp"
+        Me.btnBrowseFFPlayTemp.Size = New System.Drawing.Size(97, 27)
+        Me.btnBrowseFFPlayTemp.TabIndex = 45
+        Me.btnBrowseFFPlayTemp.Text = "Br&owse"
+        Me.btnBrowseFFPlayTemp.UseVisualStyleBackColor = True
+        '
+        'txtFFPlayTemp
+        '
+        Me.txtFFPlayTemp.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.txtFFPlayTemp.Location = New System.Drawing.Point(116, 94)
+        Me.txtFFPlayTemp.Margin = New System.Windows.Forms.Padding(4)
+        Me.txtFFPlayTemp.Name = "txtFFPlayTemp"
+        Me.txtFFPlayTemp.ReadOnly = True
+        Me.txtFFPlayTemp.Size = New System.Drawing.Size(324, 22)
+        Me.txtFFPlayTemp.TabIndex = 46
+        Me.txtFFPlayTemp.TabStop = False
+        '
         'btniView
         '
         Me.btniView.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.btniView.Location = New System.Drawing.Point(448, 91)
+        Me.btniView.Location = New System.Drawing.Point(448, 127)
         Me.btniView.Margin = New System.Windows.Forms.Padding(4)
         Me.btniView.Name = "btniView"
         Me.btniView.Size = New System.Drawing.Size(97, 27)
         Me.btniView.TabIndex = 42
-        Me.btniView.Text = "Br&owse"
+        Me.btniView.Text = "Bro&wse"
         Me.btniView.UseVisualStyleBackColor = True
         '
         'txtiView
         '
         Me.txtiView.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.txtiView.Location = New System.Drawing.Point(116, 96)
+        Me.txtiView.Location = New System.Drawing.Point(116, 132)
         Me.txtiView.Margin = New System.Windows.Forms.Padding(4)
         Me.txtiView.Name = "txtiView"
         Me.txtiView.ReadOnly = True
@@ -1617,7 +1657,7 @@ Partial Class Main
         '
         Me.lbliView.AutoSize = True
         Me.lbliView.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lbliView.Location = New System.Drawing.Point(41, 99)
+        Me.lbliView.Location = New System.Drawing.Point(41, 135)
         Me.lbliView.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.lbliView.Name = "lbliView"
         Me.lbliView.Size = New System.Drawing.Size(72, 17)
@@ -1627,7 +1667,7 @@ Partial Class Main
         'PictureBox1
         '
         Me.PictureBox1.Image = CType(resources.GetObject("PictureBox1.Image"), System.Drawing.Image)
-        Me.PictureBox1.Location = New System.Drawing.Point(116, 320)
+        Me.PictureBox1.Location = New System.Drawing.Point(116, 334)
         Me.PictureBox1.Margin = New System.Windows.Forms.Padding(4)
         Me.PictureBox1.Name = "PictureBox1"
         Me.PictureBox1.Size = New System.Drawing.Size(324, 304)
@@ -1639,7 +1679,7 @@ Partial Class Main
         '
         Me.lblTHPConv.AutoSize = True
         Me.lblTHPConv.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblTHPConv.Location = New System.Drawing.Point(7, 134)
+        Me.lblTHPConv.Location = New System.Drawing.Point(7, 170)
         Me.lblTHPConv.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.lblTHPConv.Name = "lblTHPConv"
         Me.lblTHPConv.Size = New System.Drawing.Size(106, 17)
@@ -1649,7 +1689,7 @@ Partial Class Main
         'picOptions
         '
         Me.picOptions.Image = CType(resources.GetObject("picOptions.Image"), System.Drawing.Image)
-        Me.picOptions.Location = New System.Drawing.Point(313, 183)
+        Me.picOptions.Location = New System.Drawing.Point(313, 197)
         Me.picOptions.Margin = New System.Windows.Forms.Padding(4)
         Me.picOptions.Name = "picOptions"
         Me.picOptions.Size = New System.Drawing.Size(127, 112)
@@ -1660,7 +1700,7 @@ Partial Class Main
         'btnAbout
         '
         Me.btnAbout.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.btnAbout.Location = New System.Drawing.Point(116, 183)
+        Me.btnAbout.Location = New System.Drawing.Point(116, 197)
         Me.btnAbout.Margin = New System.Windows.Forms.Padding(4)
         Me.btnAbout.Name = "btnAbout"
         Me.btnAbout.Size = New System.Drawing.Size(127, 112)
@@ -1671,18 +1711,18 @@ Partial Class Main
         'btnBrowseTHPConv
         '
         Me.btnBrowseTHPConv.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.btnBrowseTHPConv.Location = New System.Drawing.Point(448, 126)
+        Me.btnBrowseTHPConv.Location = New System.Drawing.Point(448, 162)
         Me.btnBrowseTHPConv.Margin = New System.Windows.Forms.Padding(4)
         Me.btnBrowseTHPConv.Name = "btnBrowseTHPConv"
         Me.btnBrowseTHPConv.Size = New System.Drawing.Size(97, 27)
         Me.btnBrowseTHPConv.TabIndex = 2
-        Me.btnBrowseTHPConv.Text = "Bro&wse"
+        Me.btnBrowseTHPConv.Text = "Brow&se"
         Me.btnBrowseTHPConv.UseVisualStyleBackColor = True
         '
         'txtTHPConv
         '
         Me.txtTHPConv.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.txtTHPConv.Location = New System.Drawing.Point(116, 131)
+        Me.txtTHPConv.Location = New System.Drawing.Point(116, 167)
         Me.txtTHPConv.Margin = New System.Windows.Forms.Padding(4)
         Me.txtTHPConv.Name = "txtTHPConv"
         Me.txtTHPConv.ReadOnly = True
@@ -1772,7 +1812,6 @@ Partial Class Main
         'LoadFMPegRoot
         '
         Me.LoadFMPegRoot.Description = "Select the root exe directory for FFMpeg"
-        Me.LoadFMPegRoot.RootFolder = System.Environment.SpecialFolder.ProgramFilesX86
         Me.LoadFMPegRoot.ShowNewFolderButton = False
         '
         'LoadTHPConv
@@ -1800,6 +1839,11 @@ Partial Class Main
         Me.LoadiView.FileName = "i_view32.exe"
         Me.LoadiView.Filter = "Irfanview Executable|i_view32.exe"
         Me.LoadiView.InitialDirectory = "C:\Program Files (x86)"
+        '
+        'LoadFFPlayWork
+        '
+        Me.LoadFFPlayWork.Description = "Select a working directory for FFPlay playback"
+        Me.LoadFFPlayWork.ShowNewFolderButton = False
         '
         'Main
         '
@@ -1993,4 +2037,8 @@ Partial Class Main
     Friend WithEvents radTD_All As System.Windows.Forms.RadioButton
     Friend WithEvents txtTD_S As System.Windows.Forms.Label
     Friend WithEvents chkRipDumF As System.Windows.Forms.CheckBox
+    Friend WithEvents lblFFPlayTemp As System.Windows.Forms.Label
+    Friend WithEvents btnBrowseFFPlayTemp As System.Windows.Forms.Button
+    Friend WithEvents txtFFPlayTemp As System.Windows.Forms.TextBox
+    Friend WithEvents LoadFFPlayWork As System.Windows.Forms.FolderBrowserDialog
 End Class
