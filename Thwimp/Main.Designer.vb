@@ -53,6 +53,7 @@ Partial Class Main
         Me.chkTE_B5 = New System.Windows.Forms.CheckBox()
         Me.grpTHPDec = New System.Windows.Forms.GroupBox()
         Me.grpTHPDec_Crop = New System.Windows.Forms.GroupBox()
+        Me.chkRipDumF = New System.Windows.Forms.CheckBox()
         Me.txtTD_S = New System.Windows.Forms.Label()
         Me.radTD_All = New System.Windows.Forms.RadioButton()
         Me.radTD_Dum = New System.Windows.Forms.RadioButton()
@@ -163,7 +164,6 @@ Partial Class Main
         Me.ofdRip = New System.Windows.Forms.OpenFileDialog()
         Me.ofdOutput = New System.Windows.Forms.FolderBrowserDialog()
         Me.LoadiView = New System.Windows.Forms.OpenFileDialog()
-        Me.chkRipDumF = New System.Windows.Forms.CheckBox()
         Me.TabTHP.SuspendLayout()
         Me.grpTHPEnc.SuspendLayout()
         CType(Me.nudTE_jpgq, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -577,6 +577,20 @@ Partial Class Main
         Me.grpTHPDec_Crop.TabIndex = 26
         Me.grpTHPDec_Crop.TabStop = False
         Me.grpTHPDec_Crop.Text = "Crop Settings"
+        '
+        'chkRipDumF
+        '
+        Me.chkRipDumF.AutoCheck = False
+        Me.chkRipDumF.AutoSize = True
+        Me.chkRipDumF.Enabled = False
+        Me.chkRipDumF.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.chkRipDumF.Location = New System.Drawing.Point(23, 144)
+        Me.chkRipDumF.Name = "chkRipDumF"
+        Me.chkRipDumF.Size = New System.Drawing.Size(77, 38)
+        Me.chkRipDumF.TabIndex = 65
+        Me.chkRipDumF.TabStop = False
+        Me.chkRipDumF.Text = "Dum" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "Frames"
+        Me.chkRipDumF.UseVisualStyleBackColor = True
         '
         'txtTD_S
         '
@@ -1786,20 +1800,6 @@ Partial Class Main
         Me.LoadiView.FileName = "i_view32.exe"
         Me.LoadiView.Filter = "Irfanview Executable|i_view32.exe"
         Me.LoadiView.InitialDirectory = "C:\Program Files (x86)"
-        '
-        'chkRipDumF
-        '
-        Me.chkRipDumF.AutoCheck = False
-        Me.chkRipDumF.AutoSize = True
-        Me.chkRipDumF.Enabled = False
-        Me.chkRipDumF.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.chkRipDumF.Location = New System.Drawing.Point(23, 144)
-        Me.chkRipDumF.Name = "chkRipDumF"
-        Me.chkRipDumF.Size = New System.Drawing.Size(77, 38)
-        Me.chkRipDumF.TabIndex = 65
-        Me.chkRipDumF.TabStop = False
-        Me.chkRipDumF.Text = "Dum" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "Frames"
-        Me.chkRipDumF.UseVisualStyleBackColor = True
         '
         'Main
         '

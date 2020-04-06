@@ -1,5 +1,5 @@
 ﻿'Thwimp - FOSS utility for ripping, viewing, and creating THP video files for Mario Kart Wii
-'Copyright (C) 2018-2019 Tamkis
+'Copyright (C) 2018-2020 Tamkis
 
 'This program is free software: you can redistribute it and/or modify
 'it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
 'You should have received a copy of the GNU General Public License
 'along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '
-'Email: tamkis[at]eaglesoftltd.com
+'Email: tamkis[at]eaglesoftltd[dot]com
 
 Imports System.IO
 Imports System.Runtime.InteropServices
@@ -1176,7 +1176,8 @@ Public Class Main
         '    MoveFile "final.mp4"->"filename.mp4"                
         '7.2 Convert filename.mp4 to yuv420p format
         '8.  Convert final video ("filename.mp4") into BMP frames, padded to N digits ("frame_%0Nd.bmp")
-        '8.1 Convert BMP frames into JPG frames, using irfanview, and the JPG Quality value
+        '8.1 Find, copy, and hack Irfanview advanced options INI file
+        '8.2 Convert BMP frames into JPG frames, using irfanview, and the JPG Quality value
         '9.  Check the output directory, and delete any extra jpg frames past the framelimit (frames * m).
         '10. The jpg files and the audio file (if applicable, "filename.wav") are converted into "filename.thp" with THPConv at proper framerate
         '11. Cleanup() is run to delete all temporary files from steps 0-10 during the conversion
@@ -1549,16 +1550,21 @@ Public Class Main
             shell.WaitForExit()
             shell.Close()
 
-            'Do Step 8.1: Convert .bmp frames to .jpg frames
+            'Do Step 8.1: Hack INI file, throw error if failure
+            Dim success As Boolean = HackINIFile(path)
+            If success = False Then Throw New System.Exception("Irfanview INI hack failed!")
+
+            'Do Step 8.2: Convert .bmp frames to .jpg frames
             MsgBox("Generating JPG frames; please wait!", MsgBoxStyle.Information, "JPG Rendering")
-            cnt = TryParseErr_Byte(txtTE_D.Text)                                                    'Get amount of digits
+            cnt = TryParseErr_Byte(txtTE_D.Text)                                                    'Get amount of digits            
             j = CountFilesFromFolder(path, "frame_*.bmp")                                           'Count amount of BMP frames
             For i = 1 To j                                                                          'Iterate frames from 1 to j
                 cmd = strQUOT & txtiView.Text & strQUOT                                             '"C:\iView32\iView32.exe"
                 file2 = StrDup(cnt, "0")                                                            '"0Nd". Create ToString dig formatter
                 file = strQUOT & path & strBAK & "frame_" & i.ToString(file2) & ".bmp" & strQUOT
                 cmd &= " " & file                                                                   ' "C:\WorkingDir\frames_%0Nd.bmp
-                cmd &= " /jpgq=" & nudTE_jpgq.Value.ToString() & " /convert="                       ' /jpgq=N /convert-
+                'cmd &= " /jpgq=" & nudTE_jpgq.Value.ToString() & " /convert="                      ' /jpgq=N /convert-
+                cmd &= " /ini /convert="                                                            '/ini /convert=
                 file = strQUOT & path & strBAK & "frame_" & i.ToString(file2) & ".jpg" & strQUOT
                 cmd &= file                                                                   ' "C:\WorkingDir\frames_%0Nd.jpg
 
@@ -1686,6 +1692,12 @@ Public Class Main
             If justBMPs = False Then
                 'Delete file.txt if exists, a list of files used for -i in ffmpeg.exe
                 File = Path & strBAK & "File.txt"
+                If System.IO.File.Exists(File) Then My.Computer.FileSystem.DeleteFile(File)
+
+                'Also delete Irfanview JPG INI files
+                File = Path & strBAK & "i_view32.ini"
+                If System.IO.File.Exists(File) Then My.Computer.FileSystem.DeleteFile(File)
+                File = Path & strBAK & "i_view32_temp.ini"
                 If System.IO.File.Exists(File) Then My.Computer.FileSystem.DeleteFile(File)
             End If
         Catch ex As Exception
@@ -2069,6 +2081,149 @@ Public Class Main
             MsgBox(ex.Message, MsgBoxStyle.Critical, "File IO error in CountFilesFromFolder!")
         End Try
         Return cnt
+    End Function
+
+    ''' <summary>
+    ''' Copies i_view32.ini APPDATA file pointed to from INI_Folder var within i_view32.ini (at i_view32.exe folder) to THP working directory, hacks JPG "Save Progressive" value to 0 and changes "Save Quality" setting.
+    ''' This file will be used later for JPG conversion, to ensure NO Progressive JPG (fixes THPConv encoding bugs)
+
+    ''' This is a bugfix for Bug #5.
+    ''' Bug: Using a spaceless symlink to iview creates non-progressive JPG files which work with THPConv
+    ''' (due to inability to find i_view32.ini file which usually has JPG "Save Progressive" option as true,
+    ''' while using a real path within Program Files breaks (because it finds the INI files and enables option)
+    ''' </summary>
+    ''' <param name="workDir">THP working directory</param>
+    ''' <returns>Sucessful INI hack?</returns>
+    Private Function HackINIFile(ByVal workDir As String)
+        Dim success As Boolean = False
+        Const INI As String = "i_view32.ini"             'File name for Irfanview INI files
+        Const INITEMP As String = "i_view32_temp.ini"    'File name for temp Irfanview INI file
+
+        Dim xrINIData As StreamReader            'Streamreader object for reading the i_view32.ini files
+        Dim xwINIData As StreamWriter            'Streamwriter object for hacked INI file
+        Try
+            Dim iView As String = txtiView.Text                         'irfanview exe path
+            Dim iViewPath As String = Path.GetDirectoryName(iView)      'path of irfanview exe
+            Dim iViewINI As String                                      '1st INI file (at exe dir)
+            Dim iViewINI2 As String                                     '2nd options INI file (at %Appdata%/whatever)
+            Dim iViewINI2Temp As String                                 'Same as iViewINI2, but temporary INI that will be hacked
+
+            iViewPath &= (strBAK & INI)                                 'Get the 1st INI file (exe folder\INI const)
+            Dim strEntry As String                                      'Line from INI file
+            Dim blnFound As Boolean = False                             'String match found?
+            Dim chrInd As Integer                                       'Index of a char in line
+
+            xrINIData = File.OpenText(iViewPath)                         'Open the INI file
+
+            'Read each line, until find "[Others]" marker
+            blnFound = False
+            While xrINIData.EndOfStream() <> True
+                strEntry = xrINIData.ReadLine()                    'Read a line from the file
+
+                'If marker found, flag as found and exit loop
+                If strEntry.Contains("[Others]") Then
+                    blnFound = True
+                    Exit While
+                End If
+            End While
+
+            'If marker was not found, throw custom error
+            If blnFound = False Then Throw New System.Exception("Failed to find '[Others]' marker in i_view32.ini file within Irfanview exe folder")
+
+            'Read next line from the file
+            strEntry = xrINIData.ReadLine()
+            'If next line is not INI_Folder variable, then throw custom error
+            If strEntry.Contains("INI_Folder") = False Then Throw New System.Exception("Failed to find 'INI_Folder' variable in i_view32.ini file within Irfanview exe folder")
+
+            chrInd = strEntry.IndexOf("=")                              'Find index of '=' char in variable line
+            chrInd += 2                                                 'Increment by 2. !@ This may be wrong?
+            iViewINI = Mid(strEntry, chrInd)                            'Get substring of everything after = sign
+            iViewINI = LTrim(iViewINI)                                  'Left trim it
+            iViewINI &= (strBAK & INI)                                  'Add "\INI" to EOP
+            iViewINI = Environment.ExpandEnvironmentVariables(iViewINI) 'Expand any environ vars within (defaul INI usually has %APPDATA% envvar)
+
+            'Close INI file, copy over INI file, then load it for reading/writing to new temp file
+            xrINIData.Close()
+            xrINIData.Dispose()
+            xrINIData = Nothing
+            iViewINI2 = workDir & strBAK & INI
+            iViewINI2Temp = workDir & strBAK & INITEMP
+            My.Computer.FileSystem.CopyFile(iViewINI, iViewINI2, True)
+            xrINIData = File.OpenText(iViewINI2)                                        'Open the INI2 file
+            xwINIData = My.Computer.FileSystem.OpenTextFileWriter(iViewINI2Temp, False) 'Open a new INI2Temp file for writing
+
+            'Read each line, write each to other file, read until find "[JPEG]" marker
+            blnFound = False
+            While xrINIData.EndOfStream() <> True
+                strEntry = xrINIData.ReadLine()                    'Read a line from the file
+                xwINIData.WriteLine(strEntry)
+
+                'If marker found, flag as found and exit loop
+                If strEntry.Contains("[JPEG]") Then
+                    blnFound = True
+                    Exit While
+                End If
+            End While
+
+            'If marker was not found, throw custom error
+            If blnFound = False Then Throw New System.Exception("Failed to find '[JPEG]' marker in " & strQUOT & iViewINI2 & strQUOT & " file.")
+
+            'Keep reading lines and writing to other file until EOF
+            'If found "Save Progressive=BIT" line, change BIT to 0 (this is the INI hack)
+            'If Found "Save Quality" line, replace value with JPG quality (the other hack)
+            blnFound = False
+            While xrINIData.EndOfStream() <> True
+                strEntry = xrINIData.ReadLine()                    'Read a line from the file
+
+                'If Save Progressive var found, replace 1 to 0 bit
+                If strEntry.Contains("Save Progressive") Then
+                    blnFound = (blnFound Or True)
+                    strEntry = strEntry.Replace("1", "0")
+                End If
+
+                'If Save Quality var found, replace with new quality
+                If strEntry.Contains("Save Quality") Then
+                    blnFound = (blnFound Or True)
+                    strEntry = "Save Quality=" & nudTE_jpgq.Value.ToString()
+                End If
+
+                'Write line
+                xwINIData.WriteLine(strEntry)
+            End While
+
+            'If markers were not found, throw error
+            If blnFound = False Then Throw New System.Exception("Failed to find 'Save Progressive' or 'Save Quality' settings under '[JPEG]' marker in " & strQUOT & iViewINI2 & strQUOT & " file. Irfanview INI hack was unsuccessful, and thus ripped JPG files used for THP Encoding may be created as wrong progressive JPG types or wrong JPG quality applied. These errors shall cause THP encoding to fail!")
+
+            'Close all files, delete iViewINI2, rename iViewINI2TEMP to iViewINI2, show success
+            xrINIData.Close()
+            xrINIData.Dispose()
+            xrINIData = Nothing
+            xwINIData.Close()
+            xwINIData.Dispose()
+            xwINIData = Nothing
+            My.Computer.FileSystem.DeleteFile(iViewINI2)
+            My.Computer.FileSystem.RenameFile(iViewINI2Temp, Path.GetFileName(iViewINI2))
+            MsgBox("Disabled Progressive JPG for conversions!", MsgBoxStyle.Information, "Irfanview settings INI Hack successful!")
+            success = True
+        Catch ex As Exception
+            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error finding, copying, and/or hacking INI Irfanview INI file!")
+            success = False
+        End Try
+
+        'Close any lingering Streams if not null
+        If IsNothing(xrINIData) = False Then
+            xrINIData.Close()
+            xrINIData.Dispose()
+            xrINIData = Nothing
+        End If
+
+        If IsNothing(xwINIData) = False Then
+            xwINIData.Close()
+            xwINIData.Dispose()
+            xwINIData = Nothing
+        End If
+
+        Return success
     End Function
 
     '================
