@@ -1630,6 +1630,7 @@ Partial Class Main
         Me.txtFFPlayTemp.Size = New System.Drawing.Size(324, 22)
         Me.txtFFPlayTemp.TabIndex = 46
         Me.txtFFPlayTemp.TabStop = False
+        Me.txtFFPlayTemp.Text = "C:\Users\Anthony\Downloads\Output"
         '
         'btniView
         '
@@ -1652,6 +1653,7 @@ Partial Class Main
         Me.txtiView.Size = New System.Drawing.Size(324, 22)
         Me.txtiView.TabIndex = 44
         Me.txtiView.TabStop = False
+        Me.txtiView.Text = "C:\Program Files (x86)\Accessories\IrfanView\i_view32.exe"
         '
         'lbliView
         '
@@ -1729,6 +1731,7 @@ Partial Class Main
         Me.txtTHPConv.Size = New System.Drawing.Size(324, 22)
         Me.txtTHPConv.TabIndex = 38
         Me.txtTHPConv.TabStop = False
+        Me.txtTHPConv.Text = "E:\GC_Wii\Hacking\Tools\Video\THPGUI\THP\THPConv.exe"
         '
         'btnBrowseFFMpeg
         '
@@ -1751,6 +1754,8 @@ Partial Class Main
         Me.txtFFMpeg.Size = New System.Drawing.Size(324, 22)
         Me.txtFFMpeg.TabIndex = 36
         Me.txtFFMpeg.TabStop = False
+        Me.txtFFMpeg.Text = "C:\Program Files (x86)\Media\Video\ffmpeg\ffmpeg-20181015-c27c7b4-win64-static\bi" & _
+            "n"
         '
         'lblFMpeg
         '
@@ -1784,6 +1789,7 @@ Partial Class Main
         Me.txtRoot.Size = New System.Drawing.Size(324, 22)
         Me.txtRoot.TabIndex = 0
         Me.txtRoot.TabStop = False
+        Me.txtRoot.Text = "C:\Users\Anthony\Downloads\Output"
         '
         'lblRoot
         '

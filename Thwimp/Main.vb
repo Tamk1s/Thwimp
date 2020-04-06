@@ -22,6 +22,11 @@ Imports System.Runtime.InteropServices
 Public Class Main    
     'Global constants
 
+    'Debug mode?
+    'If enabled, don't hide THP tab, and use current contents for quick debugging)
+    'If disabled, clear options tab items and forcibly set them every run
+    Shared DEBUG As Boolean = True
+
     'Characters
     Shared strBAK As String = "\"                           'Backslash symbol
     Shared strQUOT As String = Chr(34)                      'Quote Symbol
@@ -122,11 +127,19 @@ Public Class Main
 
         'Disable form elements in THP tab (until the data in the "Options" tab is filled out)
         'Hide THPFile lable and combo box, THP Info Group box, THP Dec/Encoder boxes
-        lblTHPFile.Visible = False
-        cmbTHP.Visible = False
-        grpTHPInfo.Visible = False
-        grpTHPDec.Visible = False
-        grpTHPEnc.Visible = False
+        If DEBUG = False Then
+            txtRoot.Text = Nothing
+            txtFFMpeg.Text = Nothing
+            txtFFPlayTemp.Text = Nothing
+            txtiView.Text = Nothing
+            txtTHPConv.Text = Nothing
+
+            lblTHPFile.Visible = False
+            cmbTHP.Visible = False
+            grpTHPInfo.Visible = False
+            grpTHPDec.Visible = False
+            grpTHPEnc.Visible = False
+        End If
 
         'Load the THP combo box data from the ext. files
         InitTHPData()
@@ -1731,7 +1744,7 @@ Public Class Main
                 file = strQUOT & path & strBAK & "frame_" & i.ToString(file2) & ".bmp" & strQUOT
                 cmd &= " " & file                                                                   ' "C:\WorkingDir\frames_%0Nd.bmp
                 'cmd &= " /jpgq=" & nudTE_jpgq.Value.ToString() & " /convert="                      ' /jpgq=N /convert-
-                cmd &= " /ini /convert="                                                            '/ini /convert=
+                cmd &= " /ini /jpgq=" & nudTE_jpgq.Value.ToString() & "/convert="                                                            '/ini /convert=
                 file = strQUOT & path & strBAK & "frame_" & i.ToString(file2) & ".jpg" & strQUOT
                 cmd &= file                                                                   ' "C:\WorkingDir\frames_%0Nd.jpg
 
