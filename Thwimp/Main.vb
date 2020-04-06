@@ -764,6 +764,11 @@ Public Class Main
             Dim h As String = txtTD_CH.Text                     'Crop height
             Dim _start As UShort = txtTD_FS.Text                'frame start
             Dim _end As UShort = txtTD_FE.Text                  'frame end
+            Dim FPS As Single = txtVC_F.Text                    'FPS
+
+            'Audio info. In seconds (so start/end pt /FPS = seconds)
+            Dim _aStart As Single = _start / FPS                'audio start
+            Dim _aEnd As Single = _end / FPS                    'audio end
 
             'User-error:
             'If chkRipDumF is checked (therefore, multiplicity=0 and Dum radio button),
@@ -778,7 +783,7 @@ Public Class Main
                 End If
             End If
 
-            'Step 1: Convert THP to temp MP4. Encoded THP to H264 MP4 with crop filter
+            'Step 1: Convert THP to temp MP4. Encode THP to H264 MP4 with crop filter
             '"C:\FFMPegPath\ffmpeg.exe"
             cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT
             ' -i C:\PathToTHP\DIRtoTHP\file.thp -vcodec h264 -y -filter:v "crop=out_w:out_h:x:y" "C:\OutputDir\output.mp4"
@@ -811,7 +816,7 @@ Public Class Main
             shell.Start()
             shell.WaitForExit()
 
-            'Extract audio as wav (if any)
+            'Extract audio as wav (if any) with trimming
             Dim hasAudio As Boolean = THPHasAudio()
             If hasAudio Then
                 'If THP has audio
@@ -822,19 +827,20 @@ Public Class Main
                     startInfo.EnvironmentVariables("SDL_AUDIODRIVER") = "directsound"
                 End If
 
-                'Convert the audio to file.wav file
+                'ffmpeg.exe -y -i video.thp -vn -ss audio_Start -to audio_End "C:\OutputDir\file.wav" 
+
                 '"C:\FFMPegPath\FFMPEG.exe"
                 cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT
-                ' -i "C:\PathToTHP\DIRtoTHP\file.thp" -vn "C:\OutputDir\file.wav"
-                cmd &= " -y -i " & strQUOT & inFile & strQUOT & " -vn "
+                '-y -i "C:\PathToTHP\DIRtoTHP\file.thp" -vn -ss audio_Start -to audio_End output_file
+                'Note ToString("G9") format is the recommended one for "RoundTripping" a single
+                cmd &= " -y -i " & strQUOT & inFile & strQUOT & " -vn -ss " & _aStart.ToString("G9") & " -to " & _aEnd.ToString("G9") & " "
+                '"C:\OutputDir\file.wav"
                 cmd &= strQUOT & outPath & FileAndExt(inFile).Replace(".thp", ".wav") & strQUOT
                 'Run the cmd
                 startInfo.FileName = cmd
                 shell.StartInfo = startInfo
                 shell.Start()
                 shell.WaitForExit()
-
-
             End If
 
             If type = True Then
