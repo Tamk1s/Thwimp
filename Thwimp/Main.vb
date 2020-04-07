@@ -1488,15 +1488,15 @@ Public Class Main
                         My.Computer.FileSystem.CopyFile(file, file2)                                        'Copy file to file2
                     Next cnt
 
-                    'Convert bmp files to MP4: ffmpeg -f image2 -i image_%03d.bmp test.mp4
-                    cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT & " -y"                                    '"C:\FFMPegPath\FFMPeg.exe" -y                    
-                    cmd &= " -f image2"                                                                                     ' -f image2
+                    'Properly convert bmp files to MP4: ffmpeg -y -f image2 -framerate FPS -i dummy_N_%03d.bmp out.mp4
+                    cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT                                            '"C:\FFMPegPath\FFMPeg.exe"
+                    cmd &= " -y -f image2 -framerate " & FPS                                                                ' -y -f image2 -framerate FPS
 
                     file = strQUOT & path & strBAK & "dummy_" & k.ToString() & "_%0" & dg.ToString() & "d.bmp" & strQUOT
                     cmd &= " -i " & file                                                                                    ' -i "C:\WorkingDir\dummy_M_%0Nd.bmp"
 
-                    file = strQUOT & path & strBAK & "dummy_" & k.ToString() & ".mp4" & strQUOT                             ' -fm  -vcodec h264 -framerate RR.RR & C:\Path\dummy_N.pm4
-                    cmd &= " -vcodec h264 -framerate " & FPS & " " & file
+                    file = strQUOT & path & strBAK & "dummy_" & k.ToString() & ".mp4" & strQUOT
+                    cmd &= (" " & file)                                                                                     ' "C:\WorkingDir\out.mp4"
 
                     'Run cmd
                     startInfo.FileName = cmd
