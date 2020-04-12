@@ -63,6 +63,15 @@ Namespace My.Resources
         '''<summary>
         '''  Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
         '''</summary>
+        Friend ReadOnly Property _error() As System.IO.UnmanagedMemoryStream
+            Get
+                Return ResourceManager.GetStream("_error", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        '''</summary>
         Friend ReadOnly Property EagleSoft() As System.IO.UnmanagedMemoryStream
             Get
                 Return ResourceManager.GetStream("EagleSoft", resourceCulture)
@@ -75,6 +84,35 @@ Namespace My.Resources
         Friend ReadOnly Property Logo() As System.Drawing.Bitmap
             Get
                 Dim obj As Object = ResourceManager.GetObject("Logo", resourceCulture)
+                Return CType(obj,System.Drawing.Bitmap)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized resource of type System.Drawing.Bitmap.
+        '''</summary>
+        Friend ReadOnly Property nullIcon() As System.Drawing.Bitmap
+            Get
+                Dim obj As Object = ResourceManager.GetObject("nullIcon", resourceCulture)
+                Return CType(obj,System.Drawing.Bitmap)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        '''</summary>
+        Friend ReadOnly Property success() As System.IO.UnmanagedMemoryStream
+            Get
+                Return ResourceManager.GetStream("success", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized resource of type System.Drawing.Bitmap.
+        '''</summary>
+        Friend ReadOnly Property THPTab() As System.Drawing.Bitmap
+            Get
+                Dim obj As Object = ResourceManager.GetObject("THPTab", resourceCulture)
                 Return CType(obj,System.Drawing.Bitmap)
             End Get
         End Property

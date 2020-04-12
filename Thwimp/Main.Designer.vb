@@ -25,7 +25,19 @@ Partial Class Main
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(Main))
         Me.LoadTHPRoot = New System.Windows.Forms.FolderBrowserDialog()
         Me.TabTHP = New System.Windows.Forms.TabPage()
+        Me.grpLog = New System.Windows.Forms.GroupBox()
+        Me.btnLogSave = New System.Windows.Forms.Button()
+        Me.btnLogClear = New System.Windows.Forms.Button()
+        Me.picLog = New System.Windows.Forms.PictureBox()
+        Me.txtLog = New System.Windows.Forms.TextBox()
         Me.grpTHPEnc = New System.Windows.Forms.GroupBox()
+        Me.grpTHPEnc_Prog = New System.Windows.Forms.GroupBox()
+        Me.lblTHPEnc_Prg_Cur = New System.Windows.Forms.Label()
+        Me.lblTHPEnc_Prg_Ttl = New System.Windows.Forms.Label()
+        Me.txtTHPEnc_Prg_Cur = New System.Windows.Forms.TextBox()
+        Me.txtTHPEnc_Prg_Ttl = New System.Windows.Forms.TextBox()
+        Me.prgCur = New System.Windows.Forms.ProgressBar()
+        Me.prgTotal = New System.Windows.Forms.ProgressBar()
         Me.lblTE_jpgq = New System.Windows.Forms.Label()
         Me.nudTE_jpgq = New System.Windows.Forms.NumericUpDown()
         Me.txtTE_D = New System.Windows.Forms.MaskedTextBox()
@@ -143,33 +155,57 @@ Partial Class Main
         Me.txtFDesc = New System.Windows.Forms.TextBox()
         Me.cmbTHP = New System.Windows.Forms.ComboBox()
         Me.TabOptions = New System.Windows.Forms.TabPage()
+        Me.grpHelp = New System.Windows.Forms.GroupBox()
+        Me.PictureBox2 = New System.Windows.Forms.PictureBox()
+        Me.btnCmdline = New System.Windows.Forms.Button()
+        Me.PictureBox1 = New System.Windows.Forms.PictureBox()
+        Me.btnManual = New System.Windows.Forms.Button()
+        Me.btnRelease = New System.Windows.Forms.Button()
+        Me.btnWiki = New System.Windows.Forms.Button()
+        Me.btnWeb = New System.Windows.Forms.Button()
+        Me.btnAbout = New System.Windows.Forms.Button()
+        Me.grpOptions = New System.Windows.Forms.GroupBox()
+        Me.txtDataDir = New System.Windows.Forms.TextBox()
+        Me.btnDataDir = New System.Windows.Forms.Button()
+        Me.lblDataDir = New System.Windows.Forms.Label()
+        Me.chkLogFull = New System.Windows.Forms.CheckBox()
+        Me.lblRoot = New System.Windows.Forms.Label()
+        Me.chkAudio = New System.Windows.Forms.CheckBox()
+        Me.picOptions = New System.Windows.Forms.PictureBox()
+        Me.chkEMusic = New System.Windows.Forms.CheckBox()
+        Me.txtRoot = New System.Windows.Forms.TextBox()
+        Me.chkMsg = New System.Windows.Forms.CheckBox()
+        Me.btnBrowseRoot = New System.Windows.Forms.Button()
+        Me.btnSaveSettings = New System.Windows.Forms.Button()
+        Me.lblFFMPEG = New System.Windows.Forms.Label()
+        Me.btnLoadSettings = New System.Windows.Forms.Button()
+        Me.txtFFMPEG = New System.Windows.Forms.TextBox()
         Me.lblFFPlayTemp = New System.Windows.Forms.Label()
+        Me.btnBrowseFFMPEG = New System.Windows.Forms.Button()
         Me.btnBrowseFFPlayTemp = New System.Windows.Forms.Button()
+        Me.txtTHPConv = New System.Windows.Forms.TextBox()
         Me.txtFFPlayTemp = New System.Windows.Forms.TextBox()
+        Me.btnBrowseTHPConv = New System.Windows.Forms.Button()
         Me.btniView = New System.Windows.Forms.Button()
         Me.txtiView = New System.Windows.Forms.TextBox()
-        Me.lbliView = New System.Windows.Forms.Label()
-        Me.PictureBox1 = New System.Windows.Forms.PictureBox()
         Me.lblTHPConv = New System.Windows.Forms.Label()
-        Me.picOptions = New System.Windows.Forms.PictureBox()
-        Me.btnAbout = New System.Windows.Forms.Button()
-        Me.btnBrowseTHPConv = New System.Windows.Forms.Button()
-        Me.txtTHPConv = New System.Windows.Forms.TextBox()
-        Me.btnBrowseFFMpeg = New System.Windows.Forms.Button()
-        Me.txtFFMpeg = New System.Windows.Forms.TextBox()
-        Me.lblFMpeg = New System.Windows.Forms.Label()
-        Me.btnBrowseRoot = New System.Windows.Forms.Button()
-        Me.txtRoot = New System.Windows.Forms.TextBox()
-        Me.lblRoot = New System.Windows.Forms.Label()
+        Me.lbliView = New System.Windows.Forms.Label()
         Me.tabApp = New System.Windows.Forms.TabControl()
-        Me.LoadFMPegRoot = New System.Windows.Forms.FolderBrowserDialog()
+        Me.LoadFFMPEGRoot = New System.Windows.Forms.FolderBrowserDialog()
         Me.LoadTHPConv = New System.Windows.Forms.OpenFileDialog()
         Me.ofdRip = New System.Windows.Forms.OpenFileDialog()
         Me.ofdOutput = New System.Windows.Forms.FolderBrowserDialog()
         Me.LoadiView = New System.Windows.Forms.OpenFileDialog()
         Me.LoadFFPlayWork = New System.Windows.Forms.FolderBrowserDialog()
+        Me.ofdLoadSettings = New System.Windows.Forms.OpenFileDialog()
+        Me.LoadDataDir = New System.Windows.Forms.FolderBrowserDialog()
+        Me.ofdSaveSettings = New System.Windows.Forms.OpenFileDialog()
+        Me.SaveLog = New System.Windows.Forms.OpenFileDialog()
         Me.TabTHP.SuspendLayout()
+        Me.grpLog.SuspendLayout()
+        CType(Me.picLog, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.grpTHPEnc.SuspendLayout()
+        Me.grpTHPEnc_Prog.SuspendLayout()
         CType(Me.nudTE_jpgq, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.grpTHPDec.SuspendLayout()
         Me.grpTHPDec_Crop.SuspendLayout()
@@ -186,7 +222,10 @@ Partial Class Main
         Me.gVMult.SuspendLayout()
         Me.grpAudio.SuspendLayout()
         Me.TabOptions.SuspendLayout()
+        Me.grpHelp.SuspendLayout()
+        CType(Me.PictureBox2, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.grpOptions.SuspendLayout()
         CType(Me.picOptions, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.tabApp.SuspendLayout()
         Me.SuspendLayout()
@@ -198,6 +237,8 @@ Partial Class Main
         '
         'TabTHP
         '
+        Me.TabTHP.Controls.Add(Me.grpTHPEnc_Prog)
+        Me.TabTHP.Controls.Add(Me.grpLog)
         Me.TabTHP.Controls.Add(Me.grpTHPEnc)
         Me.TabTHP.Controls.Add(Me.grpTHPDec)
         Me.TabTHP.Controls.Add(Me.lblTHPFile)
@@ -207,10 +248,66 @@ Partial Class Main
         Me.TabTHP.Margin = New System.Windows.Forms.Padding(4)
         Me.TabTHP.Name = "TabTHP"
         Me.TabTHP.Padding = New System.Windows.Forms.Padding(4)
-        Me.TabTHP.Size = New System.Drawing.Size(553, 772)
+        Me.TabTHP.Size = New System.Drawing.Size(553, 951)
         Me.TabTHP.TabIndex = 1
         Me.TabTHP.Text = "THP"
         Me.TabTHP.UseVisualStyleBackColor = True
+        '
+        'grpLog
+        '
+        Me.grpLog.Controls.Add(Me.btnLogSave)
+        Me.grpLog.Controls.Add(Me.btnLogClear)
+        Me.grpLog.Controls.Add(Me.picLog)
+        Me.grpLog.Controls.Add(Me.txtLog)
+        Me.grpLog.Location = New System.Drawing.Point(7, 773)
+        Me.grpLog.Name = "grpLog"
+        Me.grpLog.Size = New System.Drawing.Size(290, 171)
+        Me.grpLog.TabIndex = 44
+        Me.grpLog.TabStop = False
+        Me.grpLog.Text = "Log"
+        '
+        'btnLogSave
+        '
+        Me.btnLogSave.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnLogSave.Location = New System.Drawing.Point(161, 140)
+        Me.btnLogSave.Name = "btnLogSave"
+        Me.btnLogSave.Size = New System.Drawing.Size(68, 24)
+        Me.btnLogSave.TabIndex = 50
+        Me.btnLogSave.Text = "&Save"
+        Me.btnLogSave.UseVisualStyleBackColor = True
+        '
+        'btnLogClear
+        '
+        Me.btnLogClear.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnLogClear.Location = New System.Drawing.Point(86, 141)
+        Me.btnLogClear.Name = "btnLogClear"
+        Me.btnLogClear.Size = New System.Drawing.Size(68, 24)
+        Me.btnLogClear.TabIndex = 49
+        Me.btnLogClear.Text = "&Cls"
+        Me.btnLogClear.UseVisualStyleBackColor = True
+        '
+        'picLog
+        '
+        Me.picLog.Image = CType(resources.GetObject("picLog.Image"), System.Drawing.Image)
+        Me.picLog.Location = New System.Drawing.Point(47, 138)
+        Me.picLog.Margin = New System.Windows.Forms.Padding(4)
+        Me.picLog.Name = "picLog"
+        Me.picLog.Size = New System.Drawing.Size(32, 32)
+        Me.picLog.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage
+        Me.picLog.TabIndex = 43
+        Me.picLog.TabStop = False
+        '
+        'txtLog
+        '
+        Me.txtLog.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.txtLog.Location = New System.Drawing.Point(6, 21)
+        Me.txtLog.Multiline = True
+        Me.txtLog.Name = "txtLog"
+        Me.txtLog.ReadOnly = True
+        Me.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Both
+        Me.txtLog.Size = New System.Drawing.Size(278, 114)
+        Me.txtLog.TabIndex = 43
+        Me.txtLog.TabStop = False
         '
         'grpTHPEnc
         '
@@ -240,12 +337,89 @@ Partial Class Main
         Me.grpTHPEnc.Controls.Add(Me.chkTE_B4)
         Me.grpTHPEnc.Controls.Add(Me.chkTE_B5)
         Me.grpTHPEnc.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.grpTHPEnc.Location = New System.Drawing.Point(307, 478)
+        Me.grpTHPEnc.Location = New System.Drawing.Point(307, 412)
         Me.grpTHPEnc.Name = "grpTHPEnc"
-        Me.grpTHPEnc.Size = New System.Drawing.Size(228, 223)
+        Me.grpTHPEnc.Size = New System.Drawing.Size(228, 197)
         Me.grpTHPEnc.TabIndex = 42
         Me.grpTHPEnc.TabStop = False
         Me.grpTHPEnc.Text = "THP Encoder"
+        '
+        'grpTHPEnc_Prog
+        '
+        Me.grpTHPEnc_Prog.Controls.Add(Me.lblTHPEnc_Prg_Cur)
+        Me.grpTHPEnc_Prog.Controls.Add(Me.lblTHPEnc_Prg_Ttl)
+        Me.grpTHPEnc_Prog.Controls.Add(Me.txtTHPEnc_Prg_Cur)
+        Me.grpTHPEnc_Prog.Controls.Add(Me.txtTHPEnc_Prg_Ttl)
+        Me.grpTHPEnc_Prog.Controls.Add(Me.prgCur)
+        Me.grpTHPEnc_Prog.Controls.Add(Me.prgTotal)
+        Me.grpTHPEnc_Prog.Location = New System.Drawing.Point(308, 615)
+        Me.grpTHPEnc_Prog.Name = "grpTHPEnc_Prog"
+        Me.grpTHPEnc_Prog.Size = New System.Drawing.Size(227, 329)
+        Me.grpTHPEnc_Prog.TabIndex = 48
+        Me.grpTHPEnc_Prog.TabStop = False
+        Me.grpTHPEnc_Prog.Text = "Progress"
+        '
+        'lblTHPEnc_Prg_Cur
+        '
+        Me.lblTHPEnc_Prg_Cur.AutoSize = True
+        Me.lblTHPEnc_Prg_Cur.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lblTHPEnc_Prg_Cur.Location = New System.Drawing.Point(150, 309)
+        Me.lblTHPEnc_Prg_Cur.Name = "lblTHPEnc_Prg_Cur"
+        Me.lblTHPEnc_Prg_Cur.Size = New System.Drawing.Size(71, 17)
+        Me.lblTHPEnc_Prg_Cur.TabIndex = 50
+        Me.lblTHPEnc_Prg_Cur.Text = "100.00%"
+        '
+        'lblTHPEnc_Prg_Ttl
+        '
+        Me.lblTHPEnc_Prg_Ttl.AutoSize = True
+        Me.lblTHPEnc_Prg_Ttl.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lblTHPEnc_Prg_Ttl.Location = New System.Drawing.Point(150, 149)
+        Me.lblTHPEnc_Prg_Ttl.Name = "lblTHPEnc_Prg_Ttl"
+        Me.lblTHPEnc_Prg_Ttl.Size = New System.Drawing.Size(71, 17)
+        Me.lblTHPEnc_Prg_Ttl.TabIndex = 49
+        Me.lblTHPEnc_Prg_Ttl.Text = "100.00%"
+        '
+        'txtTHPEnc_Prg_Cur
+        '
+        Me.txtTHPEnc_Prg_Cur.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.txtTHPEnc_Prg_Cur.Location = New System.Drawing.Point(2, 178)
+        Me.txtTHPEnc_Prg_Cur.Multiline = True
+        Me.txtTHPEnc_Prg_Cur.Name = "txtTHPEnc_Prg_Cur"
+        Me.txtTHPEnc_Prg_Cur.ReadOnly = True
+        Me.txtTHPEnc_Prg_Cur.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
+        Me.txtTHPEnc_Prg_Cur.Size = New System.Drawing.Size(219, 124)
+        Me.txtTHPEnc_Prg_Cur.TabIndex = 7
+        Me.txtTHPEnc_Prg_Cur.TabStop = False
+        '
+        'txtTHPEnc_Prg_Ttl
+        '
+        Me.txtTHPEnc_Prg_Ttl.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.txtTHPEnc_Prg_Ttl.Location = New System.Drawing.Point(3, 19)
+        Me.txtTHPEnc_Prg_Ttl.Multiline = True
+        Me.txtTHPEnc_Prg_Ttl.Name = "txtTHPEnc_Prg_Ttl"
+        Me.txtTHPEnc_Prg_Ttl.ReadOnly = True
+        Me.txtTHPEnc_Prg_Ttl.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
+        Me.txtTHPEnc_Prg_Ttl.Size = New System.Drawing.Size(218, 124)
+        Me.txtTHPEnc_Prg_Ttl.TabIndex = 6
+        Me.txtTHPEnc_Prg_Ttl.TabStop = False
+        '
+        'prgCur
+        '
+        Me.prgCur.Location = New System.Drawing.Point(2, 305)
+        Me.prgCur.Name = "prgCur"
+        Me.prgCur.Size = New System.Drawing.Size(141, 23)
+        Me.prgCur.Step = 1
+        Me.prgCur.Style = System.Windows.Forms.ProgressBarStyle.Continuous
+        Me.prgCur.TabIndex = 1
+        '
+        'prgTotal
+        '
+        Me.prgTotal.Location = New System.Drawing.Point(3, 149)
+        Me.prgTotal.Name = "prgTotal"
+        Me.prgTotal.Size = New System.Drawing.Size(135, 23)
+        Me.prgTotal.Step = 1
+        Me.prgTotal.Style = System.Windows.Forms.ProgressBarStyle.Continuous
+        Me.prgTotal.TabIndex = 0
         '
         'lblTE_jpgq
         '
@@ -289,10 +463,10 @@ Partial Class Main
         'chkTE_wav
         '
         Me.chkTE_wav.AutoSize = True
-        Me.chkTE_wav.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.chkTE_wav.Location = New System.Drawing.Point(44, 197)
+        Me.chkTE_wav.Font = New System.Drawing.Font("Microsoft Sans Serif", 4.2!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.chkTE_wav.Location = New System.Drawing.Point(4, 148)
         Me.chkTE_wav.Name = "chkTE_wav"
-        Me.chkTE_wav.Size = New System.Drawing.Size(54, 21)
+        Me.chkTE_wav.Size = New System.Drawing.Size(39, 17)
         Me.chkTE_wav.TabIndex = 45
         Me.chkTE_wav.TabStop = False
         Me.chkTE_wav.Text = "wav"
@@ -301,10 +475,10 @@ Partial Class Main
         'chkTE_Dum
         '
         Me.chkTE_Dum.AutoSize = True
-        Me.chkTE_Dum.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.chkTE_Dum.Location = New System.Drawing.Point(97, 197)
+        Me.chkTE_Dum.Font = New System.Drawing.Font("Microsoft Sans Serif", 4.2!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.chkTE_Dum.Location = New System.Drawing.Point(4, 174)
         Me.chkTE_Dum.Name = "chkTE_Dum"
-        Me.chkTE_Dum.Size = New System.Drawing.Size(57, 21)
+        Me.chkTE_Dum.Size = New System.Drawing.Size(40, 17)
         Me.chkTE_Dum.TabIndex = 44
         Me.chkTE_Dum.TabStop = False
         Me.chkTE_Dum.Text = "dum"
@@ -334,7 +508,7 @@ Partial Class Main
         '
         Me.chkTE_A1.AutoSize = True
         Me.chkTE_A1.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.chkTE_A1.Location = New System.Drawing.Point(44, 40)
+        Me.chkTE_A1.Location = New System.Drawing.Point(47, 40)
         Me.chkTE_A1.Name = "chkTE_A1"
         Me.chkTE_A1.Size = New System.Drawing.Size(47, 21)
         Me.chkTE_A1.TabIndex = 26
@@ -346,7 +520,7 @@ Partial Class Main
         '
         Me.chkTE_A2.AutoSize = True
         Me.chkTE_A2.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.chkTE_A2.Location = New System.Drawing.Point(44, 65)
+        Me.chkTE_A2.Location = New System.Drawing.Point(47, 65)
         Me.chkTE_A2.Name = "chkTE_A2"
         Me.chkTE_A2.Size = New System.Drawing.Size(47, 21)
         Me.chkTE_A2.TabIndex = 27
@@ -368,7 +542,7 @@ Partial Class Main
         '
         Me.chkTE_A3.AutoSize = True
         Me.chkTE_A3.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.chkTE_A3.Location = New System.Drawing.Point(44, 92)
+        Me.chkTE_A3.Location = New System.Drawing.Point(47, 92)
         Me.chkTE_A3.Name = "chkTE_A3"
         Me.chkTE_A3.Size = New System.Drawing.Size(47, 21)
         Me.chkTE_A3.TabIndex = 28
@@ -380,7 +554,7 @@ Partial Class Main
         '
         Me.chkTE_A4.AutoSize = True
         Me.chkTE_A4.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.chkTE_A4.Location = New System.Drawing.Point(44, 119)
+        Me.chkTE_A4.Location = New System.Drawing.Point(47, 119)
         Me.chkTE_A4.Name = "chkTE_A4"
         Me.chkTE_A4.Size = New System.Drawing.Size(47, 21)
         Me.chkTE_A4.TabIndex = 29
@@ -392,7 +566,7 @@ Partial Class Main
         '
         Me.chkTE_A5.AutoSize = True
         Me.chkTE_A5.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.chkTE_A5.Location = New System.Drawing.Point(44, 146)
+        Me.chkTE_A5.Location = New System.Drawing.Point(47, 146)
         Me.chkTE_A5.Name = "chkTE_A5"
         Me.chkTE_A5.Size = New System.Drawing.Size(47, 21)
         Me.chkTE_A5.TabIndex = 30
@@ -403,20 +577,20 @@ Partial Class Main
         'txtTE_M
         '
         Me.txtTE_M.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.txtTE_M.Location = New System.Drawing.Point(6, 102)
+        Me.txtTE_M.Location = New System.Drawing.Point(4, 92)
         Me.txtTE_M.Multiline = True
         Me.txtTE_M.Name = "txtTE_M"
         Me.txtTE_M.ReadOnly = True
-        Me.txtTE_M.Size = New System.Drawing.Size(34, 60)
+        Me.txtTE_M.Size = New System.Drawing.Size(34, 48)
         Me.txtTE_M.TabIndex = 33
         Me.txtTE_M.TabStop = False
-        Me.txtTE_M.Text = "_1" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "to" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "_4"
+        Me.txtTE_M.Text = "_1 to _4"
         '
         'chkTE_A6
         '
         Me.chkTE_A6.AutoSize = True
         Me.chkTE_A6.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.chkTE_A6.Location = New System.Drawing.Point(44, 173)
+        Me.chkTE_A6.Location = New System.Drawing.Point(47, 173)
         Me.chkTE_A6.Name = "chkTE_A6"
         Me.chkTE_A6.Size = New System.Drawing.Size(47, 21)
         Me.chkTE_A6.TabIndex = 31
@@ -428,7 +602,7 @@ Partial Class Main
         '
         Me.lblTE_M.AutoSize = True
         Me.lblTE_M.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblTE_M.Location = New System.Drawing.Point(3, 79)
+        Me.lblTE_M.Location = New System.Drawing.Point(3, 66)
         Me.lblTE_M.Name = "lblTE_M"
         Me.lblTE_M.Size = New System.Drawing.Size(42, 17)
         Me.lblTE_M.TabIndex = 40
@@ -1571,48 +1745,351 @@ Partial Class Main
         '
         'TabOptions
         '
-        Me.TabOptions.Controls.Add(Me.lblFFPlayTemp)
-        Me.TabOptions.Controls.Add(Me.btnBrowseFFPlayTemp)
-        Me.TabOptions.Controls.Add(Me.txtFFPlayTemp)
-        Me.TabOptions.Controls.Add(Me.btniView)
-        Me.TabOptions.Controls.Add(Me.txtiView)
-        Me.TabOptions.Controls.Add(Me.lbliView)
-        Me.TabOptions.Controls.Add(Me.PictureBox1)
-        Me.TabOptions.Controls.Add(Me.lblTHPConv)
-        Me.TabOptions.Controls.Add(Me.picOptions)
-        Me.TabOptions.Controls.Add(Me.btnAbout)
-        Me.TabOptions.Controls.Add(Me.btnBrowseTHPConv)
-        Me.TabOptions.Controls.Add(Me.txtTHPConv)
-        Me.TabOptions.Controls.Add(Me.btnBrowseFFMpeg)
-        Me.TabOptions.Controls.Add(Me.txtFFMpeg)
-        Me.TabOptions.Controls.Add(Me.lblFMpeg)
-        Me.TabOptions.Controls.Add(Me.btnBrowseRoot)
-        Me.TabOptions.Controls.Add(Me.txtRoot)
-        Me.TabOptions.Controls.Add(Me.lblRoot)
+        Me.TabOptions.Controls.Add(Me.grpHelp)
+        Me.TabOptions.Controls.Add(Me.grpOptions)
         Me.TabOptions.Location = New System.Drawing.Point(4, 25)
         Me.TabOptions.Margin = New System.Windows.Forms.Padding(4)
         Me.TabOptions.Name = "TabOptions"
         Me.TabOptions.Padding = New System.Windows.Forms.Padding(4)
-        Me.TabOptions.Size = New System.Drawing.Size(553, 772)
+        Me.TabOptions.Size = New System.Drawing.Size(553, 951)
         Me.TabOptions.TabIndex = 0
         Me.TabOptions.Text = "Options"
         Me.TabOptions.UseVisualStyleBackColor = True
+        '
+        'grpHelp
+        '
+        Me.grpHelp.Controls.Add(Me.PictureBox2)
+        Me.grpHelp.Controls.Add(Me.btnCmdline)
+        Me.grpHelp.Controls.Add(Me.PictureBox1)
+        Me.grpHelp.Controls.Add(Me.btnManual)
+        Me.grpHelp.Controls.Add(Me.btnRelease)
+        Me.grpHelp.Controls.Add(Me.btnWiki)
+        Me.grpHelp.Controls.Add(Me.btnWeb)
+        Me.grpHelp.Controls.Add(Me.btnAbout)
+        Me.grpHelp.Location = New System.Drawing.Point(6, 309)
+        Me.grpHelp.Name = "grpHelp"
+        Me.grpHelp.Size = New System.Drawing.Size(540, 635)
+        Me.grpHelp.TabIndex = 54
+        Me.grpHelp.TabStop = False
+        Me.grpHelp.Text = "Help/Resources"
+        '
+        'PictureBox2
+        '
+        Me.PictureBox2.Image = CType(resources.GetObject("PictureBox2.Image"), System.Drawing.Image)
+        Me.PictureBox2.Location = New System.Drawing.Point(4, 22)
+        Me.PictureBox2.Margin = New System.Windows.Forms.Padding(4)
+        Me.PictureBox2.Name = "PictureBox2"
+        Me.PictureBox2.Size = New System.Drawing.Size(273, 192)
+        Me.PictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
+        Me.PictureBox2.TabIndex = 51
+        Me.PictureBox2.TabStop = False
+        '
+        'btnCmdline
+        '
+        Me.btnCmdline.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnCmdline.Location = New System.Drawing.Point(411, 148)
+        Me.btnCmdline.Margin = New System.Windows.Forms.Padding(4)
+        Me.btnCmdline.Name = "btnCmdline"
+        Me.btnCmdline.Size = New System.Drawing.Size(120, 56)
+        Me.btnCmdline.TabIndex = 8
+        Me.btnCmdline.Text = "&Cmdline"
+        Me.btnCmdline.UseVisualStyleBackColor = True
+        '
+        'PictureBox1
+        '
+        Me.PictureBox1.Image = CType(resources.GetObject("PictureBox1.Image"), System.Drawing.Image)
+        Me.PictureBox1.Location = New System.Drawing.Point(105, 272)
+        Me.PictureBox1.Margin = New System.Windows.Forms.Padding(4)
+        Me.PictureBox1.Name = "PictureBox1"
+        Me.PictureBox1.Size = New System.Drawing.Size(324, 304)
+        Me.PictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage
+        Me.PictureBox1.TabIndex = 41
+        Me.PictureBox1.TabStop = False
+        '
+        'btnManual
+        '
+        Me.btnManual.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnManual.Location = New System.Drawing.Point(411, 21)
+        Me.btnManual.Margin = New System.Windows.Forms.Padding(4)
+        Me.btnManual.Name = "btnManual"
+        Me.btnManual.Size = New System.Drawing.Size(120, 56)
+        Me.btnManual.TabIndex = 7
+        Me.btnManual.Text = "Ma&nual (Github)"
+        Me.btnManual.UseVisualStyleBackColor = True
+        '
+        'btnRelease
+        '
+        Me.btnRelease.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnRelease.Location = New System.Drawing.Point(411, 84)
+        Me.btnRelease.Margin = New System.Windows.Forms.Padding(4)
+        Me.btnRelease.Name = "btnRelease"
+        Me.btnRelease.Size = New System.Drawing.Size(120, 56)
+        Me.btnRelease.TabIndex = 6
+        Me.btnRelease.Text = "La&test Release"
+        Me.btnRelease.UseVisualStyleBackColor = True
+        '
+        'btnWiki
+        '
+        Me.btnWiki.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnWiki.Location = New System.Drawing.Point(282, 148)
+        Me.btnWiki.Margin = New System.Windows.Forms.Padding(4)
+        Me.btnWiki.Name = "btnWiki"
+        Me.btnWiki.Size = New System.Drawing.Size(120, 56)
+        Me.btnWiki.TabIndex = 5
+        Me.btnWiki.Text = "M&KWiiki article"
+        Me.btnWiki.UseVisualStyleBackColor = True
+        '
+        'btnWeb
+        '
+        Me.btnWeb.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnWeb.Location = New System.Drawing.Point(282, 21)
+        Me.btnWeb.Name = "btnWeb"
+        Me.btnWeb.Size = New System.Drawing.Size(120, 56)
+        Me.btnWeb.TabIndex = 4
+        Me.btnWeb.Text = "Web&page"
+        Me.btnWeb.UseVisualStyleBackColor = True
+        '
+        'btnAbout
+        '
+        Me.btnAbout.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnAbout.Location = New System.Drawing.Point(282, 84)
+        Me.btnAbout.Margin = New System.Windows.Forms.Padding(4)
+        Me.btnAbout.Name = "btnAbout"
+        Me.btnAbout.Size = New System.Drawing.Size(120, 56)
+        Me.btnAbout.TabIndex = 3
+        Me.btnAbout.Text = "&About"
+        Me.btnAbout.UseVisualStyleBackColor = True
+        '
+        'grpOptions
+        '
+        Me.grpOptions.Controls.Add(Me.txtDataDir)
+        Me.grpOptions.Controls.Add(Me.btnDataDir)
+        Me.grpOptions.Controls.Add(Me.lblDataDir)
+        Me.grpOptions.Controls.Add(Me.chkLogFull)
+        Me.grpOptions.Controls.Add(Me.lblRoot)
+        Me.grpOptions.Controls.Add(Me.chkAudio)
+        Me.grpOptions.Controls.Add(Me.picOptions)
+        Me.grpOptions.Controls.Add(Me.chkEMusic)
+        Me.grpOptions.Controls.Add(Me.txtRoot)
+        Me.grpOptions.Controls.Add(Me.chkMsg)
+        Me.grpOptions.Controls.Add(Me.btnBrowseRoot)
+        Me.grpOptions.Controls.Add(Me.btnSaveSettings)
+        Me.grpOptions.Controls.Add(Me.lblFFMPEG)
+        Me.grpOptions.Controls.Add(Me.btnLoadSettings)
+        Me.grpOptions.Controls.Add(Me.txtFFMPEG)
+        Me.grpOptions.Controls.Add(Me.lblFFPlayTemp)
+        Me.grpOptions.Controls.Add(Me.btnBrowseFFMPEG)
+        Me.grpOptions.Controls.Add(Me.btnBrowseFFPlayTemp)
+        Me.grpOptions.Controls.Add(Me.txtTHPConv)
+        Me.grpOptions.Controls.Add(Me.txtFFPlayTemp)
+        Me.grpOptions.Controls.Add(Me.btnBrowseTHPConv)
+        Me.grpOptions.Controls.Add(Me.btniView)
+        Me.grpOptions.Controls.Add(Me.txtiView)
+        Me.grpOptions.Controls.Add(Me.lblTHPConv)
+        Me.grpOptions.Controls.Add(Me.lbliView)
+        Me.grpOptions.Location = New System.Drawing.Point(3, 7)
+        Me.grpOptions.Name = "grpOptions"
+        Me.grpOptions.Size = New System.Drawing.Size(543, 296)
+        Me.grpOptions.TabIndex = 53
+        Me.grpOptions.TabStop = False
+        Me.grpOptions.Text = "Options"
+        '
+        'txtDataDir
+        '
+        Me.txtDataDir.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.txtDataDir.Location = New System.Drawing.Point(108, 198)
+        Me.txtDataDir.Margin = New System.Windows.Forms.Padding(4)
+        Me.txtDataDir.Name = "txtDataDir"
+        Me.txtDataDir.ReadOnly = True
+        Me.txtDataDir.Size = New System.Drawing.Size(324, 22)
+        Me.txtDataDir.TabIndex = 55
+        Me.txtDataDir.TabStop = False
+        '
+        'btnDataDir
+        '
+        Me.btnDataDir.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnDataDir.Location = New System.Drawing.Point(440, 193)
+        Me.btnDataDir.Margin = New System.Windows.Forms.Padding(4)
+        Me.btnDataDir.Name = "btnDataDir"
+        Me.btnDataDir.Size = New System.Drawing.Size(97, 27)
+        Me.btnDataDir.TabIndex = 54
+        Me.btnDataDir.Text = "Brows&e"
+        Me.btnDataDir.UseVisualStyleBackColor = True
+        '
+        'lblDataDir
+        '
+        Me.lblDataDir.AutoSize = True
+        Me.lblDataDir.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lblDataDir.Location = New System.Drawing.Point(3, 200)
+        Me.lblDataDir.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
+        Me.lblDataDir.Name = "lblDataDir"
+        Me.lblDataDir.Size = New System.Drawing.Size(99, 17)
+        Me.lblDataDir.TabIndex = 56
+        Me.lblDataDir.Text = "Data File Dir"
+        '
+        'chkLogFull
+        '
+        Me.chkLogFull.AutoSize = True
+        Me.chkLogFull.Location = New System.Drawing.Point(75, 260)
+        Me.chkLogFull.Name = "chkLogFull"
+        Me.chkLogFull.Size = New System.Drawing.Size(96, 21)
+        Me.chkLogFull.TabIndex = 53
+        Me.chkLogFull.Text = "&Full Logs"
+        Me.chkLogFull.UseVisualStyleBackColor = True
+        '
+        'lblRoot
+        '
+        Me.lblRoot.AutoSize = True
+        Me.lblRoot.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lblRoot.Location = New System.Drawing.Point(27, 20)
+        Me.lblRoot.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
+        Me.lblRoot.Name = "lblRoot"
+        Me.lblRoot.Size = New System.Drawing.Size(78, 17)
+        Me.lblRoot.TabIndex = 0
+        Me.lblRoot.Text = "THP Root"
+        '
+        'chkAudio
+        '
+        Me.chkAudio.AutoSize = True
+        Me.chkAudio.Checked = True
+        Me.chkAudio.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.chkAudio.Location = New System.Drawing.Point(403, 233)
+        Me.chkAudio.Name = "chkAudio"
+        Me.chkAudio.Size = New System.Drawing.Size(71, 21)
+        Me.chkAudio.TabIndex = 52
+        Me.chkAudio.Text = "A&udio"
+        Me.chkAudio.UseVisualStyleBackColor = True
+        '
+        'picOptions
+        '
+        Me.picOptions.Image = CType(resources.GetObject("picOptions.Image"), System.Drawing.Image)
+        Me.picOptions.Location = New System.Drawing.Point(5, 225)
+        Me.picOptions.Margin = New System.Windows.Forms.Padding(4)
+        Me.picOptions.Name = "picOptions"
+        Me.picOptions.Size = New System.Drawing.Size(63, 56)
+        Me.picOptions.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage
+        Me.picOptions.TabIndex = 26
+        Me.picOptions.TabStop = False
+        '
+        'chkEMusic
+        '
+        Me.chkEMusic.AutoSize = True
+        Me.chkEMusic.Checked = True
+        Me.chkEMusic.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.chkEMusic.Location = New System.Drawing.Point(402, 260)
+        Me.chkEMusic.Name = "chkEMusic"
+        Me.chkEMusic.Size = New System.Drawing.Size(136, 21)
+        Me.chkEMusic.TabIndex = 51
+        Me.chkEMusic.Text = "Elevator &Music"
+        Me.chkEMusic.UseVisualStyleBackColor = True
+        '
+        'txtRoot
+        '
+        Me.txtRoot.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.txtRoot.Location = New System.Drawing.Point(108, 17)
+        Me.txtRoot.Margin = New System.Windows.Forms.Padding(4)
+        Me.txtRoot.Name = "txtRoot"
+        Me.txtRoot.ReadOnly = True
+        Me.txtRoot.Size = New System.Drawing.Size(324, 22)
+        Me.txtRoot.TabIndex = 0
+        Me.txtRoot.TabStop = False
+        Me.txtRoot.Text = "C:\Users\Anthony\Downloads\Output"
+        '
+        'chkMsg
+        '
+        Me.chkMsg.AutoSize = True
+        Me.chkMsg.Checked = True
+        Me.chkMsg.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.chkMsg.Location = New System.Drawing.Point(75, 233)
+        Me.chkMsg.Name = "chkMsg"
+        Me.chkMsg.Size = New System.Drawing.Size(124, 21)
+        Me.chkMsg.TabIndex = 50
+        Me.chkMsg.Text = "Less MsgBo&x"
+        Me.chkMsg.UseVisualStyleBackColor = True
+        '
+        'btnBrowseRoot
+        '
+        Me.btnBrowseRoot.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnBrowseRoot.Location = New System.Drawing.Point(440, 12)
+        Me.btnBrowseRoot.Margin = New System.Windows.Forms.Padding(4)
+        Me.btnBrowseRoot.Name = "btnBrowseRoot"
+        Me.btnBrowseRoot.Size = New System.Drawing.Size(97, 27)
+        Me.btnBrowseRoot.TabIndex = 0
+        Me.btnBrowseRoot.Text = "&Browse"
+        Me.btnBrowseRoot.UseVisualStyleBackColor = True
+        '
+        'btnSaveSettings
+        '
+        Me.btnSaveSettings.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnSaveSettings.Location = New System.Drawing.Point(286, 233)
+        Me.btnSaveSettings.Margin = New System.Windows.Forms.Padding(4)
+        Me.btnSaveSettings.Name = "btnSaveSettings"
+        Me.btnSaveSettings.Size = New System.Drawing.Size(72, 56)
+        Me.btnSaveSettings.TabIndex = 49
+        Me.btnSaveSettings.Text = "Sa&ve Settings"
+        Me.btnSaveSettings.UseVisualStyleBackColor = True
+        '
+        'lblFFMPEG
+        '
+        Me.lblFFMPEG.AutoSize = True
+        Me.lblFFMPEG.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lblFFMPEG.Location = New System.Drawing.Point(32, 46)
+        Me.lblFFMPEG.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
+        Me.lblFFMPEG.Name = "lblFFMPEG"
+        Me.lblFFMPEG.Size = New System.Drawing.Size(73, 34)
+        Me.lblFFMPEG.TabIndex = 35
+        Me.lblFFMPEG.Text = "FFMpeg" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "Exe Root"
+        '
+        'btnLoadSettings
+        '
+        Me.btnLoadSettings.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnLoadSettings.Location = New System.Drawing.Point(206, 233)
+        Me.btnLoadSettings.Margin = New System.Windows.Forms.Padding(4)
+        Me.btnLoadSettings.Name = "btnLoadSettings"
+        Me.btnLoadSettings.Size = New System.Drawing.Size(72, 56)
+        Me.btnLoadSettings.TabIndex = 48
+        Me.btnLoadSettings.Text = "&Load Settings"
+        Me.btnLoadSettings.UseVisualStyleBackColor = True
+        '
+        'txtFFMPEG
+        '
+        Me.txtFFMPEG.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.txtFFMPEG.Location = New System.Drawing.Point(108, 58)
+        Me.txtFFMPEG.Margin = New System.Windows.Forms.Padding(4)
+        Me.txtFFMPEG.Name = "txtFFMPEG"
+        Me.txtFFMPEG.ReadOnly = True
+        Me.txtFFMPEG.Size = New System.Drawing.Size(324, 22)
+        Me.txtFFMPEG.TabIndex = 36
+        Me.txtFFMPEG.TabStop = False
+        Me.txtFFMPEG.Text = "C:\Program Files (x86)\Media\Video\ffmpeg\ffmpeg-20181015-c27c7b4-win64-static\bi" & _
+            "n"
         '
         'lblFFPlayTemp
         '
         Me.lblFFPlayTemp.AutoSize = True
         Me.lblFFPlayTemp.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblFFPlayTemp.Location = New System.Drawing.Point(42, 89)
+        Me.lblFFPlayTemp.Location = New System.Drawing.Point(34, 85)
         Me.lblFFPlayTemp.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.lblFFPlayTemp.Name = "lblFFPlayTemp"
         Me.lblFFPlayTemp.Size = New System.Drawing.Size(66, 34)
         Me.lblFFPlayTemp.TabIndex = 47
         Me.lblFFPlayTemp.Text = "FFPlay" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "WorkDir"
         '
+        'btnBrowseFFMPEG
+        '
+        Me.btnBrowseFFMPEG.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnBrowseFFMPEG.Location = New System.Drawing.Point(440, 53)
+        Me.btnBrowseFFMPEG.Margin = New System.Windows.Forms.Padding(4)
+        Me.btnBrowseFFMPEG.Name = "btnBrowseFFMPEG"
+        Me.btnBrowseFFMPEG.Size = New System.Drawing.Size(97, 27)
+        Me.btnBrowseFFMPEG.TabIndex = 1
+        Me.btnBrowseFFMPEG.Text = "B&rowse"
+        Me.btnBrowseFFMPEG.UseVisualStyleBackColor = True
+        '
         'btnBrowseFFPlayTemp
         '
         Me.btnBrowseFFPlayTemp.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.btnBrowseFFPlayTemp.Location = New System.Drawing.Point(448, 89)
+        Me.btnBrowseFFPlayTemp.Location = New System.Drawing.Point(440, 85)
         Me.btnBrowseFFPlayTemp.Margin = New System.Windows.Forms.Padding(4)
         Me.btnBrowseFFPlayTemp.Name = "btnBrowseFFPlayTemp"
         Me.btnBrowseFFPlayTemp.Size = New System.Drawing.Size(97, 27)
@@ -1620,10 +2097,22 @@ Partial Class Main
         Me.btnBrowseFFPlayTemp.Text = "Br&owse"
         Me.btnBrowseFFPlayTemp.UseVisualStyleBackColor = True
         '
+        'txtTHPConv
+        '
+        Me.txtTHPConv.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.txtTHPConv.Location = New System.Drawing.Point(108, 163)
+        Me.txtTHPConv.Margin = New System.Windows.Forms.Padding(4)
+        Me.txtTHPConv.Name = "txtTHPConv"
+        Me.txtTHPConv.ReadOnly = True
+        Me.txtTHPConv.Size = New System.Drawing.Size(324, 22)
+        Me.txtTHPConv.TabIndex = 38
+        Me.txtTHPConv.TabStop = False
+        Me.txtTHPConv.Text = "E:\GC_Wii\Hacking\Tools\Video\THPGUI\THP\THPConv.exe"
+        '
         'txtFFPlayTemp
         '
         Me.txtFFPlayTemp.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.txtFFPlayTemp.Location = New System.Drawing.Point(116, 94)
+        Me.txtFFPlayTemp.Location = New System.Drawing.Point(108, 90)
         Me.txtFFPlayTemp.Margin = New System.Windows.Forms.Padding(4)
         Me.txtFFPlayTemp.Name = "txtFFPlayTemp"
         Me.txtFFPlayTemp.ReadOnly = True
@@ -1632,10 +2121,21 @@ Partial Class Main
         Me.txtFFPlayTemp.TabStop = False
         Me.txtFFPlayTemp.Text = "C:\Users\Anthony\Downloads\Output"
         '
+        'btnBrowseTHPConv
+        '
+        Me.btnBrowseTHPConv.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnBrowseTHPConv.Location = New System.Drawing.Point(440, 158)
+        Me.btnBrowseTHPConv.Margin = New System.Windows.Forms.Padding(4)
+        Me.btnBrowseTHPConv.Name = "btnBrowseTHPConv"
+        Me.btnBrowseTHPConv.Size = New System.Drawing.Size(97, 27)
+        Me.btnBrowseTHPConv.TabIndex = 2
+        Me.btnBrowseTHPConv.Text = "Brow&se"
+        Me.btnBrowseTHPConv.UseVisualStyleBackColor = True
+        '
         'btniView
         '
         Me.btniView.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.btniView.Location = New System.Drawing.Point(448, 127)
+        Me.btniView.Location = New System.Drawing.Point(440, 123)
         Me.btniView.Margin = New System.Windows.Forms.Padding(4)
         Me.btniView.Name = "btniView"
         Me.btniView.Size = New System.Drawing.Size(97, 27)
@@ -1646,7 +2146,7 @@ Partial Class Main
         'txtiView
         '
         Me.txtiView.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.txtiView.Location = New System.Drawing.Point(116, 132)
+        Me.txtiView.Location = New System.Drawing.Point(108, 128)
         Me.txtiView.Margin = New System.Windows.Forms.Padding(4)
         Me.txtiView.Name = "txtiView"
         Me.txtiView.ReadOnly = True
@@ -1655,152 +2155,27 @@ Partial Class Main
         Me.txtiView.TabStop = False
         Me.txtiView.Text = "C:\Program Files (x86)\Accessories\IrfanView\i_view32.exe"
         '
-        'lbliView
-        '
-        Me.lbliView.AutoSize = True
-        Me.lbliView.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lbliView.Location = New System.Drawing.Point(41, 135)
-        Me.lbliView.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
-        Me.lbliView.Name = "lbliView"
-        Me.lbliView.Size = New System.Drawing.Size(72, 17)
-        Me.lbliView.TabIndex = 43
-        Me.lbliView.Text = "Irfanview"
-        '
-        'PictureBox1
-        '
-        Me.PictureBox1.Image = CType(resources.GetObject("PictureBox1.Image"), System.Drawing.Image)
-        Me.PictureBox1.Location = New System.Drawing.Point(116, 334)
-        Me.PictureBox1.Margin = New System.Windows.Forms.Padding(4)
-        Me.PictureBox1.Name = "PictureBox1"
-        Me.PictureBox1.Size = New System.Drawing.Size(324, 304)
-        Me.PictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage
-        Me.PictureBox1.TabIndex = 41
-        Me.PictureBox1.TabStop = False
-        '
         'lblTHPConv
         '
         Me.lblTHPConv.AutoSize = True
         Me.lblTHPConv.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblTHPConv.Location = New System.Drawing.Point(7, 170)
+        Me.lblTHPConv.Location = New System.Drawing.Point(3, 165)
         Me.lblTHPConv.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.lblTHPConv.Name = "lblTHPConv"
         Me.lblTHPConv.Size = New System.Drawing.Size(106, 17)
         Me.lblTHPConv.TabIndex = 40
         Me.lblTHPConv.Text = "THPConv Exe"
         '
-        'picOptions
+        'lbliView
         '
-        Me.picOptions.Image = CType(resources.GetObject("picOptions.Image"), System.Drawing.Image)
-        Me.picOptions.Location = New System.Drawing.Point(313, 197)
-        Me.picOptions.Margin = New System.Windows.Forms.Padding(4)
-        Me.picOptions.Name = "picOptions"
-        Me.picOptions.Size = New System.Drawing.Size(127, 112)
-        Me.picOptions.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage
-        Me.picOptions.TabIndex = 26
-        Me.picOptions.TabStop = False
-        '
-        'btnAbout
-        '
-        Me.btnAbout.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.btnAbout.Location = New System.Drawing.Point(116, 197)
-        Me.btnAbout.Margin = New System.Windows.Forms.Padding(4)
-        Me.btnAbout.Name = "btnAbout"
-        Me.btnAbout.Size = New System.Drawing.Size(127, 112)
-        Me.btnAbout.TabIndex = 3
-        Me.btnAbout.Text = "&About"
-        Me.btnAbout.UseVisualStyleBackColor = True
-        '
-        'btnBrowseTHPConv
-        '
-        Me.btnBrowseTHPConv.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.btnBrowseTHPConv.Location = New System.Drawing.Point(448, 162)
-        Me.btnBrowseTHPConv.Margin = New System.Windows.Forms.Padding(4)
-        Me.btnBrowseTHPConv.Name = "btnBrowseTHPConv"
-        Me.btnBrowseTHPConv.Size = New System.Drawing.Size(97, 27)
-        Me.btnBrowseTHPConv.TabIndex = 2
-        Me.btnBrowseTHPConv.Text = "Brow&se"
-        Me.btnBrowseTHPConv.UseVisualStyleBackColor = True
-        '
-        'txtTHPConv
-        '
-        Me.txtTHPConv.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.txtTHPConv.Location = New System.Drawing.Point(116, 167)
-        Me.txtTHPConv.Margin = New System.Windows.Forms.Padding(4)
-        Me.txtTHPConv.Name = "txtTHPConv"
-        Me.txtTHPConv.ReadOnly = True
-        Me.txtTHPConv.Size = New System.Drawing.Size(324, 22)
-        Me.txtTHPConv.TabIndex = 38
-        Me.txtTHPConv.TabStop = False
-        Me.txtTHPConv.Text = "E:\GC_Wii\Hacking\Tools\Video\THPGUI\THP\THPConv.exe"
-        '
-        'btnBrowseFFMpeg
-        '
-        Me.btnBrowseFFMpeg.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.btnBrowseFFMpeg.Location = New System.Drawing.Point(448, 57)
-        Me.btnBrowseFFMpeg.Margin = New System.Windows.Forms.Padding(4)
-        Me.btnBrowseFFMpeg.Name = "btnBrowseFFMpeg"
-        Me.btnBrowseFFMpeg.Size = New System.Drawing.Size(97, 27)
-        Me.btnBrowseFFMpeg.TabIndex = 1
-        Me.btnBrowseFFMpeg.Text = "B&rowse"
-        Me.btnBrowseFFMpeg.UseVisualStyleBackColor = True
-        '
-        'txtFFMpeg
-        '
-        Me.txtFFMpeg.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.txtFFMpeg.Location = New System.Drawing.Point(116, 62)
-        Me.txtFFMpeg.Margin = New System.Windows.Forms.Padding(4)
-        Me.txtFFMpeg.Name = "txtFFMpeg"
-        Me.txtFFMpeg.ReadOnly = True
-        Me.txtFFMpeg.Size = New System.Drawing.Size(324, 22)
-        Me.txtFFMpeg.TabIndex = 36
-        Me.txtFFMpeg.TabStop = False
-        Me.txtFFMpeg.Text = "C:\Program Files (x86)\Media\Video\ffmpeg\ffmpeg-20181015-c27c7b4-win64-static\bi" & _
-            "n"
-        '
-        'lblFMpeg
-        '
-        Me.lblFMpeg.AutoSize = True
-        Me.lblFMpeg.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblFMpeg.Location = New System.Drawing.Point(40, 50)
-        Me.lblFMpeg.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
-        Me.lblFMpeg.Name = "lblFMpeg"
-        Me.lblFMpeg.Size = New System.Drawing.Size(73, 34)
-        Me.lblFMpeg.TabIndex = 35
-        Me.lblFMpeg.Text = "FFMpeg" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "Exe Root"
-        '
-        'btnBrowseRoot
-        '
-        Me.btnBrowseRoot.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.btnBrowseRoot.Location = New System.Drawing.Point(448, 16)
-        Me.btnBrowseRoot.Margin = New System.Windows.Forms.Padding(4)
-        Me.btnBrowseRoot.Name = "btnBrowseRoot"
-        Me.btnBrowseRoot.Size = New System.Drawing.Size(97, 27)
-        Me.btnBrowseRoot.TabIndex = 0
-        Me.btnBrowseRoot.Text = "&Browse"
-        Me.btnBrowseRoot.UseVisualStyleBackColor = True
-        '
-        'txtRoot
-        '
-        Me.txtRoot.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.txtRoot.Location = New System.Drawing.Point(116, 21)
-        Me.txtRoot.Margin = New System.Windows.Forms.Padding(4)
-        Me.txtRoot.Name = "txtRoot"
-        Me.txtRoot.ReadOnly = True
-        Me.txtRoot.Size = New System.Drawing.Size(324, 22)
-        Me.txtRoot.TabIndex = 0
-        Me.txtRoot.TabStop = False
-        Me.txtRoot.Text = "C:\Users\Anthony\Downloads\Output"
-        '
-        'lblRoot
-        '
-        Me.lblRoot.AutoSize = True
-        Me.lblRoot.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblRoot.Location = New System.Drawing.Point(35, 24)
-        Me.lblRoot.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
-        Me.lblRoot.Name = "lblRoot"
-        Me.lblRoot.Size = New System.Drawing.Size(78, 17)
-        Me.lblRoot.TabIndex = 0
-        Me.lblRoot.Text = "THP Root"
+        Me.lbliView.AutoSize = True
+        Me.lbliView.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lbliView.Location = New System.Drawing.Point(34, 131)
+        Me.lbliView.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
+        Me.lbliView.Name = "lbliView"
+        Me.lbliView.Size = New System.Drawing.Size(72, 17)
+        Me.lbliView.TabIndex = 43
+        Me.lbliView.Text = "Irfanview"
         '
         'tabApp
         '
@@ -1811,14 +2186,14 @@ Partial Class Main
         Me.tabApp.Margin = New System.Windows.Forms.Padding(4)
         Me.tabApp.Name = "tabApp"
         Me.tabApp.SelectedIndex = 0
-        Me.tabApp.Size = New System.Drawing.Size(561, 801)
+        Me.tabApp.Size = New System.Drawing.Size(561, 980)
         Me.tabApp.TabIndex = 0
         Me.tabApp.TabStop = False
         '
-        'LoadFMPegRoot
+        'LoadFFMPEGRoot
         '
-        Me.LoadFMPegRoot.Description = "Select the root exe directory for FFMpeg"
-        Me.LoadFMPegRoot.ShowNewFolderButton = False
+        Me.LoadFFMPEGRoot.Description = "Select the root exe directory for FFMpeg"
+        Me.LoadFFMPEGRoot.ShowNewFolderButton = False
         '
         'LoadTHPConv
         '
@@ -1844,18 +2219,41 @@ Partial Class Main
         Me.LoadiView.DefaultExt = "exe"
         Me.LoadiView.FileName = "i_view32.exe"
         Me.LoadiView.Filter = "Irfanview Executable|i_view32.exe"
-        Me.LoadiView.InitialDirectory = "C:\Program Files (x86)"
         '
         'LoadFFPlayWork
         '
         Me.LoadFFPlayWork.Description = "Select a working directory for FFPlay playback"
         Me.LoadFFPlayWork.ShowNewFolderButton = False
         '
+        'ofdLoadSettings
+        '
+        Me.ofdLoadSettings.DefaultExt = "ini"
+        Me.ofdLoadSettings.FileName = "thwimp.ini"
+        Me.ofdLoadSettings.Filter = "Thwimp Settings|*.ini"
+        '
+        'LoadDataDir
+        '
+        Me.LoadDataDir.Description = "Select the root directory for Data Files to use"
+        Me.LoadDataDir.ShowNewFolderButton = False
+        '
+        'ofdSaveSettings
+        '
+        Me.ofdSaveSettings.CheckFileExists = False
+        Me.ofdSaveSettings.DefaultExt = "ini"
+        Me.ofdSaveSettings.FileName = "thwimp.ini"
+        Me.ofdSaveSettings.Filter = "Thwimp Settings|*.ini"
+        '
+        'SaveLog
+        '
+        Me.SaveLog.CheckFileExists = False
+        Me.SaveLog.DefaultExt = "log"
+        Me.SaveLog.Filter = "Log file|*.log"
+        '
         'Main
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(8.0!, 16.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(564, 799)
+        Me.ClientSize = New System.Drawing.Size(564, 986)
         Me.Controls.Add(Me.tabApp)
         Me.DoubleBuffered = True
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle
@@ -1866,8 +2264,13 @@ Partial Class Main
         Me.Text = "Thwimp"
         Me.TabTHP.ResumeLayout(False)
         Me.TabTHP.PerformLayout()
+        Me.grpLog.ResumeLayout(False)
+        Me.grpLog.PerformLayout()
+        CType(Me.picLog, System.ComponentModel.ISupportInitialize).EndInit()
         Me.grpTHPEnc.ResumeLayout(False)
         Me.grpTHPEnc.PerformLayout()
+        Me.grpTHPEnc_Prog.ResumeLayout(False)
+        Me.grpTHPEnc_Prog.PerformLayout()
         CType(Me.nudTE_jpgq, System.ComponentModel.ISupportInitialize).EndInit()
         Me.grpTHPDec.ResumeLayout(False)
         Me.grpTHPDec.PerformLayout()
@@ -1894,8 +2297,11 @@ Partial Class Main
         Me.grpAudio.ResumeLayout(False)
         Me.grpAudio.PerformLayout()
         Me.TabOptions.ResumeLayout(False)
-        Me.TabOptions.PerformLayout()
+        Me.grpHelp.ResumeLayout(False)
+        CType(Me.PictureBox2, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.grpOptions.ResumeLayout(False)
+        Me.grpOptions.PerformLayout()
         CType(Me.picOptions, System.ComponentModel.ISupportInitialize).EndInit()
         Me.tabApp.ResumeLayout(False)
         Me.ResumeLayout(False)
@@ -1914,11 +2320,11 @@ Partial Class Main
     Friend WithEvents lblTHPConv As System.Windows.Forms.Label
     Friend WithEvents btnBrowseTHPConv As System.Windows.Forms.Button
     Friend WithEvents txtTHPConv As System.Windows.Forms.TextBox
-    Friend WithEvents btnBrowseFFMpeg As System.Windows.Forms.Button
-    Friend WithEvents txtFFMpeg As System.Windows.Forms.TextBox
-    Friend WithEvents lblFMpeg As System.Windows.Forms.Label
+    Friend WithEvents btnBrowseFFMPEG As System.Windows.Forms.Button
+    Friend WithEvents txtFFMPEG As System.Windows.Forms.TextBox
+    Friend WithEvents lblFFMPEG As System.Windows.Forms.Label
     Friend WithEvents cmbTHP As System.Windows.Forms.ComboBox
-    Friend WithEvents LoadFMPegRoot As System.Windows.Forms.FolderBrowserDialog
+    Friend WithEvents LoadFFMPEGRoot As System.Windows.Forms.FolderBrowserDialog
     Friend WithEvents LoadTHPConv As System.Windows.Forms.OpenFileDialog
     Friend WithEvents lblTHPFile As System.Windows.Forms.Label
     Friend WithEvents grpTHPInfo As System.Windows.Forms.GroupBox
@@ -2015,7 +2421,6 @@ Partial Class Main
     Friend WithEvents btniView As System.Windows.Forms.Button
     Friend WithEvents txtiView As System.Windows.Forms.TextBox
     Friend WithEvents lbliView As System.Windows.Forms.Label
-    Friend WithEvents LoadiView As System.Windows.Forms.OpenFileDialog
     Friend WithEvents lblTE_jpgq As System.Windows.Forms.Label
     Friend WithEvents nudTE_jpgq As System.Windows.Forms.NumericUpDown
     Friend WithEvents txtTD_FE As System.Windows.Forms.MaskedTextBox
@@ -2047,4 +2452,38 @@ Partial Class Main
     Friend WithEvents btnBrowseFFPlayTemp As System.Windows.Forms.Button
     Friend WithEvents txtFFPlayTemp As System.Windows.Forms.TextBox
     Friend WithEvents LoadFFPlayWork As System.Windows.Forms.FolderBrowserDialog
+    Friend WithEvents grpTHPEnc_Prog As System.Windows.Forms.GroupBox
+    Friend WithEvents txtTHPEnc_Prg_Cur As System.Windows.Forms.TextBox
+    Friend WithEvents txtTHPEnc_Prg_Ttl As System.Windows.Forms.TextBox
+    Friend WithEvents prgCur As System.Windows.Forms.ProgressBar
+    Friend WithEvents prgTotal As System.Windows.Forms.ProgressBar
+    Friend WithEvents picLog As System.Windows.Forms.PictureBox
+    Friend WithEvents txtLog As System.Windows.Forms.TextBox
+    Friend WithEvents grpLog As System.Windows.Forms.GroupBox
+    Friend WithEvents lblTHPEnc_Prg_Cur As System.Windows.Forms.Label
+    Friend WithEvents lblTHPEnc_Prg_Ttl As System.Windows.Forms.Label
+    Friend WithEvents chkMsg As System.Windows.Forms.CheckBox
+    Friend WithEvents btnSaveSettings As System.Windows.Forms.Button
+    Friend WithEvents btnLoadSettings As System.Windows.Forms.Button
+    Friend WithEvents chkEMusic As System.Windows.Forms.CheckBox
+    Friend WithEvents btnLogClear As System.Windows.Forms.Button
+    Friend WithEvents chkAudio As System.Windows.Forms.CheckBox
+    Friend WithEvents grpHelp As System.Windows.Forms.GroupBox
+    Friend WithEvents btnWeb As System.Windows.Forms.Button
+    Friend WithEvents grpOptions As System.Windows.Forms.GroupBox
+    Friend WithEvents chkLogFull As System.Windows.Forms.CheckBox
+    Friend WithEvents btnCmdline As System.Windows.Forms.Button
+    Friend WithEvents btnManual As System.Windows.Forms.Button
+    Friend WithEvents btnRelease As System.Windows.Forms.Button
+    Friend WithEvents btnWiki As System.Windows.Forms.Button
+    Friend WithEvents PictureBox2 As System.Windows.Forms.PictureBox
+    Friend WithEvents btnLogSave As System.Windows.Forms.Button
+    Friend WithEvents ofdLoadSettings As System.Windows.Forms.OpenFileDialog
+    Friend WithEvents txtDataDir As System.Windows.Forms.TextBox
+    Friend WithEvents btnDataDir As System.Windows.Forms.Button
+    Friend WithEvents lblDataDir As System.Windows.Forms.Label
+    Friend WithEvents LoadDataDir As System.Windows.Forms.FolderBrowserDialog
+    Friend WithEvents ofdSaveSettings As System.Windows.Forms.OpenFileDialog
+    Friend WithEvents LoadiView As System.Windows.Forms.OpenFileDialog
+    Friend WithEvents SaveLog As System.Windows.Forms.OpenFileDialog
 End Class

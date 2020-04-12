@@ -1,4 +1,4 @@
-﻿'Thwimp - FOSS utility for ripping, viewing, and creating THP video files for Mario Kart Wii
+﻿'Thwimp - GUI/CLI FOSS utility for ripping, viewing, and creating THP video files for Mario Kart Wii
 'Copyright (C) 2018-2020 Tamkis
 
 'This program is free software: you can redistribute it and/or modify
@@ -25,7 +25,12 @@ Public Class Main
     'Debug mode?
     'If enabled, don't hide THP tab, and use current contents for quick debugging)
     'If disabled, clear options tab items and forcibly set them every run
-    Shared DEBUG As Boolean = True
+    Shared DEBUG As Boolean = False
+
+    'Command-Line Interface Mode?
+    'This flag will be set if called from CommandLine with args, and will change the runtime behavior for errors etc.
+    '!@ NOT yet implemented!
+    Shared CLI_MODE As Boolean = False
 
     'Characters
     Shared strBAK As String = "\"                           'Backslash symbol
@@ -33,6 +38,7 @@ Public Class Main
     Shared strNL As String = Environment.NewLine            'Newline symbol
 
     Shared strPATH As String = Application.StartupPath      'Directory of the exe
+    Shared SONG As String = strPATH & strBAK & "Song.wav"   'Elevator music song file
     Const LISTING As String = "FileListing.txt"             'File containing the    file listing for BreakGOLD's image files
     Const CDESC As String = "FileCDesc.txt"                 '~                      description info for the control signal
     Const DESC As String = "FileDesc.txt"                   '~                      description info for the image files
@@ -125,11 +131,14 @@ Public Class Main
     Private Sub Main_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
         'Initialize the application with some setup code
 
-        'Disable form elements in THP tab (until the data in the "Options" tab is filled out)
-        'Hide THPFile lable and combo box, THP Info Group box, THP Dec/Encoder boxes
+        'Load Options tab
+        tabApp.SelectedIndex = 1
+
+        'if not debug mode, disable form elements in THP tab (until the data in the "Options" tab is filled out)
+        'Hide THPFile lable and combo box, THP Info Group box, THP Dec/Encoder boxes, Log group box
         If DEBUG = False Then
             txtRoot.Text = Nothing
-            txtFFMpeg.Text = Nothing
+            txtFFMPEG.Text = Nothing
             txtFFPlayTemp.Text = Nothing
             txtiView.Text = Nothing
             txtTHPConv.Text = Nothing
@@ -139,7 +148,11 @@ Public Class Main
             grpTHPInfo.Visible = False
             grpTHPDec.Visible = False
             grpTHPEnc.Visible = False
+            'grpLog.Visible = False
         End If
+
+        'Auto-assign DataFile directory to this exe's (default dir)
+        txtDataDir.Text = strPATH
 
         'Load the THP combo box data from the ext. files
         InitTHPData()
@@ -314,7 +327,7 @@ Public Class Main
             xFileData.Dispose()
             xFileData = Nothing
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Data file parsing/IO error!")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Data file parsing/ I/O error!", True)
         End Try
     End Sub
 
@@ -379,7 +392,7 @@ Public Class Main
             HandleRipTimeMasks()                            'Updates the masks for the start/end lengths for ripping (time)
             txtTE_D.Text = txtVF_T.Text.Length.ToString()   'Set default value in THPEnc for digits, based on the string.length of the video's total frames
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in cmbTHP_SelectedIndexChanged!")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in cmbTHP_SelectedIndexChanged!", True)
         End Try
     End Sub
 
@@ -398,7 +411,7 @@ Public Class Main
             'If both dims are not zero, then hasPadding
             If d.width <> 0 And d.height <> 0 Then outp = True
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in THPHasPad()")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in THPHasPad()", True)
         End Try
         Return outp
     End Function
@@ -426,11 +439,12 @@ Public Class Main
     Private Sub btnLoadRoot_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnBrowseRoot.Click
         Try
             'Load the LoadTHPRoot Load Dialog Box, user selects root directory of THP
+            AssignSelPath_FBD(LoadTHPRoot, txtRoot)
             If LoadTHPRoot.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
             txtRoot.Text = LoadTHPRoot.SelectedPath    'Dump the path into the textbox, for later retrieval
             CheckPathsSet()                             'Handle enabling THP Tab
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btnLoadRoot_Click!")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btnLoadRoot_Click!", True)
         End Try
     End Sub
 
@@ -443,11 +457,14 @@ Public Class Main
     Private Sub btniView_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btniView.Click
         'Load the LoadiView ofd, user selects i_view32.exe
         Try
+            'Set initial directory to path if set; else to either "C:\Program Files (x86)" or "C:\Program Files".
+            'Alt path used for compatibility with older, 32-bit Windows
+            AssignInitDir_OFD(LoadiView, txtiView, "C:\Program Files (x86)", "C:\Program Files")
             If LoadiView.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
             txtiView.Text = LoadiView.FileName      'Dump the path into the textbox, for later retrieval
-            CheckPathsSet()                             'Handle enabling THP Tab
+            CheckPathsSet()                         'Handle enabling THP Tab
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btniView_Click!")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btniView_Click!", True)
         End Try
     End Sub
 
@@ -457,14 +474,15 @@ Public Class Main
     ''' <param name="sender"></param>
     ''' <param name="e"></param>
     ''' <remarks></remarks>
-    Private Sub btnBrowseFFMpeg_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnBrowseFFMpeg.Click
+    Private Sub btnBrowseFFMPEG_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnBrowseFFMPEG.Click
         Try
             'Load the LoadFMPegRoot Load Dialog Box, user selects root directory of FFMpeg exes
-            If LoadFMPegRoot.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
-            txtFFMpeg.Text = LoadFMPegRoot.SelectedPath    'Dump the path into the textbox, for later retrieval
+            AssignSelPath_FBD(LoadFFMPEGRoot, txtFFMPEG)
+            If LoadFFMPEGRoot.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
+            txtFFMPEG.Text = LoadFFMPEGRoot.SelectedPath    'Dump the path into the textbox, for later retrieval
             CheckPathsSet()                             'Handle enabling THP Tab
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btnBrowseFFMpeg_Click!")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btnBrowseFFMpeg_Click!", True)
         End Try
     End Sub
 
@@ -477,12 +495,12 @@ Public Class Main
     Private Sub btnBrowseFFPlayTemp_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnBrowseFFPlayTemp.Click
         Try
             'Load the LoadFFPlayWork Load Dialog Box, user selects working directory
-            'If txtRoot.Text <> Nothing Then LoadFFPlayWork.RootFolder = txtRoot.Text
+            AssignSelPath_FBD(LoadFFPlayWork, txtFFPlayTemp)
             If LoadFFPlayWork.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
             txtFFPlayTemp.Text = LoadFFPlayWork.SelectedPath    'Dump the path into the textbox, for later retrieval
             CheckPathsSet()                                     'Handle enabling THP Tab
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btnBrowseFFPlayTemp_Click!")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btnBrowseFFPlayTemp_Click!", True)
         End Try
     End Sub
 
@@ -495,12 +513,383 @@ Public Class Main
     Private Sub btnBrowseTHPConv_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnBrowseTHPConv.Click
         'Load the LoadTHPConv ofd, user selects thpconv.exe
         Try
+            'Set initial directory to path if set; else to either "C:\Program Files (x86)" or "C:\Program Files".
+            'Alt path used for compatibility with older, 32-bit Windows
+            AssignInitDir_OFD(LoadTHPConv, txtTHPConv, "C:\Program Files (x86)", "C:\Program Files")
             If LoadTHPConv.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
             txtTHPConv.Text = LoadTHPConv.FileName      'Dump the path into the textbox, for later retrieval
             CheckPathsSet()                             'Handle enabling THP Tab
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btnBrowseTHPConv_Click!")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btnBrowseTHPConv_Click!", True)
         End Try
+    End Sub
+
+    ''' <summary>
+    ''' Handles loading the directory for the DB datafiles
+    ''' </summary>
+    ''' <param name="sender"></param>
+    ''' <param name="e"></param>
+    ''' <remarks></remarks>
+    Private Sub btnDataDir_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnDataDir.Click
+        Try
+            'Load the LoadDataDir Load Dialog Box, user selects root directory for data files                        
+            AssignSelPath_FBD(LoadDataDir, txtDataDir)
+            If LoadDataDir.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
+            txtDataDir.Text = LoadDataDir.SelectedPath  'Dump the path into the textbox, for later retrieval
+            CheckPathsSet()                             'Handle enabling THP Tab
+        Catch ex As Exception
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btnDataDir_Click!", True)
+        End Try
+    End Sub
+
+    ''' <summary>
+    ''' If the correpsonding path text box for a FolderBrowserDialog is set, use it's selectpath as initial directory; else set selectedPath to root for initial directory
+    ''' </summary>
+    ''' <param name="fbd">FolderBrowserDialog ref</param>
+    ''' <param name="dir">Corresponding textbox with path</param>
+    ''' <remarks></remarks>
+    Private Sub AssignSelPath_FBD(ByRef fbd As System.Windows.Forms.FolderBrowserDialog, ByVal dir As System.Windows.Forms.TextBox)
+        'If the textbox text set (NOT nothing and NOT empty), then set selectedPath to it; else set to String.Empty
+        If dir.Text <> Nothing And dir.Text <> String.Empty Then
+            fbd.SelectedPath = dir.Text
+        Else
+            fbd.SelectedPath = String.Empty
+        End If
+    End Sub
+
+    ''' <summary>
+    ''' If the correpsonding filepath text box for an OpenFileDialog is set, use it's path as initial directory; else set initial directory (main or alt if that doesn't exist)
+    ''' </summary>
+    ''' <param name="ofd">OpenFileDialog ref</param>
+    ''' <param name="selPath">Corresponding path textbox</param>
+    ''' <param name="initDir">Initial directory to use if path is not set</param>
+    ''' <param name="initDirAlt">Alternate to initDir if DNE</param>
+    ''' <remarks></remarks>
+    Private Sub AssignInitDir_OFD(ByRef ofd As System.Windows.Forms.OpenFileDialog, ByVal selPath As System.Windows.Forms.TextBox, ByVal initDir As String, ByVal initDirAlt As String)        
+        If selPath.Text <> Nothing And selPath.Text <> String.Empty Then
+            'If the textbox text set (NOT nothing and NOT empty), then set InitialDirectory to it            
+            ofd.InitialDirectory = Path.GetDirectoryName(selPath.Text)
+        Else
+            'If the textbox not set, then set InitialDirectory to InitDir. If that DNE, then set to initDirAlt
+            Dim exists As Boolean = False
+            exists = My.Computer.FileSystem.DirectoryExists(initDir)
+            If exists = True Then ofd.InitialDirectory = initDir Else ofd.InitialDirectory = initDirAlt
+        End If
+    End Sub
+
+    'Valid Thwimp.ini format:
+    '[Thwimp.ini va.b.c.e]   Magic header, a,b,c,d = version numbers (future compatibility purps)
+
+    'Followed by variable name = value
+
+    'Variable name  Usage                       Var type    Default value
+    'THPRoot        THP Root Path               String      Whatever
+    'FFMpegDir      FFMPEG Exe Path             String      Whatever
+    'FFplay_wdir    FFPlay Working Directory    String      Whatever
+    'irfanview      Irfanview Exe               String      C:\Dir\i_view32.exe (MUST be i_view32.exe)
+    'thpconv        THPConv exe                 String      C:\Dir\thpconv.exe (MUST be thpconv.exe)
+    'dataDir        Data files dir              String      0 (=exe path)
+    'audio          Audio?                      Bit string  1
+    'audio_bgm      Elevator music?             Bit string  1
+    'log_msgBox     Ignore nfo mbox during Enc? Bit string  1
+    'log_Full       Full logs (include cmds?)   Bit string  0
+
+    ''' <summary>
+    ''' Handles loading the INI settings file
+    ''' </summary>
+    ''' <param name="sender"></param>
+    ''' <param name="e"></param>
+    ''' <remarks></remarks>
+    Private Sub btnLoadSettings_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnLoadSettings.Click
+        Try
+            'Load the ofdLoadSettings ofd, user selects thwimp.ini
+            ofdLoadSettings.InitialDirectory = strPATH  'InitialDirectory is exe path
+            If ofdLoadSettings.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
+
+            'Parse its contents; if succesful loading, then Handle enabling THP Tab
+            Dim success As Boolean = LoadSettings(ofdLoadSettings.FileName)
+            If success Then CheckPathsSet()
+        Catch ex As Exception
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btnLoadSettings_Click!", True)
+        End Try
+    End Sub
+
+    ''' <summary>
+    ''' Parses the INI settings file, initalizes settings
+    ''' </summary>
+    ''' <param name="_file">INI file</param>
+    ''' <returns>Success?</returns>
+    ''' <remarks></remarks>
+    Private Function LoadSettings(ByVal _file As String)
+        Dim Success As Boolean = False  'Succesful parsing?
+        Dim xFileData As StreamReader   'Streamreader object for parsing the INI file
+        Dim _error As String            'Text for logs/errors
+        Dim line As Integer = 1     'Current line number in INI text file (used for logging)
+        Try
+            Dim strEntry As String      'ReadLine from INI file            
+            Dim version As String       'Thwimp INI version
+            Dim var As String           'Options variable
+            Const SEP As String = "="   'Separator delimitor char between variable/value (=)
+            Dim sepPt As Integer = 0    'Position SEP in line
+            Dim valStr As String        'Variable value interpreted as string
+            Dim valBln As Boolean       'Variable value interpreted as boolean
+
+            'Open the INI file
+            Log("Loading INI settings: " & _file, MsgBoxStyle.Information)
+            xFileData = File.OpenText(_file)
+
+            'Read first line (should be Thwimp INI magic header;
+            'see block-comment structure notes above ("Valid Thwimp.ini format")
+            strEntry = xFileData.ReadLine()
+
+            'Does the first line contain magic header? (Contains "[Thwimp.ini v" & "]"?)            
+            If ((strEntry.Contains("[Thwimp.ini v")) And (strEntry.Contains("]"))) Then
+                'If so, get version from header (remove everything except version from string)
+                _error = "Line " & line & ": Found magic header, " & strEntry
+                Log(_error, MsgBoxStyle.Information)
+                version = strEntry.Replace("[Thwimp.ini v", "")
+                version = version.Replace("]", "")
+            Else
+                'If does NOT, throw error; invalid INI file!
+                Throw New System.Exception("Invalid INI file! Does not contain valid magic header.")
+            End If
+
+            '!@ Do future enuming/whatever compatibility stuff here based on the version parts found,
+            'as this INI structure evolves
+            Log("INI version: " & version, MsgBoxStyle.Information)
+
+            'Read all other lines until EOF
+            While xFileData.EndOfStream = False
+
+                'Read this line, increment line
+                strEntry = xFileData.ReadLine()
+                line += 1
+
+                'If it does NOT contain and SEP, then not a variable definition; throw error
+                If strEntry.Contains(SEP) = False Then Throw New System.Exception("Syntax error: variable assignemnt not found!")
+
+                'Has SEP, get variable and its value definition
+                sepPt = strEntry.IndexOf(SEP)       'Find position of SEP char
+
+                'Get variable
+                var = Mid(strEntry, 1, sepPt)       'Get variable name as everything before SEP
+                var = Trim(var)                     'Remove leading/trailing spaces
+
+                'Get value
+                valStr = Mid(strEntry, sepPt + 2)   'Get value as string (everything after SEP sign)
+                valStr = Trim(valStr)               'Remove leading/trailing spaces
+
+                'Handle each valid variable type;
+                'parse its value and dump into appropriate application variables for settings initz
+                'See block-comment structure notes above ("Valid Thwimp.ini format") for valid variables and value meanings
+
+                'Is this a valid variable/syntax?
+                Dim valid As Boolean = True
+                Select Case var
+                    'These are abs directory/file paths
+                    Case "THPRoot"
+                        txtRoot.Text = valStr
+                    Case "FFMpegDir"
+                        txtFFMPEG.Text = valStr
+                    Case "FFplay_wdir"
+                        txtFFPlayTemp.Text = valStr
+                    Case "irfanview"
+                        txtiView.Text = valStr
+                    Case "thpconv"
+                        txtTHPConv.Text = valStr
+                    Case "dataDir"
+                        'Data Directory needs special handling; if "0", then use exe path; else use value
+                        If valStr = "0" Then
+                            txtDataDir.Text = strPATH
+                        Else
+                            txtDataDir.Text = valStr
+                        End If
+
+                        'These are boolean options
+                        'Parse each string value as byte, then convert its bit value to bool
+                    Case "audio"
+                        valBln = BitToBool(TryParseErr_Byte(valStr))
+                        chkAudio.Checked = valBln
+                    Case "audio_bgm"
+                        valBln = BitToBool(TryParseErr_Byte(valStr))
+                        chkEMusic.Checked = valBln
+                    Case "log_msgBox"
+                        valBln = BitToBool(TryParseErr_Byte(valStr))
+                        chkMsg.Checked = valBln
+                    Case "log_Full"
+                        valBln = BitToBool(TryParseErr_Byte(valStr))
+                        chkLogFull.Checked = valBln
+
+                    Case Else
+                        'Everything else invalid, ignore, but log syntax error as warning
+                        valid = False
+                        _error = "Line " & line & ": variable syntax error (" & strEntry & ")"
+                        Log(_error, MsgBoxStyle.Exclamation)
+                End Select
+
+                'Log this line if valid
+                If valid Then
+                    _error = "Line " & line.ToString() & ": " & strEntry
+                    Log(_error, MsgBoxStyle.Information)
+                End If
+            End While
+
+            'Successful parsing!
+            Success = True
+        Catch ex As Exception
+            'If error, log error message + INI Line number that threw error
+            _error = ex.Message & strNL & "INI line: " & line
+            Log_MsgBox(_error, MsgBoxStyle.Critical, "Error loading settings INI file!", True)
+        End Try
+
+        'If xFileData is not null, then close, dispose, and nullify
+        If IsNothing(xFileData) = False Then
+            xFileData.Close()
+            xFileData.Dispose()
+            xFileData = Nothing
+        End If
+
+        'Return success
+        Return Success
+    End Function
+
+    ''' <summary>
+    ''' Handles saving the INI settings file
+    ''' </summary>
+    ''' <param name="sender"></param>
+    ''' <param name="e"></param>
+    ''' <remarks></remarks>
+    Private Sub btnSaveSettings_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnSaveSettings.Click
+        Try
+            'Load the ofdSaveSettings ofd, user selects thwimp.ini
+            ofdSaveSettings.InitialDirectory = strPATH  'Set inital dir to exe path
+            If ofdSaveSettings.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
+
+            'Save settings; if success, then display msgbox
+            Dim success As Boolean = SaveSettings(ofdSaveSettings.FileName)
+            If success Then Log_MsgBox("Succesfully saved INI settings to " & ofdSaveSettings.FileName & "!", MsgBoxStyle.Information, "INI saved", True)
+        Catch ex As Exception
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btnSaveSettings_Click!", True)
+        End Try
+    End Sub
+
+    ''' <summary>
+    ''' Dumps settings into valid INI file
+    ''' </summary>
+    ''' <param name="_file">INI file</param>
+    ''' <returns>Success?</returns>
+    ''' <remarks></remarks>
+    Private Function SaveSettings(ByVal _file As String)
+        Dim Success As Boolean = False  'Successful saving?
+        Dim xFileData As StreamWriter   'Streamwriter object for writing INI data 
+        Try
+            Dim strEntry As String      'Line to write
+            Dim val As Byte             'Value, as byte
+            Dim version As String       'INI version
+            Const sep As String = " = " 'Variable assignment separator
+
+            'StreamWriter for (over)writing INI settings (as ASCII)
+            xFileData = New StreamWriter(_file, False, System.Text.Encoding.ASCII)
+
+            'Version of this exe
+            version = ProductVersion
+
+            'Write magic header ("[Thwimp.ini va.b.c.d]")
+            strEntry = "[Thwimp.ini v" & version & "]"
+            xFileData.WriteLine(strEntry)
+
+            '!@ Do future enuming/whatever compat stuff here based on the version parts found
+
+            'Write variables
+            'File/Directory strings
+            SaveSettings_WriteVar(xFileData, "THPRoot", sep, txtRoot.Text)
+            SaveSettings_WriteVar(xFileData, "FFMpegDir", sep, txtFFMPEG.Text)
+            SaveSettings_WriteVar(xFileData, "FFplay_wdir", sep, txtFFPlayTemp.Text)
+            SaveSettings_WriteVar(xFileData, "irfanview", sep, txtiView.Text)
+            SaveSettings_WriteVar(xFileData, "thpconv", sep, txtTHPConv.Text)
+
+            'Data directory is special:
+            'If it is the exe path, write "0"; else path
+            If txtDataDir.Text = strPATH Then
+                strEntry = "0"
+            Else
+                strEntry = txtDataDir.Text
+            End If
+            SaveSettings_WriteVar(xFileData, "dataDir", sep, strEntry)
+
+            'Bits
+            SaveSettings_Bool(xFileData, "audio", sep, chkAudio.Checked)
+            SaveSettings_Bool(xFileData, "audio_bgm", sep, chkEMusic.Checked)
+            SaveSettings_Bool(xFileData, "log_msgBox", sep, chkMsg.Checked)
+            SaveSettings_Bool(xFileData, "log_Full", sep, chkLogFull.Checked)
+
+            'Sucessful writing!
+            Success = True
+        Catch ex As Exception
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error loading settings INI file!", True)
+        End Try
+
+        If IsNothing(xFileData) = False Then
+            xFileData.Close()
+            xFileData.Dispose()
+            xFileData = Nothing
+        End If
+
+        'Delete corrupted INI file if exists onFailure
+        If Success = False Then
+            If My.Computer.FileSystem.FileExists(_file) Then My.Computer.FileSystem.DeleteFile(_file)
+        End If
+        Return Success
+    End Function
+
+    ''' <summary>
+    ''' Helper function for SaveSettings, which writes a variable definition entry
+    ''' </summary>
+    ''' <param name="xFileData">StreamWrite for file</param>
+    ''' <param name="var">Variable string</param>
+    ''' <param name="sep">Assignment char/sep</param>
+    ''' <param name="val">Variable value string</param>
+    ''' <remarks></remarks>
+    Private Sub SaveSettings_WriteVar(ByRef xFileData As StreamWriter, ByVal var As String, ByVal sep As String, ByVal val As String)
+        'Line to write: variable + separator + value
+        Dim line As String = var & sep & val
+        xFileData.WriteLine(line)
+    End Sub
+
+    ''' <summary>
+    ''' Helper function for SaveSettings, which writes a variable definition entry for a boolean variable
+    ''' </summary>
+    ''' <param name="xFileData">StreamWrite for file</param>
+    ''' <param name="var">Variable string</param>
+    ''' <param name="sep">Assignment char/sep</param>
+    ''' <param name="val">Variable boolean value</param>
+    ''' <remarks></remarks>
+    Private Sub SaveSettings_Bool(ByRef xFileData As StreamWriter, ByVal var As String, ByVal sep As String, ByVal val As Boolean)
+        Dim v As Byte = BoolToBit(val)          'Convert bool to bit
+        Dim strEntry As String = v.ToString()   'Convert bit to string
+        'Write variable
+        SaveSettings_WriteVar(xFileData, var, sep, strEntry)
+    End Sub
+
+    ''' <summary>
+    ''' On checking of chkAudio, toggle chkEMusic.Enabled
+    ''' </summary>
+    ''' <param name="sender"></param>
+    ''' <param name="e"></param>
+    ''' <remarks></remarks>
+    Private Sub chkAudio_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkAudio.CheckedChanged
+        chkEMusic.Enabled = chkAudio.Checked
+    End Sub
+
+    '!@
+    ''' <summary>
+    ''' On settting chkLogFull.checked, throw msg saying feature unsupported
+    ''' </summary>
+    ''' <param name="sender"></param>
+    ''' <param name="e"></param>
+    ''' <remarks></remarks>
+    Private Sub chkLogFull_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkLogFull.CheckedChanged
+        If chkLogFull.Checked Then Log_MsgBox("Feature not yet implemented!", MsgBoxStyle.Exclamation, "Unsupported", True)
     End Sub
 
     ''' <summary>
@@ -509,11 +898,13 @@ Public Class Main
     ''' <remarks></remarks>
     Private Sub CheckPathsSet()
         'Options det to be filled if something
-        If (txtRoot.Text <> Nothing) And (txtFFMpeg.Text <> Nothing) And (txtiView.Text <> Nothing) And (txtTHPConv.Text <> Nothing) And (txtFFPlayTemp.Text <> Nothing) Then
-            'Make everything in the THP tab visible now (THPFile lable and combo box, whole THP Info group box)
+        If (txtRoot.Text <> Nothing) And (txtFFMPEG.Text <> Nothing) And (txtiView.Text <> Nothing) And (txtTHPConv.Text <> Nothing) And (txtFFPlayTemp.Text <> Nothing) And (txtDataDir.Text <> Nothing) Then
+            'Make everything in the THP tab visible now (THPFile label and combo box, whole THP Info group box, Log group)
+            btnLogClear.PerformClick()
             lblTHPFile.Visible = True
             cmbTHP.Visible = True
             grpTHPInfo.Visible = True
+            'grpLog.Visible = True
         End If
     End Sub
 
@@ -525,11 +916,81 @@ Public Class Main
     ''' <remarks></remarks>
     Private Sub btnAbout_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnAbout.Click
         Try
-            My.Computer.Audio.Play(My.Resources.EagleSoft, AudioPlayMode.Background)    'Play "EagleSoft Ltd"
+            If chkAudio.Checked Then My.Computer.Audio.Play(My.Resources.EagleSoft, AudioPlayMode.Background) 'Play "EagleSoft Ltd"
             About.ShowDialog()                                                          'Show the about box
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error with showing About box!")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error with showing About box!", True)
         End Try
+    End Sub
+
+    ''' <summary>
+    ''' Handles btnWeb click (goto EagleSoft Ltd. Thwimp webpage)
+    ''' </summary>
+    ''' <param name="sender"></param>
+    ''' <param name="e"></param>
+    ''' <remarks></remarks>
+    Private Sub btnWeb_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnWeb.Click
+        NavigateWebURL("http://www.eaglesoftltd.com/retro/Nintendo-Wii/thwimp")
+    End Sub
+
+    ''' <summary>
+    ''' Handles btnWiki click (goto MKWiiki Thwimp article)
+    ''' </summary>
+    ''' <param name="sender"></param>
+    ''' <param name="e"></param>
+    ''' <remarks></remarks>
+    Private Sub btnWiki_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnWiki.Click
+        NavigateWebURL("http://wiki.tockdom.com/wiki/Thwimp")
+    End Sub
+
+    ''' <summary>
+    ''' Handles btnManual click (goto Thwimp Github readme)
+    ''' </summary>
+    ''' <param name="sender"></param>
+    ''' <param name="e"></param>
+    ''' <remarks></remarks>
+    Private Sub btnManual_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnManual.Click
+        NavigateWebURL("https://github.com/Tamk1s/Thwimp/blob/master/README.md")
+    End Sub
+
+    ''' <summary>
+    ''' Handles btnRelease click (goto Github releases page)
+    ''' </summary>
+    ''' <param name="sender"></param>
+    ''' <param name="e"></param>
+    ''' <remarks></remarks>
+    Private Sub btnRelease_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnRelease.Click
+        NavigateWebURL("https://github.com/Tamk1s/Thwimp/releases")
+    End Sub
+
+    ''' <summary>
+    ''' Properly loads the default browser and goto URL
+    ''' </summary>
+    ''' <param name="URL">URL to load</param>
+    ''' <remarks>
+    ''' https://faithlife.codes/blog/2008/01/using_processstart_to_link_to/
+    ''' https://stackoverflow.com/a/15192260
+    ''' </remarks>
+    Private Sub NavigateWebURL(ByVal URL As String)
+        Try
+            'Show AppStarting cursor, to prevent application hang; then goto URL
+            Me.Cursor = Cursors.AppStarting
+            Process.Start(URL)
+        Catch ex As Exception
+            'Catch but don't handle fake errors (see blog article)
+        End Try
+        'Restore default cursor
+        Me.Cursor = Cursors.Default
+    End Sub
+
+    ''' <summary>
+    ''' Handles btnCmdline click (displays command line options, saves to text file for ref)
+    ''' </summary>
+    ''' <param name="sender"></param>
+    ''' <param name="e"></param>
+    ''' <remarks>'!@ Not yet implemented!</remarks>
+    Private Sub btnCmdline_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnCmdline.Click
+        Log_MsgBox("Not yet implemented", MsgBoxStyle.Exclamation, "Unsupported", True)
     End Sub
 
     '===========================
@@ -573,7 +1034,7 @@ Public Class Main
             'and start/end frames do not match THP vids' min/max, throw error.
             'This will force users to set those values as such, to ensure ripping of dummy frames work
             'I'm lazy :P
-            If Type = True Then
+            If type = True Then
                 Dim min As UShort = 1
                 Dim max As UShort = TryParseErr_UShort(txtVF_T.Text)
                 If _start <> min Or _end <> max Then
@@ -596,7 +1057,7 @@ Public Class Main
                 'If THP does not have audio
 
                 'Just Playback file using crop settings and time frame settings
-                cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFPlay & strQUOT  'FFPlay command: "C:\FDIR\ffplay.exe"
+                cmd = strQUOT & txtFFMPEG.Text & strBAK & exeFPlay & strQUOT  'FFPlay command: "C:\FDIR\ffplay.exe"
                 file = " " & strQUOT & txtRoot.Text & cmbTHP.Text & strQUOT   'input file: "C:\THPDIR\file.THP"
 
                 'Arguments: input_file + -vf "crop=w:h:x:y,select=between(n\,start_frame\,end_frame),setpts=PTS-STARTPTS" & strQUOT
@@ -614,7 +1075,7 @@ Public Class Main
                 'If THP has audio, we must rip/convert audio and video streams as MP4
                 'with crop/time frame settings applied, and then re-merge for playback
 
-                'Has to be done like this, due to not FOSS THP encoder in FFMPEG/PLAY available
+                'Has to be done like this, due to no FOSS THP encoder in FFMPEG/PLAY available
                 '(Thanks, N1nt3nd0 :( )
 
                 'Precise synchronized AV cutting:
@@ -629,7 +1090,7 @@ Public Class Main
 
                 'Step 1: Rip video only as mp4 (FFMPEG)
                 'ffmpeg -i video.thp -y -an -vcodec h264 -vf "crop=w:h:x:y, select=between(n\,start_Frame\,end_frame),setpts=PTS-STARTPTS" video.mp4
-                cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT                    'FFMPEG command: "C:\FDIR\ffmpeg.exe"
+                cmd = strQUOT & txtFFMPEG.Text & strBAK & exeFMPeg & strQUOT                    'FFMPEG command: "C:\FDIR\ffmpeg.exe"
                 file = strQUOT & txtRoot.Text & cmbTHP.Text & strQUOT                           'input file: "C:\THPDIR\file.THP"
                 file2 = strQUOT & txtFFPlayTemp.Text & strBAK & "video.mp4" & strQUOT           'Output file: "C:\THPPlayWorkDir\video.mp4"
 
@@ -644,7 +1105,6 @@ Public Class Main
                 shell.Start()
                 shell.WaitForExit()
                 shell.Close()
-
 
                 'Step 2: Rip audio only as mp4 (FFMPEG)
                 'ffmpeg -i video.thp -vn -ss audio_Start -to audio_End audio.mp4
@@ -661,7 +1121,6 @@ Public Class Main
                 shell.Start()
                 shell.WaitForExit()
                 shell.Close()
-
 
                 'Step 3: Merge both mp4 streams (FFMPEG)
                 'ffmpeg -i video.mp4 -i audio.mp4 -c:v copy -c:a copy temp.mp4
@@ -681,7 +1140,7 @@ Public Class Main
 
                 'Step 4: playback final video
                 'ffplay.exe "temp.mp4"
-                cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFPlay & strQUOT                'FFPlay command: "C:\FDIR\ffplay.exe"
+                cmd = strQUOT & txtFFMPEG.Text & strBAK & exeFPlay & strQUOT                'FFPlay command: "C:\FDIR\ffplay.exe"
                 file = " " & strQUOT & txtFFPlayTemp.Text & strBAK & "temp.mp4" & strQUOT   'Playback file: "C:\FFPlayWorkDir\temp.mp4"
 
                 startInfo.FileName = cmd & file
@@ -693,7 +1152,7 @@ Public Class Main
                 shell.Close()
             End If
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error during playback!")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error during playback!", True)
         End Try
 
         'Cleanup temp playback files
@@ -703,20 +1162,52 @@ Public Class Main
     ''' <summary>
     ''' Cleanus up leftover FFPlay temp conversion playback files
     ''' </summary>
+    ''' <param name="track">Track CurPrg (THPEnc)?</param>
+    ''' <param name="track_stringS">Start string to display (tracking)</param>
+    ''' <param name="track_stringE">End string to display (tracking)</param>
     ''' <remarks></remarks>
-    Private Sub CleanUp_Playback()
+    Private Sub CleanUp_Playback(Optional ByVal track As Boolean = False, Optional ByVal track_stringS As String = "", Optional ByVal track_stringE As String = "")
+        'Current progress
+        Dim CurPrg(2) As Single
         Try
-            'Delete "C:\FFPlayWorkDir\video.mp4", "\audio.mp4", and "temp.mp4" if exist
+            'If tracking, set current progress to 0, max progress to 3, display start string at 0% (set/don't wait)
+            If track Then
+                CurPrg(0) = 0
+                CurPrg(1) = 3
+                UpdateProg_Cur(CurPrg, track_stringS, True, False)
+            End If
 
+            'Delete "C:\FFPlayWorkDir\video.mp4", "\audio.mp4", and "temp.mp4" if exist
             Dim FFPlayRoot As String = txtFFPlayTemp.Text & strBAK              'FFPlay directory
             Dim File As String = strQUOT & FFPlayRoot & "video.mp4" & strQUOT   'Abs path to file to try deleting
             If System.IO.File.Exists(File) Then My.Computer.FileSystem.DeleteFile(File)
+            'If tracking, update progress
+            If track Then
+                CurPrg(0) += 1
+                UpdateProg_Cur(CurPrg)
+            End If
+
             File = strQUOT & FFPlayRoot & "audio.mp4" & strQUOT
             If System.IO.File.Exists(File) Then My.Computer.FileSystem.DeleteFile(File)
+            'If tracking, update progress
+            If track Then
+                CurPrg(0) += 1
+                UpdateProg_Cur(CurPrg)
+            End If
+
             File = strQUOT & FFPlayRoot & "temp.mp4" & strQUOT
             If System.IO.File.Exists(File) Then My.Computer.FileSystem.DeleteFile(File)
+            'If tracking, update progress
+            If track Then
+                CurPrg(0) += 1
+                UpdateProg_Cur(CurPrg)
+
+                'Set to 100%, display end string (append/wait)
+                CurPrg(0) = CurPrg(1)
+                UpdateProg_Cur(CurPrg, track_stringE, False, True)
+            End If
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "CleanUp_Playback error!")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "CleanUp_Playback error!", True)
         End Try
     End Sub
 
@@ -732,8 +1223,8 @@ Public Class Main
             Dim inFile As String = txtRoot.Text & cmbTHP.Text   'Input file. C:\PathToTHP\DIRtoTHP\file.thp"
             Dim initDir As String = FileDir(inFile)             'Initial directory. Directory of inFile
             Dim newFile As String = FileAndExt(cmbTHP.Text)     'New file. "Filename.thp" from inFile
-            Dim file As String = ""
-            Dim file2 As String = ""
+            Dim file As String = ""                             'Generic file register 1
+            Dim file2 As String = ""                            'Generic file register 2
             Dim type As Boolean = chkRipDumF.Checked            'Type of ripping to do. True=Rip dummy frames
             newFile = newFile.Replace(".thp", "")               'Remove extension from newFile, just get filename-ext
 
@@ -785,7 +1276,7 @@ Public Class Main
 
             'Step 1: Convert THP to temp MP4. Encode THP to H264 MP4 with crop filter
             '"C:\FFMPegPath\ffmpeg.exe"
-            cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT
+            cmd = strQUOT & txtFFMPEG.Text & strBAK & exeFMPeg & strQUOT
             ' -i C:\PathToTHP\DIRtoTHP\file.thp -vcodec h264 -y -filter:v "crop=out_w:out_h:x:y" "C:\OutputDir\output.mp4"
             cmd &= " -y -i " & strQUOT & inFile & strQUOT & " -vcodec h264 -filter:v " & strQUOT & "crop=" & w & ":" & h & ":" & x & ":" & y & strQUOT & " " & strQUOT & tempFile & strQUOT
 
@@ -800,9 +1291,10 @@ Public Class Main
             shell.Start()
             shell.WaitForExit()
 
+
             'Step 2: Convert temp mp4 to final MP4, cutting between start and end frames
             '"C:\FFMPegPath\ffmpeg.exe"
-            cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT
+            cmd = strQUOT & txtFFMPEG.Text & strBAK & exeFMPeg & strQUOT
             ' -y -i C:\PathToTHP\DIRtoTHP\file.thp -vcodec h264 -an -vf select="between(n\,start_frame\,end_frame),setpts=PTS-STARTPTS" "C:\OutputDir\output.mp4"
             cmd &= " -y -i " & strQUOT & tempFile & strQUOT & " -vcodec h264 -an -vf select=" & strQUOT & "between(n" & strBAK & "," & _start & strBAK & "," & _end & "),setpts=PTS-STARTPTS" & strQUOT
             cmd &= " " & strQUOT & outFile & strQUOT
@@ -830,12 +1322,13 @@ Public Class Main
                 'ffmpeg.exe -y -i video.thp -vn -ss audio_Start -to audio_End "C:\OutputDir\file.wav" 
 
                 '"C:\FFMPegPath\FFMPEG.exe"
-                cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT
+                cmd = strQUOT & txtFFMPEG.Text & strBAK & exeFMPeg & strQUOT
                 '-y -i "C:\PathToTHP\DIRtoTHP\file.thp" -vn -ss audio_Start -to audio_End output_file
                 'Note ToString("G9") format is the recommended one for "RoundTripping" a single
                 cmd &= " -y -i " & strQUOT & inFile & strQUOT & " -vn -ss " & _aStart.ToString("G9") & " -to " & _aEnd.ToString("G9") & " "
                 '"C:\OutputDir\file.wav"
                 cmd &= strQUOT & outPath & FileAndExt(inFile).Replace(".thp", ".wav") & strQUOT
+
                 'Run the cmd
                 startInfo.FileName = cmd
                 shell.StartInfo = startInfo
@@ -849,7 +1342,7 @@ Public Class Main
                 'Keep only 1st frame for each multiplicty, rename to "dummy_N.bmp", delete excess frames
 
                 '"C:\FFMPegPath\FFMPEG.exe" -y 
-                cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT & " -y "
+                cmd = strQUOT & txtFFMPEG.Text & strBAK & exeFMPeg & strQUOT & " -y "
 
                 'Output ctrl MP4 to .bmp frames
                 Dim d As String = ""                                                    'Printf digit formatter thingy (pad to N digits)
@@ -899,11 +1392,68 @@ Public Class Main
 
             'Thwimp kicks dat Koopa shell away!
             shell.Close()
-            MsgBox("Video ripped!", MsgBoxStyle.Information, "Success!")
+            If chkAudio.Checked Then My.Computer.Audio.Play(My.Resources.success, AudioPlayMode.Background)
+            Log_MsgBox("Video ripped!", MsgBoxStyle.Information, "Success!", True)
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error during ripping!")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error during ripping!", True)
         End Try
     End Sub
+
+    '!@ WIP
+    ''' <summary>
+    ''' 
+    ''' </summary>
+    ''' <param name="cmd"></param>
+    ''' <param name="envvar"></param>
+    ''' <param name="envval"></param>
+    ''' <param name="Special"></param>
+    ''' <param name="shell"></param>
+    ''' <param name="outputBuff"></param>
+    ''' <remarks></remarks>
+    'Private Sub RunProcess(ByVal cmd As String, Optional ByRef envvar() As String = Nothing, Optional ByRef envval() As String = Nothing, Optional ByVal Special As Boolean = False, Optional ByRef shell As Process = Nothing, Optional ByRef outputBuff As StreamReader = Nothing)
+    '    Try
+    '        Dim full As Boolean = chkLogFull.Checked
+    '        Dim startInfo As ProcessStartInfo
+    '        startInfo = New ProcessStartInfo
+
+    '        If ((IsNothing(envvar) = False) And (IsNothing(envval) = False)) Then
+    '            If envvar.Count <> envval.Count Then Throw New System.Exception("Dictionary size mismatch for Envvar/val pairs!")
+    '            Dim i As Byte = 1
+    '            Dim max As Byte = envval.Count()
+    '            max -= 1
+    '            For i = 0 To max
+    '                startInfo.EnvironmentVariables(envvar(i)) = envval(i)
+    '            Next i
+    '        End If
+    '        startInfo.FileName = cmd
+    '        startInfo.UseShellExecute = False
+    '        If full Then
+    '            startInfo.ErrorDialog = False
+    '            startInfo.RedirectStandardOutput = True
+    '        End If
+    '        shell = New Process
+    '        shell.StartInfo = startInfo
+    '        shell.Start()
+    '        If full Then outputBuff = shell.StandardOutput
+    '        If Special = False Then
+    '            shell.WaitForExit()
+    '            If full Then
+    '                Log(outputBuff.ReadToEnd, MsgBoxStyle.Information)
+    '                outputBuff.Close()
+    '                outputBuff.Dispose()
+    '                outputBuff = Nothing
+    '            End If
+    '        End If
+    '    Catch ex As System.Exception
+    '        Dim text As String = ex.Message
+    '        text &= strNL & strNL & "arguments:" & strNL & strNL
+    '        text &= "cmd: " & cmd & strNL
+    '        text &= "specialCawback: " & Special.ToString() & strNL
+    '        text &= "envars: " & envvar.ToString & strNL
+    '        text &= "envals: " & envval.ToString & strNL
+    '        Log_MsgBox(text, MsgBoxStyle.Critical, "RunProcess cmdline error!", True)
+    '    End Try
+    'End Sub
 
     ''' <summary>
     ''' Keeps txtTD_CX in range for total vid width
@@ -919,7 +1469,7 @@ Public Class Main
             txtTD_CX.Text = KeepInRange(txtTD_CX.Text, xmin, xmax)      'Set string within numeric range
             KeepWInRange()                                              'Keep W in range
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in txtTD_CX_Validated!")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in txtTD_CX_Validated!", True)
         End Try
     End Sub
     ''' <summary>
@@ -936,7 +1486,7 @@ Public Class Main
             txtTD_CY.Text = KeepInRange(txtTD_CY.Text, ymin, ymax)      'Set string within numeric range
             KeepHInRange()                                              'Keep H in range
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in txtTD_CY_Validated!")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in txtTD_CY_Validated!", True)
         End Try
     End Sub
     ''' <summary>
@@ -970,7 +1520,7 @@ Public Class Main
             Dim wmax As UShort = w2 - w1                            'Get dif of b-a as wmax
             txtTD_CW.Text = KeepInRange(txtTD_CW.Text, wmin, wmax)  'Keep w in range
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in KeepWInRange()")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in KeepWInRange()", True)
         End Try
     End Sub
 
@@ -986,7 +1536,7 @@ Public Class Main
             Dim hmax As UShort = h2 - h1                            'Get dif of b-a as hmax
             txtTD_CH.Text = KeepInRange(txtTD_CH.Text, hmin, hmax)  'Keep h in range
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in KeepHInRange()")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in KeepHInRange()", True)
         End Try
     End Sub
 
@@ -1006,7 +1556,7 @@ Public Class Main
             nudTD_M.Value = 0
             nudTD_M_ChangeMe()
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in HandleRipTimeMasks()!")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in HandleRipTimeMasks()!", True)
         End Try
     End Sub
 
@@ -1059,7 +1609,7 @@ Public Class Main
             txtTD_FS.Text = _start.ToString()
             txtTD_FE.Text = _end.ToString()
         Catch ex As Exception
-            'MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in nudTD_M_ValueChanged()!")
+            'Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in nudTD_M_ValueChanged()!", true)
         End Try
     End Sub
 
@@ -1092,7 +1642,7 @@ Public Class Main
             smax = _end - 1
             txtTD_FS.Text = KeepInRange(txtTD_FS.Text, smin, smax)      'Set string within numeric range
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in txtTD_FS_Validated!")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in txtTD_FS_Validated!", True)
         End Try
     End Sub
 
@@ -1114,7 +1664,7 @@ Public Class Main
             emin = _start + 1
             txtTD_FE.Text = KeepInRange(txtTD_FE.Text, emin, emax)      'Set string within numeric range
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in txtTD_FE_Validated!")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in txtTD_FE_Validated!", True)
         End Try
     End Sub
 
@@ -1156,7 +1706,7 @@ Public Class Main
     End Sub
     Private Sub radTD_B6_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles radTD_B6.CheckedChanged
         If radTD_B6.Checked = True Then HandleTimeFrameCell(6, 2, 0)
-    End Sub    
+    End Sub
     Private Sub radTD_All_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles radTD_All.CheckedChanged
         If radTD_All.Checked = True Then HandleTimeFrameCell(0, 0, 1)
     End Sub
@@ -1227,7 +1777,7 @@ Public Class Main
             txtTD_CW.Text = size.width.ToString()
             txtTD_CH.Text = size.height.ToString()
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in HandleTimeFrameCell()!")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in HandleTimeFrameCell()!", True)
         End Try
     End Sub
 
@@ -1298,7 +1848,7 @@ Public Class Main
                 If nudTD_M.Value <> 0 Then suffix = "_" & TryParseErr_Byte(nudTD_M.Value)
             End If
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in GetCellFrameName()!")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in GetCellFrameName()!", True)
         End Try
         nameResult = nameResult & suffix
         Return nameResult
@@ -1329,7 +1879,7 @@ Public Class Main
             End If
             outp = newVal.ToString()                        'Set output as strinng of newval
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in KeepInRange func!")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in KeepInRange func!", True)
         End Try
         Return outp
     End Function
@@ -1352,15 +1902,18 @@ Public Class Main
 
         '0.  If video has padding, convert the appropriate dummy bmp file ("dummy_N.bmp") to a video of appropriate frame length ("dummy_N.mp4") for the current multiplicity
         '1.  All subvideos in a column are vstacked ("cN.mp4"). Do for all columns
-        '2.  ALl subvideos in a column are then limited to F frames ("dN.mp4"). Do for all columns
+        '2.  All subvideos in a column are then limited to F frames ("dN.mp4"). Do for all columns
         '3.  HStack all frame-limited column videos ("dN.mp4" in step 2) to create a composite video with all subvideos included for the current multiplicity. ("mN.mp4", where N is the current multiplicity)
         '4.  Repeat steps 0-3 for each multiplicity
+
         '5.  Concatenate each composite multiplicity video (all "mN.mp4" files in step 3) to a nearly-final mp4 file ("filename.mp4")
+
         '6.  If video has padding, concatenate all dummy video multiplicities ("dummy_N.mp4" in step 0) to a composite dummy video ("dummy.mp4")
         '7.  If video has padding, vstack the video in step 5 ("filename.mp4") with the composite dummy
         '    video in step 6 ("dummy.mp4") into a file called "final.mp4".
         '    MoveFile "final.mp4"->"filename.mp4"                
-        '7.2 Convert filename.mp4 to yuv420p format
+        'REMOVED 7.2 Convert filename.mp4 to yuv420p format
+
         '8.  Convert final video ("filename.mp4") into BMP frames, padded to N digits ("frame_%0Nd.bmp")
         '8.1 Find, copy, and hack Irfanview advanced options INI file
         '8.2 Convert BMP frames into JPG frames, using irfanview, and the JPG Quality value
@@ -1416,6 +1969,14 @@ Public Class Main
         Try
             If ofdOutput.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
 
+            'Total/current progress for progress bar.
+            'Index(0)=current progress, Index(1)=max progress
+            'Min progress always = 0
+            Dim TtlPrg(2) As Single
+            Dim CurPrg(2) As Single
+            'Generic text register
+            Dim text As String
+
             Dim startInfo As ProcessStartInfo
             startInfo = New ProcessStartInfo
             startInfo.UseShellExecute = False
@@ -1432,7 +1993,7 @@ Public Class Main
             'Generic iterators
             Dim i As UShort = 1   'Usually rows
             Dim j As UShort = 1   '~       cols
-            Dim k As Byte = 1   '~       multiplicity
+            Dim k As UShort = 1   '~       multiplicity
             Dim cnt As UShort = 0
 
             'THP Array dims        
@@ -1467,11 +2028,34 @@ Public Class Main
 
             CleanUp(path, filename, r, c, m, hasPad, False)         'Cleanup leftover temp files at working dir
 
+            'Play elevator music (if allowed)            
+            If (chkAudio.Checked And chkEMusic.Checked) Then My.Computer.Audio.Play(SONG, AudioPlayMode.BackgroundLoop)
+
             'BEGIN PROCESSING
+
+            'Init progress
+            HideApp_notTHPEnc(False)        'Hide everything not related to THP Encoding (saves rendering CPU cycles)
+            btnLogClear.PerformClick()      'Click btnLogClear (clear all progress/log logs)
+
+            'Total progress: current = 0, max = 9 steps (0-based = 10 steps)
+            TtlPrg(0) = 0
+            TtlPrg(1) = 9
+            UpdateProg_Ttl(TtlPrg, "Create separate composite videos for each multiplicity (Steps 1-4, " & m.ToString() & " " & Plural(m, "multiplicity", "multiplicities") & ")")
+
+            'Steps 1-4
+            'Current progress: current = 0, max = 2m(c+1); see factored algebra
+            CurPrg(0) = 0
+            'm[1+c+c+1]
+            'm[2c+2]
+            '2m[c+1]
+            CurPrg(1) = (2 * m) * (c + 1)
+
             'Iterate through all multiplicities from 1 to m
             For k = 1 To m Step 1
-
+                UpdateProg_Cur(CurPrg, "Mult = " + k.ToString(), True, False)
                 If hasPad Then
+                    UpdateProg_Cur(CurPrg, "Step 0: Video has padding!" & strNL & "Convert dummy bmp file for this mult (dummy_" & k.ToString() & ".bmp) to video of appropriate frame length (dummy_" & k.ToString() & ".mp4)")
+
                     'Do Step 0 if padding
                     Dim dg As Byte = frames.ToString().Length   'The amount of frames to limit to in digits
                     Dim dgs As String = StrDup(dg, "0")         'A .ToString() format string, limiting to N digits
@@ -1489,7 +2073,7 @@ Public Class Main
                     Next cnt
 
                     'Properly convert bmp files to MP4: ffmpeg -y -f image2 -framerate FPS -i dummy_N_%03d.bmp out.mp4
-                    cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT                                            '"C:\FFMPegPath\FFMPeg.exe"
+                    cmd = strQUOT & txtFFMPEG.Text & strBAK & exeFMPeg & strQUOT                                            '"C:\FFMPegPath\FFMPeg.exe"
                     cmd &= " -y -f image2 -framerate " & FPS                                                                ' -y -f image2 -framerate FPS
 
                     file = strQUOT & path & strBAK & "dummy_" & k.ToString() & "_%0" & dg.ToString() & "d.bmp" & strQUOT
@@ -1506,17 +2090,21 @@ Public Class Main
 
                     'Cleanup all of the BMP frames
                     CleanUp(path, filename, r, c, m, hasPad, True)
+                Else
+                    UpdateProg_Cur(CurPrg, "Step 0: Video does NOT have padding for this multiplicity; skip")
                 End If
                 shell.Close()
+                CurPrg(0) += 1
 
                 'Do step 1
                 'Iterate through columns 1 to C
+                UpdateProg_Cur(CurPrg, "Step 1: Vstack all subvideos in a column into giant columns (cN.mp4). Do for all columns (" & c.ToString() & " " & Plural(c, "column", "columns") & ")")
                 For j = 1 To c Step 1
                     'ffmpeg -i input0 -i input1 -i input2 -filter_complex "[0:v][1:v][2:v]vstack=inputs=3[v]" -map "[v]" output
-
+                    UpdateProg_Cur(CurPrg, "VStack Column " + j.ToString())
                     parm = ""                                                                                                       'Clear parm string
                     ReDim parms(r)                                                                                                  'Redim parm array to the amount of rows
-                    cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT & " -y "                                           '"C:\FFMPegPath\FFMPeg.exe" -y
+                    cmd = strQUOT & txtFFMPEG.Text & strBAK & exeFMPeg & strQUOT & " -y "                                           '"C:\FFMPegPath\FFMPeg.exe" -y
 
                     'Iterate through all rows 1 to r
                     'Concatenate all input file args ("-i filename") onto cmd, build input pads
@@ -1549,13 +2137,16 @@ Public Class Main
                     shell.StartInfo = startInfo
                     shell.Start()
                     shell.WaitForExit()
+                    CurPrg(0) += 1
                 Next j
                 shell.Close()
 
                 'Do Step 2
-                'Iterate through columns 1 to C
+                'Iterate through columns 1 to C                
+                UpdateProg_Cur(CurPrg, "Step 2: Limit each giant vstacked column to " & (TryParseErr_UShort(frames)).ToString() & " frames (dN.mp4). Do for all columns (" & c.ToString() & " " & Plural(c, "column", "columns") & ")")
                 For j = 1 To c Step 1
-                    cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT & " -y "           '"C:\FFMPegDir\FFMPeg.exe" -y
+                    UpdateProg_Cur(CurPrg, "Frame limit column " & j.ToString() & " (c" & j.ToString() & ".mp4 to d" & j.ToString() & ".mp4)")
+                    cmd = strQUOT & txtFFMPEG.Text & strBAK & exeFMPeg & strQUOT & " -y "           '"C:\FFMPegDir\FFMPeg.exe" -y
                     file = strQUOT & path & strBAK & "c" & j.ToString() & ".mp4" & strQUOT
                     cmd &= "-i " & file                                                             '-i "C:\WorkingDir\cN.mp4"
                     file = strQUOT & path & strBAK & "d" & j.ToString() & ".mp4" & strQUOT
@@ -1568,13 +2159,15 @@ Public Class Main
                     shell.StartInfo = startInfo
                     shell.Start()
                     shell.WaitForExit()
+                    CurPrg(0) += 1
                 Next j
                 shell.Close()
 
                 'Do Step 3
+                UpdateProg_Cur(CurPrg, "Step 3: Combine each giant, frame-limited column (dN.mp4) into a near-final composite video for this multiplicity (m" & k.ToString() & ".mp4) . Do for all columns (" & c.ToString() & " " & Plural(c, "column", "columns") & ")")
                 parm = ""                                                               'Clear parm string
                 ReDim parms(c)                                                          'ReDim parms to amount of columns
-                cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT & " -y "   '"C:\FFMPegDir\FFMPeg.exe" - y
+                cmd = strQUOT & txtFFMPEG.Text & strBAK & exeFMPeg & strQUOT & " -y "   '"C:\FFMPegDir\FFMPeg.exe" - y
                 'Iterate through all columns 1 to c
                 'Concatenate all input file args ("-i dN.mp4") onto cmd, build input pads. Similar to Step 1 with vstack
                 For j = 1 To c Step 1
@@ -1605,16 +2198,27 @@ Public Class Main
                 shell.Start()
                 shell.WaitForExit()
                 shell.Close()
+                CurPrg(0) += 1
+                UpdateProg_Cur(CurPrg, "Step 4: Repeat Steps 1-3 for each multiplicity")
             Next k  'Do Step 4
+            CurPrg(0) = CurPrg(1)
+            UpdateProg_Cur(CurPrg, "Steps 0-4 completed!", False, True)
 
             'Do Step 5
+            TtlPrg(0) += 1
+            CurPrg(0) = 0
+            CurPrg(1) = 1
+            UpdateProg_Cur(CurPrg)
+            UpdateProg_Ttl(TtlPrg, "Step 5: Concatenate each composite multiplicity video (all 'mN.mp4' files in step 3) to a nearly-final mp4 file ('" & filename & ".mp4')")
+            
             'https://stackoverflow.com/questions/5415006/ffmpeg-combine-merge-multiple-mp4-videos-not-working-output-only-contains-the
             'ffmpeg -f concat -i inputs.txt -vcodec h264 Mux1.mp4
             If m > 1 Then
                 'If video has multiplicity
+                UpdateProg_Cur(CurPrg, "Video has multiplicity! Creating near-final composite video...", True, False)
 
                 '"C:\FFMPegDir\FFMPeg.exe" -y -f concat -i
-                cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT & " -y -f concat -i "
+                cmd = strQUOT & txtFFMPEG.Text & strBAK & exeFMPeg & strQUOT & " -y -f concat -i "
 
                 'Redim files to 0-based multiplicity
                 ReDim Files(m - 1)
@@ -1636,22 +2240,34 @@ Public Class Main
                 shell.Close()
             Else
                 'If video has no multiplicity, just copy "C:\WorkingDir\m1.mp4" to "C:\WorkingDir\filename.mp4"
+                UpdateProg_Cur(CurPrg, "Video does NOT have multiplicity! Use 1st/only multiplicity as near-final composite video...", True, False)
                 file = path & strBAK & "m1.mp4"             '"C:\WorkingDir\m1.mp4"
                 file2 = path & strBAK & filename & ".mp4"   '"C:\WorkingDir\filename.mp4"
                 My.Computer.FileSystem.CopyFile(file, file2)
             End If
+            CurPrg(0) += 1
+            UpdateProg_Cur(CurPrg, "Near-final " & filename & ".mp4 composite video created!", False, True)
+
 
             'If we have dummy padding, concatenate each of the dummy_*.mp4 files into dummy.mp4,
             'then vstack filename.mp4 with dummy.mp4 for final.mp4. Rename final.mp4 to filename.mp4 and replace
+            TtlPrg(0) += 1
+            CurPrg(0) = 0
+            CurPrg(1) = 2
+            UpdateProg_Cur(CurPrg)
+            text = "Step 6: If video has padding, concatenate all dummy video multiplicities ('dummy_N.mp4' in step 0) to a composite dummy video ('dummy.mp4')" & strNL
+            text &= "Step 7: If video has padding, vstack the video in step 5 ('" & filename & ".mp4') with the composite dummy video in step 6 ('dummy.mp4') into a file called 'final.mp4', then rename as final '" & filename & ".mp4'"
+            UpdateProg_Ttl(TtlPrg, text)
             If hasPad Then
                 'If padding, Do Step 6
-
+                UpdateProg_Cur(CurPrg, "Video has padding; do steps 6 & 7!", True, False)
                 If m > 1 Then
+                    UpdateProg_Cur(CurPrg, "Video has multiplicity; concatenating all dummy videos to compositie (dummy.mp4)")
                     'If multiplicity, concatenate all dummy_N.mp4 to dummy.mp4
 
                     'Setup similar to Step 5
                     '"C:\FFMPegDir\FFMPeg.exe" -y -f concat -i
-                    cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT & " -y -f concat -i "
+                    cmd = strQUOT & txtFFMPEG.Text & strBAK & exeFMPeg & strQUOT & " -y -f concat -i "
                     'Redim files to 0-based multiplicity
                     ReDim Files(m - 1)
                     'Iterate multiplicity from 1 to m
@@ -1672,15 +2288,22 @@ Public Class Main
                     shell.Close()
                 Else
                     'If no multiplicity, copy "C:\WorkingDir\dummy_1.mp4" to "C:\WorkingDir\dummy.mp4"
+                    UpdateProg_Cur(CurPrg, "Video does NOT have multiplicity; just use only dummy video (dummy_1.mp4) as compositie (dummy.mp4)")
                     file = path & strBAK & "dummy_1.mp4"
                     file2 = path & strBAK & "dummy.mp4"
                     My.Computer.FileSystem.MoveFile(file, file2, True)
                 End If
+                CurPrg(0) += 1
+                UpdateProg_Cur(CurPrg, "Composite dummy video (dummy.mp4) created!", False, True)
+
 
                 'Do Step 7
                 'vstack filename.mp4 with dummy.mp4 into final.mp4
                 'ffmpeg -i top.mp4 -i bot.mp4 -filter_complex vstack output.mp4
-                cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT & " -y"    '"C:\FFMPegDir\FFMPeg.exe" -y
+                UpdateProg_Ttl(TtlPrg, "Step 7: Vstack the video in step 5 ('" & filename & ".mp4') with the composite dummy video in step 6 ('dummy.mp4') into a file called 'final.mp4', then rename as final '" & filename & ".mp4'")
+                UpdateProg_Cur(CurPrg, "VStacking composite dummy video (dummy.mp4) to bottom of base composite video (" & filename & ".mp4)...", True, False)
+
+                cmd = strQUOT & txtFFMPEG.Text & strBAK & exeFMPeg & strQUOT & " -y"    '"C:\FFMPegDir\FFMPeg.exe" -y
                 file = strQUOT & path & strBAK & filename & ".mp4" & strQUOT
                 cmd &= " -i " & file                                                    ' -i "C:\WorkingDir\filename.mp4"
                 file = strQUOT & path & strBAK & "dummy.mp4" & strQUOT
@@ -1701,6 +2324,12 @@ Public Class Main
                 file = path & strBAK & "final.mp4"
                 file2 = path & strBAK & filename & ".mp4"
                 My.Computer.FileSystem.MoveFile(file, file2, True)
+
+                CurPrg(0) += 1
+                UpdateProg_Cur(CurPrg, "Final composite video (" & filename & ".mp4) created!", False, True)
+            Else
+                CurPrg(0) = CurPrg(1)
+                UpdateProg_Cur(CurPrg, "Video does NOT have padding; skip steps 6 & 7!", False, True)
             End If
 
             'Do Step 7.2: Convert filename.mp4 to yuv420p format
@@ -1722,9 +2351,17 @@ Public Class Main
             'My.Computer.FileSystem.MoveFile(file, file2, True)
 
 
-            'Do Step 8: Output to .bmp frames
+            'Do Step 8: Output to .bmp frames            
             i = TryParseErr_Byte(txtTE_D.Text)                                              'Set i to amount of digits in framelimit
-            cmd = strQUOT & txtFFMpeg.Text & strBAK & exeFMPeg & strQUOT & " -y "           '"C:\FFMPegDir\FFMPeg.exe" -y 
+            j = TryParseErr_UShort(txtTE_F.Text)                                              'Set j to amount of frames
+            TtlPrg(0) += 1
+            CurPrg(0) = 0
+            CurPrg(1) = j * m
+            UpdateProg_Cur(CurPrg)
+            UpdateProg_Ttl(TtlPrg, "Step 8: Convert final video ('" & filename & ".mp4') into BMP frames, padded to " & i.ToString() & " digits ('frame_%0Nd.bmp')")            
+            UpdateProg_Cur(CurPrg, "Generating ~" & CurPrg(1).ToString() & " BMP frames. Please wait; this shall take some time...", True, False)
+
+            cmd = strQUOT & txtFFMPEG.Text & strBAK & exeFMPeg & strQUOT & " -y "           '"C:\FFMPegDir\FFMPeg.exe" -y 
             file = strQUOT & path & strBAK & filename & ".mp4" & strQUOT
             cmd &= "-i " & file                                                             '-i "C:\WorkingDir\filename.mp4"
             file = strQUOT & path & strBAK & "frame_%0" & i.ToString() & "d.bmp" & strQUOT
@@ -1733,17 +2370,44 @@ Public Class Main
             startInfo.FileName = cmd
             shell.StartInfo = startInfo
             shell.Start()
-            shell.WaitForExit()
+
+            'shell.WaitForExit()
+            'Loop while cmd is still running
+            While shell.HasExited = False
+                'Count current amount of frame_*.bmp frames, set as current progress, then updated
+                k = CountFilesFromFolder(path, "frame_*.bmp")
+                CurPrg(0) = k
+                UpdateProg_Cur(CurPrg)
+            End While
             shell.Close()
+            CurPrg(0) = CurPrg(1)
+            UpdateProg_Cur(CurPrg, "All BMP frames ripped!", False, True)
+
 
             'Do Step 8.1: Hack INI file, throw error if failure
+            TtlPrg(0) += 1
+            CurPrg(0) = 0
+            CurPrg(1) = 1
+            UpdateProg_Cur(CurPrg)
+            UpdateProg_Ttl(TtlPrg, "Step 8.1: Find, copy, and hack Irfanview advanced options INI file")            
+            UpdateProg_Cur(CurPrg, "Hack Irfanview INI file...", True, False)
             Dim success As Boolean = HackINIFile(path)
             If success = False Then Throw New System.Exception("Irfanview INI hack failed!")
+            CurPrg(0) = CurPrg(1)
+            UpdateProg_Cur(CurPrg, "Irfanview INI hack successful!", False, True)
+            Log_MsgBox("Disabled Progressive JPG for conversions!", MsgBoxStyle.Information, "Irfanview settings INI Hack successful!")
 
-            'Do Step 8.2: Convert .bmp frames to .jpg frames
-            MsgBox("Generating JPG frames; please wait!", MsgBoxStyle.Information, "JPG Rendering")
+
+            'Do Step 8.2: Convert .bmp frames to .jpg frames            
+            TtlPrg(0) += 1
             cnt = TryParseErr_Byte(txtTE_D.Text)                                                    'Get amount of digits            
             j = CountFilesFromFolder(path, "frame_*.bmp")                                           'Count amount of BMP frames
+            CurPrg(0) = 0
+            CurPrg(1) = j
+            UpdateProg_Cur(CurPrg)
+            UpdateProg_Ttl(TtlPrg, "Step 8.2: Convert BMP frames into JPG frames, using Irfanview and the JPG Quality value (" & nudTE_jpgq.Value.ToString() & "%)")            
+            UpdateProg_Cur(CurPrg, "Generating " & j.ToString() & " JPG " & Plural(j, "frame", "frames") & ". Please wait; this shall take some time...", True, False)
+            Log_MsgBox("Generating JPG frames; please wait!", MsgBoxStyle.Information, "JPG Rendering")
             For i = 1 To j                                                                          'Iterate frames from 1 to j
                 cmd = strQUOT & txtiView.Text & strQUOT                                             '"C:\iView32\iView32.exe"
                 file2 = StrDup(cnt, "0")                                                            '"0Nd". Create ToString dig formatter
@@ -1759,19 +2423,43 @@ Public Class Main
                 shell.StartInfo = startInfo
                 shell.Start()
                 shell.WaitForExit()
+                CurPrg(0) = i
+                UpdateProg_Cur(CurPrg)
             Next i
             shell.Close()
+            CurPrg(0) = CurPrg(1)
+            UpdateProg_Cur(CurPrg, "All JPG frames generated!", False, True)
+
 
             'Do Step 9
+            TtlPrg(0) += 1
+            CurPrg(0) = 0
+            CurPrg(1) = 1
+            UpdateProg_Cur(CurPrg)
+            UpdateProg_Ttl(TtlPrg, "Step 9: Check the output directory, delete any extra JPG frames past the framelimit (" & (frames * m).ToString() & "), and then cleanup all BMP files")
             file = "frame_*.jpg"
             DeleteExtraFilesFromFolder(path, file, frames * m)
+            CurPrg(1) = 1
+            CurPrg(0) = CurPrg(1)
+            UpdateProg_Cur(CurPrg, "Deleted all extra JPG files!", False, True)
             file = "frame_*.bmp"
-            DeleteFilesFromFolder(path, file)
+            DeleteFilesFromFolder(path, file, True, "Deleting all BMP frames; please wait...", True, False)
+            CurPrg(1) = 1
+            CurPrg(0) = CurPrg(1)
+            UpdateProg_Cur(CurPrg, "Deleted all BMP frames!", False, True)
 
             'Do Step 10
+            TtlPrg(0) += 1
+            CurPrg(0) = 0
+            CurPrg(1) = 1
+            UpdateProg_Cur(CurPrg)
+            UpdateProg_Ttl(TtlPrg, "Step 10: Feed the JPG frames and any audio files ('" & filename & ".wav') into THPConv.exe to generate " & filename & ".thp (FPS=" & FPS.ToString("F2") & ")")
+            UpdateProg_Cur(CurPrg, "Generating THP...", True, False)
             Dim hasAudio As Boolean = THPHasAudio()
             If hasAudio = False Then
                 'If no audio, just convert jpg frames into THP using THPConv at appropriate framerate
+                UpdateProg_Cur(CurPrg, "Video does NOT have audio!")
+
                 '"C:\THPConvDir\THPConv.exe" -j "C:\WorkingDir\*.jpg" -r RR.RR -d "C:\WorkingDir\filename.thp"
                 cmd = strQUOT & txtTHPConv.Text & strQUOT
                 file = "-j " & strQUOT & path & strBAK & "*.jpg" & strQUOT
@@ -1781,6 +2469,8 @@ Public Class Main
                 cmd &= " -d " & file
             Else
                 'If audio, convert jpg frames and add audio file at appropriate framerate
+                UpdateProg_Cur(CurPrg, "Video has audio!")
+
                 '"C:\THPConvDir\THPConv.exe" -j "C:\WorkingDir\*.jpg" -s "C:\WorkingDir\filename.wav" -r RR.RR -d "C:\WorkingDir\filename.thp"
                 cmd = strQUOT & txtTHPConv.Text & strQUOT
                 file = "-j " & strQUOT & path & strBAK & "*.jpg" & strQUOT
@@ -1798,20 +2488,399 @@ Public Class Main
             shell.Start()
             shell.WaitForExit()
             shell.Close()
+            CurPrg(0) += 1
+            UpdateProg_Cur(CurPrg, "THP (hopefully) generated!", False, True)
+            Log_MsgBox("THP rendered! Now cleaning up...", MsgBoxStyle.Information, "Success!")
 
             'Step 11
-            MsgBox("THP rendered! Now cleaning up...", MsgBoxStyle.Information, "Success!")
-            CleanUp(path, filename, r, c, m, hasPad, False)
+            TtlPrg(0) += 1
+            CurPrg(0) = 0
+            CurPrg(1) = 1
+            UpdateProg_Cur(CurPrg)
+            UpdateProg_Ttl(TtlPrg, "Step 11: Cleanup all temporary files")            
+            Dim textS() As String =
+            {
+                "Delete padless final video (" & filename & ".mp4)",
+                "Delete vstacked column videos(cN.mp4, dN.mp4)",
+                "Delete all composite multiplicity videos (mN.mp4)",
+                "Delete all JPG frames",
+                "Delete all dummy BMP extension frames for all multiplcities",
+                "Delete all dummy videos",
+                "Delete final composite video (with padding, final.mp4)",
+                "Delete File.txt (Irfanview merge file), and i_view32.ini/i_view32_temp.ini (hacked Irfanview INI files)"
+            }
+            Dim textE() As String =
+            {
+                filename & ".mp4 deleted!",
+                "cN and dN.mp4 columns deleted!",
+                "mN.mp4 multiplicity composite videos deleted!",
+                "All JPG frames deleted!",
+                "All dummy BMP extension frames deleted!",
+                "All dummy videos deleted!",
+                "final.mp4 composite video deleted!",
+                "File.txt, i_view32(_temp).ini deleted!"
+            }
+            CleanUp(path, filename, r, c, m, hasPad, False, True, textS, textE)
 
             'Step 12: Done!
-            MsgBox("Done!", MsgBoxStyle.Information, "Tada!")
+            TtlPrg(0) += 1
+            CurPrg(1) = 1
+            CurPrg(0) = CurPrg(1)
+            UpdateProg_Cur(CurPrg)
+            UpdateProg_Ttl(TtlPrg, "Step 12: DONE")            
+            UpdateProg_Cur(CurPrg, "THP Encoding finished!", True, True)
+
+            'Stop elevator music (if allowed)
+            If chkAudio.Checked Then
+                My.Computer.Audio.Stop()
+                My.Computer.Audio.Play(My.Resources.success, AudioPlayMode.Background)
+            End If
+            Log_MsgBox("Done!", MsgBoxStyle.Information, "Tada!", True)
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error during Encoding!")
+            Me.Cursor = Cursors.Default
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error during Encoding!", True)
+        End Try
+        HideApp_notTHPEnc(True) 'Restore main form
+    End Sub
+
+    ''' <summary>
+    ''' Toggles visibility of all groups boxes in THP tab OTHER than grpLog and grpTHPEnc
+    ''' </summary>
+    ''' <param name="enabled">Visible?</param>
+    ''' <remarks></remarks>
+    Private Sub HideApp_notTHPEnc(ByVal enabled As Boolean)
+        grpTHPInfo.Visible = enabled
+        grpTHPDec.Visible = enabled
+        grpHelp.Visible = enabled
+        grpOptions.Visible = enabled
+    End Sub
+
+    ''' <summary>
+    ''' Given a regular english noun and a count, returns its singular/plural counterpart
+    ''' </summary>
+    ''' <param name="noun">Nounr</param>
+    ''' <param name="count">Count</param>
+    ''' <returns>Singular/plural form</returns>
+    ''' <remarks></remarks>
+    Private Function Plural(ByVal count As UShort, ByVal singular As String, ByVal _plural As String)
+        Dim noun As String
+        If count = 1 Then
+            noun = singular
+        Else
+            noun = _plural
+        End If
+        Return noun
+    End Function
+
+    ''' <summary>
+    ''' Update Total progress bar
+    ''' </summary>
+    ''' <param name="value">array(2), 0=current value, 1=max progress</param>
+    ''' <param name="text">Message to display</param>
+    ''' <remarks></remarks>
+    Private Sub UpdateProg_Ttl(ByRef value() As Single, Optional ByVal text As String = Nothing)
+        'Update progress for Total, use values, display message, set text, don't wait
+        UpdateProg(True, value, text, True, False)
+    End Sub
+
+    ''' <summary>
+    ''' Update current progress bar
+    ''' </summary>
+    ''' <param name="value">array(2), 0=current value, 1=max progress</param>
+    ''' <param name="text">Message to display</param>
+    ''' <param name="_set">Set text?</param>
+    ''' <param name="_wait">Wait?</param>
+    ''' <remarks></remarks>
+    Private Sub UpdateProg_Cur(ByRef value() As Single, Optional ByVal text As String = Nothing, Optional ByVal _set As Boolean = False, Optional ByVal _wait As Boolean = True)
+        UpdateProg(False, value, text, _set, _wait)
+    End Sub
+
+    ''' <summary>
+    ''' General meat of updating a progress bar
+    ''' </summary>
+    ''' <param name="type">Type of progress bar (false = current, true = total)</param>
+    ''' <param name="value">array(2), 0=current value, 1=max progress</param>
+    ''' <param name="text">Message to display</param>
+    ''' <param name="_set">Set text?</param>
+    ''' <param name="_wait">Wait?</param>
+    ''' <remarks></remarks>
+    Private Sub UpdateProg(ByVal type As Boolean, ByRef value() As Single, ByVal text As String, ByVal _set As Boolean, ByVal _wait As Boolean)
+        'Logging data
+        Dim prog As Single      'Progress% for this bar
+        Dim prog2 As Single     'Progress% for other bar
+        Dim logText As String   'Text for logging
+
+        Dim prg As System.Windows.Forms.ProgressBar     'Obj ref to this prog bar
+        Dim prg2 As System.Windows.Forms.ProgressBar    'Obj ref to other prog bar
+        Dim lbl As System.Windows.Forms.Label           'Obj ref to this prog bar's text percentage progress
+        Dim txt As System.Windows.Forms.TextBox         'Obj ref to this prog bar's log textbox
+
+        'Handle proper refs
+        If type = False Then
+            'If current progress
+            prg = prgCur                                'Set this progbar ref to current
+            prg2 = prgTotal                             'Set other progbar ref to total
+            lbl = lblTHPEnc_Prg_Cur                     'Set progbar lbl ref to current's
+            txt = txtTHPEnc_Prg_Cur                     'Set progbar txtlog ref to current's
+        Else
+            'If total progress
+            prg = prgTotal                              'Set this progbar ref to total
+            prg2 = prgCur                               'Set other progbar ref to current
+            lbl = lblTHPEnc_Prg_Ttl                     'Set progbar lbl ref to total's
+            txt = txtTHPEnc_Prg_Ttl                     'Set progbar txtlog ref to total's
+        End If
+
+        'Set this progbar minimum to 0, max to value(1)
+        prg.Minimum = 0
+        prg.Maximum = value(1)
+        'Force a progressbar update for fast rendering
+        prg.Update()
+
+        'If value(1) max progress is 0, set current value to 0, max to 1
+        'This prevents DivByZero error a few blocks below, and will force 0% progress (instead of 0 out of 0 = 100%)
+        If value(1) = 0 Then
+            value(0) = 0
+            value(1) = 1
+        End If
+
+        'Prevent OOB errors with progressbar.value
+        If value(0) > value(1) Then
+            'If current value > max, then set current to max
+            value(0) = value(1)
+        ElseIf value(0) < 0 Then
+            'If current value < min 0, then set current to min
+            value(0) = 0
+        End If
+        prg.Value = value(0)                'Set this progress bar current progress
+        prog = value(0) / value(1)          'Get this progress bar's progress as %
+
+        prog2 = prg2.Value / prg2.Maximum   'Get other progress bar's progress as %
+        lbl.Text = prog.ToString("P2")      'Display progress as 2-dig% ("iii.dd%")
+        lbl.Update()                        'Force a lbl update for fast rendering
+
+        'Handle message (if not null)
+        If IsNothing(text) = False Then
+            If _set Then
+                'If set, then set text
+                txt.Text = text & strNL
+            Else
+                'If not set, then append text + CRLF
+                txt.AppendText(text & strNL)
+            End If
+            txt.Update()                    'Force a txt update for fast rendering
+
+            'If text not empty, log progresses and message
+            If text <> String.Empty Then
+                'Log:
+                'THPEnc progress (ttl, cur) = (ttl%,cur%):
+                'Message
+                If type = False Then
+                    logText = "THPEnc progress (ttl, cur) = (" & prog2.ToString("P2") & "," & prog.ToString("P2") & "):" & strNL & text
+                Else
+                    logText = "THPEnc progress (ttl, cur) = (" & prog.ToString("P2") & "," & prog2.ToString("P2") & "): " & strNL & text
+                End If
+                Log(logText)
+            End If
+
+            'If wait flag, stall app by 3s
+            If _wait Then Threading.Thread.Sleep(3000)
+        End If
+    End Sub
+
+    ''' <summary>
+    ''' Handles btnLog click (reset progress bars, clear all logs)
+    ''' </summary>
+    ''' <param name="sender"></param>
+    ''' <param name="e"></param>
+    ''' <remarks></remarks>
+    Private Sub btnLogClear_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnLogClear.Click
+        Dim value(2) As Single  'array(2), 0=current progress value, 1=max progress    
+        'Set progress to 0/1 (0%)
+        value(0) = 0
+        value(1) = 1
+
+        'Set log to empty, display null icon
+        Log("", MsgBoxStyle.MsgBoxHelp, True)
+
+        'Set total progress, set text to empty
+        UpdateProg_Ttl(value, "")
+        'Set current progress, set text to empty, no wait
+        UpdateProg_Cur(value, "", True, False)
+    End Sub
+
+    ''' <summary>
+    ''' Handles btnLogSave click (save log file)
+    ''' </summary>
+    ''' <param name="sender"></param>
+    ''' <param name="e"></param>
+    ''' <remarks></remarks>
+    Private Sub btnLogSave_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnLogSave.Click
+        'Load the SaveLog ofd, user selects whatever.log
+
+        'Default filename stuff
+
+        Const ext As String = ".log"
+        Const name As String = "thwimp"   'Base filename
+        Dim _datetime As String = ""        'Current date
+        Dim _file As String = ""        'Final filename
+
+        'Try-Catch-block in case of stupid Y2K-like bug in the far future
+        Try
+            _datetime = DateTime.Now.ToString("MMddyyyy_HHmmss")
+        Catch ex As Exception
+            Log_MsgBox(ex.Message, MsgBoxStyle.Exclamation, "Date/Time error in btnLogSave_Click! (Future Y2K-like bug?)", True)
+        End Try
+
+        If _datetime <> String.Empty Then
+            'If date and time strings are not null, then filename is "thwimp_MMddyyyy_HHmmss.log"
+            _file = name & "_" & _datetime & ext
+        Else
+            'If date or time strings are null (in case of future Y2K-like bug), then filename is "thwimp.log"
+            _file = name & ext
+        End If
+
+        Try
+            'Set initial directory to app dir, and defualt filename
+            SaveLog.FileName = _file
+            SaveLog.InitialDirectory = strPATH
+            If SaveLog.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
+            SaveLogFile(SaveLog.FileName)
+        Catch ex As Exception
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btnLogSave_Click!", True)
         End Try
     End Sub
 
     ''' <summary>
-    ''' Cleans up temporary files during THP encoding
+    ''' Save log file
+    ''' </summary>
+    ''' <param name="_file">Filename</param>
+    ''' <remarks></remarks>
+    Private Sub SaveLogFile(ByVal _file As String)
+        Dim success = False 'Success?
+        Dim xFileData As StreamWriter = Nothing
+        Try
+            xFileData = New StreamWriter(_file, False, System.Text.Encoding.ASCII)
+            Dim strEntry As String = txtLog.Text
+            xFileData.Write(strEntry)
+            success = True
+        Catch ex As Exception
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error saving log file!")
+        End Try
+
+        If IsNothing(xFileData) = False Then
+            xFileData.Close()
+            xFileData.Dispose()
+            xFileData = Nothing
+        End If
+
+        'If success writing, then clear textboxes
+        If success Then btnLogClear.PerformClick()
+    End Sub
+
+    ''' <summary>
+    ''' Logs text
+    ''' </summary>
+    ''' <param name="text">Text</param>
+    ''' <param name="style">Icon to display (if any; see remarks)</param>
+    ''' <param name="_Set">Set text?</param>
+    ''' <remarks>
+    ''' Valid styles/icon pairs:
+    ''' MsgBoxStyle.OkOnly = don't change
+    ''' MsgBoxStyle.Critical = SystemIcons.Error
+    ''' MsgBoxStyle.Exclamation = SystemIcons.Exclamation
+    ''' MsgBoxStyle.Information = SystemIcons.Information
+    ''' MsgBoxStyle.Question = SystemIcons.Question
+    ''' Other = NullIcon
+    ''' </remarks>
+    Private Sub Log(ByVal text As String, Optional ByVal style As MsgBoxStyle = MsgBoxStyle.OkOnly, Optional ByVal _Set As Boolean = False)
+        'Bitmap of icon to display (if any)
+        Dim bitmap As System.Drawing.Bitmap = Nothing
+
+        'If set flag, set; else append text+CRLF
+        If _Set = True Then
+            txtLog.Text = text
+        Else
+            txtLog.AppendText(text & strNL)
+        End If
+        'Force a text update for fast rendering
+        txtLog.Update()
+
+        'Handle valid styles for valid icons
+        Select Case style
+            'Corresponding, appropriate styles vs. icons
+            Case MsgBoxStyle.Critical
+                bitmap = System.Drawing.SystemIcons.Error.ToBitmap()
+            Case MsgBoxStyle.Exclamation
+                bitmap = System.Drawing.SystemIcons.Exclamation.ToBitmap()
+            Case MsgBoxStyle.Information
+                bitmap = System.Drawing.SystemIcons.Information.ToBitmap()
+            Case MsgBoxStyle.Question
+                bitmap = System.Drawing.SystemIcons.Question.ToBitmap()
+
+                'NOP; don't handle
+            Case MsgBoxStyle.OkOnly
+
+                'Anthing else = nullicon
+            Case Else
+                bitmap = My.Resources.nullIcon
+        End Select
+
+        'if bitmap not null, then update log icon
+        If IsNothing(bitmap) = False Then
+            picLog.Image = bitmap
+            'Force a pic update for fast rendering
+            picLog.Update()
+        End If
+    End Sub
+
+    ''' <summary>
+    ''' Log-based MsgBox() wrapper which logs the message, title, and icon to the log box,
+    ''' as well as handles chkMsgBox flag
+    ''' </summary>
+    ''' <param name="msg">Message</param>
+    ''' <param name="style">New icon</param>
+    ''' <param name="title">Title</param>
+    ''' <param name="msgBox_override">Forcibly show msgBox, despite chkMsg flag?</param>
+    ''' <remarks>Also suppresses some annoying, informational based msgboxes in THP Encoding process</remarks>
+    Private Sub Log_MsgBox(ByVal msg As String, ByVal style As MsgBoxStyle, ByVal title As String, Optional ByVal msgBox_override As Boolean = False)
+        'Text to log:
+
+        'MsgBox:
+        'title: title
+        'msg: msg
+        'icon: iconStyle
+        Dim text As String = strNL & "MsgBox:" & strNL & "title: " & title & strNL & "msg: " & msg & strNL & "icon: " & style.ToString() & strNL
+
+        'Handle some style-specific stuff
+        If style = MsgBoxStyle.Information Then
+            'If informational
+
+            'If NOT CLI mode
+            If CLI_MODE = False Then
+                'If show all message boxes OR override flag, then display the message box
+                If chkMsg.Checked = False Or msgBox_override = True Then MsgBox(msg, style, title)
+            End If
+        Else
+            'If Critical (error) and Audio enabled
+            If style = MsgBoxStyle.Critical And chkAudio.Checked Then
+                'Stop all audio (esp elevator bgm)
+                My.Computer.Audio.Stop()
+                'Play error sound
+                My.Computer.Audio.Play(My.Resources._error, AudioPlayMode.Background)
+            End If
+
+            'If NOT CLI mode, always display errors
+            If CLI_MODE = False Then
+                MsgBox(msg, style, title)
+            End If
+        End If
+
+        'Log the msgBox text
+        Log(text, style)
+    End Sub
+
+    ''' <summary>
+    ''' Cleans up temporary files during THP encoding, optionally logs current progress
     ''' </summary>
     ''' <param name="Path">Path to working dir</param>
     ''' <param name="filename">Filename for the THP</param>
@@ -1820,77 +2889,192 @@ Public Class Main
     ''' <param name="m">Multiplicity for subvids</param>
     ''' <param name="Haspad">Does video use padding?</param>
     ''' <param name="justBMPs">Just cleanup bmps for dummy video encoding?</param>
-    ''' <remarks></remarks>
-    Private Sub CleanUp(ByVal Path As String, ByVal filename As String, ByVal r As Byte, ByVal c As Byte, ByVal m As Byte, ByVal Haspad As Boolean, ByVal justBMPs As Boolean)
+    ''' <param name="track">Current progress tracking?</param>
+    ''' <param name="track_stringS">Array of start strings for tracking</param>
+    ''' <param name="track_stringE">Array of end strings for tracking</param>
+    ''' <remarks>Array of start/end strings = 8; see code for index usage</remarks>
+    Private Sub CleanUp(ByVal Path As String, ByVal filename As String, ByVal r As Byte, ByVal c As Byte, ByVal m As Byte, ByVal Haspad As Boolean, ByVal justBMPs As Boolean, Optional ByVal track As Boolean = False, Optional ByVal track_stringS() As String = Nothing, Optional ByVal track_stringE() As String = Nothing)
+        'array(2), 0=current progress, 1=max progress
+        Dim CurPrg(2) As Single
+
+        'If either start/end string arrays are null, then redim to 8.
+        'Prevents further processing issues with optional params
+        If IsNothing(track_stringS) Or IsNothing(track_stringE) Then
+            ReDim track_stringS(8)
+            ReDim track_stringE(8)
+        End If
+
         Try
             'Generic iterators
-            'Dim i As Byte       'Rows
-            Dim j As Byte       'Cols
-            Dim k As Byte       'Multiplicity
-            Dim File As String  'File to check against/to delete/to whatever
+            'Dim i As UShort       'Rows
+            Dim j As UShort       'Cols
+            Dim k As UShort       'Multiplicity
+            Dim File As String    'File to check against/to delete/to whatever
 
             If justBMPs = False Then
                 'Delete thpfilename.mp4 (final mp4 without padding) if exists
                 File = Path & strBAK & filename & ".mp4"
-                If System.IO.File.Exists(File) Then My.Computer.FileSystem.DeleteFile(File)
+                If track = True Then
+                    CurPrg(0) = 0
+                    CurPrg(1) = 1
+                    UpdateProg_Cur(CurPrg, track_stringS(0), True, False)
+                    If System.IO.File.Exists(File) Then My.Computer.FileSystem.DeleteFile(File)
+                    CurPrg(0) = 1
+                    UpdateProg_Cur(CurPrg, track_stringE(0), False, True)
+                Else
+                    If System.IO.File.Exists(File) Then My.Computer.FileSystem.DeleteFile(File)
+                End If
+
 
                 'Delete column videos
                 'Iterate cols from 1 to c
+                k = 0
+                If track = True Then
+                    CurPrg(0) = 0
+                    CurPrg(1) = c * 2
+                    UpdateProg_Cur(CurPrg, track_stringS(1), True, False)
+                End If
+
                 For j = 1 To c Step 1
                     'if cN.mp4 or dN.mp4 exists, delete
                     File = Path & strBAK & "c" & j.ToString() & ".mp4"
                     If System.IO.File.Exists(File) Then My.Computer.FileSystem.DeleteFile(File)
+                    If track = True Then
+                        k += 1
+                        CurPrg(0) = k
+                        UpdateProg_Cur(CurPrg)
+                    End If
+
                     File = Path & strBAK & "d" & j.ToString() & ".mp4"
                     If System.IO.File.Exists(File) Then My.Computer.FileSystem.DeleteFile(File)
+                    If track = True Then
+                        k += 1
+                        CurPrg(0) = k
+                        UpdateProg_Cur(CurPrg)
+                    End If
                 Next j
+
+                If track Then
+                    CurPrg(0) = CurPrg(1)
+                    UpdateProg_Cur(CurPrg, track_stringE(1), False, True)
+                End If
+
 
                 'Delete multiplicity videos
                 'Iterate mult from 1 to m
+                If track = True Then
+                    CurPrg(0) = 0
+                    CurPrg(1) = m
+                    UpdateProg_Cur(CurPrg, track_stringS(2), True, False)
+                End If
+
                 For k = 1 To m Step 1
                     'if mN.mp4 exists, delete
                     File = Path & strBAK & "m" & k.ToString() & ".mp4"
                     If System.IO.File.Exists(File) Then My.Computer.FileSystem.DeleteFile(File)
+                    If track = True Then
+                        CurPrg(0) = k
+                        UpdateProg_Cur(CurPrg)
+                    End If
                 Next k
 
+                If track = True Then
+                    CurPrg(0) = CurPrg(1)
+                    UpdateProg_Cur(CurPrg, track_stringE(2), False, True)
+                End If
+
+
                 'Delete all jpg frames (used for THP video stream)
-                DeleteFilesFromFolder(Path, "*.jpg")
+                DeleteFilesFromFolder(Path, "*.jpg", track, track_stringS(3), True, False)
+                CurPrg(1) = 1
+                CurPrg(0) = CurPrg(1)
+                UpdateProg_Cur(CurPrg, track_stringE(3), False, True)
             End If
+
 
             'If video has padding, delete temp files for dummy padding
             If Haspad Then
                 'Delete BMP frames from dummy videos (dummy_N_%0Nd_.bmp)
-                'Iterate multiplicity from 1 to m
+                'Iterate multiplicity from 1 to m                
+                CurPrg(0) = 0
+                CurPrg(0) = 1
+                UpdateProg_Cur(CurPrg, track_stringS(4), True, False)
                 For k = 1 To m Step 1
                     Dim srch As String = "dummy_" & k.ToString() & "_*.bmp"
-                    DeleteFilesFromFolder(Path, srch)
+                    Dim text As String = "mult=" & k.ToString()
+                    DeleteFilesFromFolder(Path, srch, track, text)
+                    CurPrg(1) = 1
+                    CurPrg(0) = CurPrg(1)
+                    UpdateProg_Cur(CurPrg, "mult=" & k.ToString() & " deleted!")
                 Next k
+                If track Then
+                    CurPrg(1) = 1
+                    CurPrg(0) = CurPrg(1)
+                    UpdateProg_Cur(CurPrg, track_stringE(4), False, True)
+                End If
+
 
                 If justBMPs = False Then
                     'Delete dummy_N.mp4 files
-                    DeleteFilesFromFolder(Path, "dummy*.mp4")
+                    DeleteFilesFromFolder(Path, "dummy*.mp4", track, track_stringS(5), True, False)
+                    If track Then
+                        CurPrg(1) = 1
+                        CurPrg(0) = CurPrg(1)
+                        UpdateProg_Cur(CurPrg, track_stringE(5), False, True)
+                    End If
+
 
                     'Delete final.mp4 if exists
+                    If track Then
+                        CurPrg(0) = 0
+                        CurPrg(1) = 1
+                        UpdateProg_Cur(CurPrg, track_stringS(6), True, False)
+                    End If
                     File = Path & strBAK & "final.mp4"
                     If System.IO.File.Exists(File) Then My.Computer.FileSystem.DeleteFile(File)
+                    If track Then
+                        CurPrg(0) = CurPrg(1)
+                        UpdateProg_Cur(CurPrg, track_stringE(6), False, True)
+                    End If
                 End If
             End If
 
+
             If justBMPs = False Then
+                If track Then
+                    CurPrg(0) = 0
+                    CurPrg(1) = 3
+                    UpdateProg_Cur(CurPrg, track_stringS(7), True, False)
+                End If
+
                 'Delete file.txt if exists, a list of files used for -i in ffmpeg.exe
                 File = Path & strBAK & "File.txt"
                 If System.IO.File.Exists(File) Then My.Computer.FileSystem.DeleteFile(File)
+                If track Then
+                    CurPrg(0) += 1
+                    UpdateProg_Cur(CurPrg)
+                End If
 
                 'Also delete Irfanview JPG INI files
                 File = Path & strBAK & "i_view32.ini"
                 If System.IO.File.Exists(File) Then My.Computer.FileSystem.DeleteFile(File)
+                If track Then
+                    CurPrg(0) += 1
+                    UpdateProg_Cur(CurPrg)
+                End If
+
                 File = Path & strBAK & "i_view32_temp.ini"
                 If System.IO.File.Exists(File) Then My.Computer.FileSystem.DeleteFile(File)
+                If track Then
+                    CurPrg(0) += 1
+                    UpdateProg_Cur(CurPrg, track_stringE(7), False, True)
+                End If
 
                 'Cleanup FFPLay playback
                 CleanUp_Playback()
             End If
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in CleanUp!")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in CleanUp!", True)
         End Try
     End Sub
 
@@ -1914,7 +3098,7 @@ Public Class Main
             Dim digs As Byte = max.ToString().Length                'Get the amount of digits in the max value
             txtTE_D.Text = digs.ToString()                          'Update the digits text
         Catch ex As Exception
-            'MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in UpdateTEDigs()!")
+            'Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in UpdateTEDigs()!", true)
         End Try
     End Sub
 
@@ -2070,7 +3254,7 @@ Public Class Main
             Enc_Wav.Enabled = state
 
             'Handle the multiplicity box (the m values), and mult for time ripping
-            'If only m=1, then "_1", else "_1\nto\nM"
+            'If only m=1, then "_1", else "_1 to\n_M"
             If m = 1 Then
                 txtTE_M.Text = "_1"
 
@@ -2079,15 +3263,15 @@ Public Class Main
                 nudTD_M.Maximum = 1
             Else
                 'Update the text multi box
-                txtTE_M.Text = "_1" & strNL & "to" & strNL & "_" & m.ToString()
-                txtTE_F.Text = txtVF_S.Text
+                txtTE_M.Text = "_1 to" & strNL & "_" & m.ToString()                
 
                 'Update the time rip NUD
                 nudTD_M.Minimum = 0
                 nudTD_M.Maximum = m
             End If
+            txtTE_F.Text = txtVF_S.Text
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in HandleArrState()!")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in HandleArrState()!", True)
         End Try
     End Sub
 
@@ -2111,7 +3295,7 @@ Public Class Main
             'From the full file path, replace the file+ext with nothing, to get file directory; return
             strOut = Replace(strPath, strFile, "")
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in FileDir()!")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in FileDir()!", True)
         End Try
         Return strOut
     End Function
@@ -2168,7 +3352,7 @@ Public Class Main
             shtFileLen = shtLen - shtPos(bytItems - 1)  'Set the length of the file+ext
             outp = Mid(strPath, (shtPos(bytItems - 1)) + 1, shtFileLen) 'Extract the file+ext
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in FileAndExt")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in FileAndExt", True)
         End Try
         Return outp
     End Function
@@ -2202,30 +3386,53 @@ Public Class Main
             xFileData.Dispose()
             xFileData = Nothing
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "File IO error in WriteTxtFile!")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "File I/O error in WriteTxtFile!", True)
         End Try
     End Sub
 
     ''' <summary>
-    ''' Deletes files from a folder based on a DOS search spec
+    ''' Deletes files from a folder based on a DOS search spec, with optional current progress tracking
     ''' </summary>
     ''' <param name="Folder">Folder to search</param>
     ''' <param name="type">Search spec</param>
+    ''' <param name="track">Current progres tracking?</param>
+    ''' <param name="startText">Start message</param>
+    ''' <param name="_Set">Set start message?</param>
+    ''' <param name="_Wait">Wait?</param>
     ''' <remarks>
     ''' Like del cmd. For stuff like del *.pdf.
     ''' https://stackoverflow.com/questions/25429791/how-do-i-delete-all-files-of-a-particular-type-from-a-folder
     ''' </remarks>
-    Private Sub DeleteFilesFromFolder(ByVal Folder As String, ByVal type As String)
-        'If folder exists
+    Private Sub DeleteFilesFromFolder(ByVal Folder As String, ByVal type As String, Optional ByVal track As Boolean = False, Optional ByVal startText As String = "", Optional ByVal _Set As Boolean = False, Optional ByVal _Wait As Boolean = False)
+        'array(2), 0=current value, 1=max progress
+        Dim CurPrg(2) As Single
         Try
+            'If folder exists
             If Directory.Exists(Folder) Then
                 'Iterate through all files that match spec, delete them
-                For Each _file As String In Directory.GetFiles(Folder, type)
+                Dim i As Integer = 0                                        'Generic iterator
+                Dim Files() As String = Directory.GetFiles(Folder, type)    'All files
+                Dim max As Integer = Files.Count                            'Max amt of files
+
+                'If tracking, set current progress between 0-max file count, and current progress to 0, display any text with set/wait flags
+                CurPrg(0) = 0
+                CurPrg(1) = max
+                If track Then UpdateProg_Cur(CurPrg, startText, _Set, _Wait)
+                For Each _file As String In Files
                     File.Delete(_file)
+                    i += 1
+
+                    'If tracking, increment the current progress
+                    If track Then
+                        CurPrg(0) = i
+                        UpdateProg_Cur(CurPrg)
+                    End If
                 Next _file
+            Else
+                Throw New System.Exception("Could not find directory " & Folder & "!")
             End If
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "File IO error in DeleteFilesFromFolder!")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "File I/O error in DeleteFilesFromFolder!", True)
         End Try
     End Sub
 
@@ -2238,16 +3445,31 @@ Public Class Main
     ''' <remarks></remarks>
     Private Sub DeleteExtraFilesFromFolder(ByVal Folder As String, ByVal type As String, ByVal limit As UShort)
         'If folder exists
+        'Current progress tracking
+        Dim CurPrg(2) As Single
+
         Try
             If Directory.Exists(Folder) Then
-                Dim i As UShort = 1                                             'Generic counter
-                For Each _file As String In Directory.GetFiles(Folder, type)
-                    If i > limit Then File.Delete(_file) '                       If iterator is above limit (extra file), delete it
-                    i += 1                                                      'Incremen
+                Dim i As Integer = 1                                             'Generic counter                
+                Dim Files() As String = Directory.GetFiles(Folder, type)         'Array of files
+                Dim max As Integer = Files.Count                                 'Count of files
+
+                'Track between 0 and max file count, current = 0
+                CurPrg(0) = 0
+                CurPrg(1) = max
+                'Set start text without wait
+                UpdateProg_Cur(CurPrg, "Deleting extra JPG files; please wait...", True, False)
+                For Each _file As String In Files
+                    If i > limit Then File.Delete(_file) '                       If iterator is above limit (extra file), delete it                    
+                    i += 1                                                      'Increment
+
+                    'Update progress
+                    CurPrg(0) = i
+                    UpdateProg_Cur(CurPrg)
                 Next _file
             End If
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "File IO error in DeleteExtraFilesFromFolder!")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "File I/O error in DeleteExtraFilesFromFolder!", True)
         End Try
     End Sub
 
@@ -2267,7 +3489,7 @@ Public Class Main
                 cnt = Files.Count()                                         'Get count of files meeting spec
             End If
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "File IO error in CountFilesFromFolder!")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "File I/O error in CountFilesFromFolder!", True)
         End Try
         Return cnt
     End Function
@@ -2391,11 +3613,10 @@ Public Class Main
             xwINIData.Dispose()
             xwINIData = Nothing
             My.Computer.FileSystem.DeleteFile(iViewINI2)
-            My.Computer.FileSystem.RenameFile(iViewINI2Temp, Path.GetFileName(iViewINI2))
-            MsgBox("Disabled Progressive JPG for conversions!", MsgBoxStyle.Information, "Irfanview settings INI Hack successful!")
+            My.Computer.FileSystem.RenameFile(iViewINI2Temp, Path.GetFileName(iViewINI2))            
             success = True
         Catch ex As Exception
-            MsgBox(ex.Message, MsgBoxStyle.Critical, "Error finding, copying, and/or hacking INI Irfanview INI file!")
+            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error finding, copying, and/or hacking INI Irfanview INI file!", True)
             success = False
         End Try
 
@@ -2418,10 +3639,32 @@ Public Class Main
     '================
     'Cast helper funcs
 
+    ''' <summary>
+    ''' Converts standard bits (0/1) to bool
+    ''' </summary>
+    ''' <param name="inp">Bit input</param>
+    ''' <returns>Bool</returns>
+    ''' <remarks></remarks>
     Private Function BitToBool(ByVal inp As Byte) As Boolean
         Dim outp As Boolean = False
         If inp = 1 Then outp = True
         Return outp
+    End Function
+
+    ''' <summary>
+    ''' Converts bool to bit
+    ''' </summary>
+    ''' <param name="value">Bool to convert</param>
+    ''' <param name="_false">False bit value</param>
+    ''' <param name="_true">True bit value</param>
+    ''' <returns>Bit value</returns>
+    ''' <remarks></remarks>
+    Private Function BoolToBit(ByVal value As Boolean, Optional ByVal _false As Byte = 0, Optional ByVal _true As Byte = 1) As Byte
+        Dim result As Byte = _false
+        If value = True Then
+            result = _true
+        End If
+        Return result
     End Function
 
     'Converts String with "True" or "False" into appropriate boolean value

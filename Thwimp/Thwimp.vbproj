@@ -178,6 +178,14 @@
   <ItemGroup>
     <Content Include="icon.ico" />
     <Content Include="Resources\EagleSoft.wav" />
+    <None Include="Resources\mario_kart_wii_by_ariarts258_d41u6uw-fullview.jpg" />
+    <None Include="Resources\THP_Tab.jpg" />
+    <None Include="Resources\THPTab.png" />
+    <None Include="Resources\success.wav" />
+    <None Include="Resources\error.wav" />
+    <None Include="Resources\song.wav" />
+    <None Include="Resources\nullIcon.png" />
+    <None Include="Resources\nullIcon.ico" />
     <None Include="Resources\EagleSoft Ltd.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
