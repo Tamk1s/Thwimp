@@ -25,7 +25,7 @@ Public Class Main
     'Debug mode?
     'If enabled, don't hide THP tab, and use current contents for quick debugging)
     'If disabled, clear options tab items and forcibly set them every run
-    Shared DEBUG As Boolean = False
+    Shared DEBUG As Boolean = True
 
     'Command-Line Interface Mode?
     'This flag will be set if called from CommandLine with args, and will change the runtime behavior for errors etc.
@@ -33,12 +33,13 @@ Public Class Main
     Shared CLI_MODE As Boolean = False
 
     'Characters
-    Shared strBAK As String = "\"                           'Backslash symbol
-    Shared strQUOT As String = Chr(34)                      'Quote Symbol
-    Shared strNL As String = Environment.NewLine            'Newline symbol
+    Shared strPATHSEP As String = Path.DirectorySeparatorChar 'Path separator symbol
+    Shared strBAK As String = "\"                             'Backslash. Needed for some FFMPEG cmds
+    Shared strQUOT As String = Chr(34)                        'Quote Symbol
+    Shared strNL As String = Environment.NewLine              'Newline symbol
 
     Shared strPATH As String = Application.StartupPath      'Directory of the exe
-    Shared SONG As String = strPATH & strBAK & "Song.wav"   'Elevator music song file
+    Shared SONG As String = strPATH & strPATHSEP & "Song.wav"   'Elevator music song file
     Const LISTING As String = "FileListing.txt"             'File containing the    file listing for BreakGOLD's image files
     Const CDESC As String = "FileCDesc.txt"                 '~                      description info for the control signal
     Const DESC As String = "FileDesc.txt"                   '~                      description info for the image files
@@ -183,7 +184,7 @@ Public Class Main
 
         Try
             bytItems = 0
-            xFileData = File.OpenText(strPATH & strBAK & LISTING)   'Open the LISTING file
+            xFileData = File.OpenText(strPATH & strPATHSEP & LISTING)   'Open the LISTING file
 
             'Count the amount of items
             While xFileData.EndOfStream() <> True
@@ -197,7 +198,7 @@ Public Class Main
             xFileData = Nothing
 
             'Load all relative file paths into THPs(#).File
-            xFileData = File.OpenText(strPATH & strBAK & LISTING)   'Open the LISTING file
+            xFileData = File.OpenText(strPATH & strPATHSEP & LISTING)   'Open the LISTING file
             For bytCtr1 = 1 To bytItems Step 1                      'Iterate through all of the lines
                 strEntry = xFileData.ReadLine()                     'Read a line
                 THPs(bytCtr1).File = strEntry                       'Dump file paths into appropriate array entry
@@ -209,7 +210,7 @@ Public Class Main
             xFileData = Nothing
 
             'Load all descriptions into THPs(#).Desc array
-            xFileData = File.OpenText(strPATH & strBAK & DESC)      'Open the DESC file
+            xFileData = File.OpenText(strPATH & strPATHSEP & DESC)      'Open the DESC file
             For bytCtr1 = 1 To bytItems Step 1                      'Iterate through all lines
                 strEntry = xFileData.ReadLine()                     'Read a line
                 THPs(bytCtr1).Desc = strEntry                       'Dump the data into the array slots
@@ -220,7 +221,7 @@ Public Class Main
             xFileData = Nothing
 
             'Load all ctrl descriptions into THPs(#).visual.cdesc array
-            xFileData = File.OpenText(strPATH & strBAK & CDESC)     'Open the CDESC file
+            xFileData = File.OpenText(strPATH & strPATHSEP & CDESC)     'Open the CDESC file
             For bytCtr1 = 1 To bytItems Step 1                      'Iterate through all lines
                 strEntry = xFileData.ReadLine()                     'Read a line
                 THPs(bytCtr1).visual.CDesc = strEntry               'Dump the data into the array slots
@@ -233,7 +234,7 @@ Public Class Main
             'Get data from the DATA file
 
             'Load all AV data into THPs(#).visual and THPs(#).audial struct elements
-            xFileData = File.OpenText(strPATH & strBAK & DATA)      'Load the DATA file
+            xFileData = File.OpenText(strPATH & strPATHSEP & DATA)      'Load the DATA file
             For bytCtr1 = 1 To bytItems Step 1                      'Iterate through all lines
                 strEntry = xFileData.ReadLine()                     'Read a line
 
@@ -565,7 +566,7 @@ Public Class Main
     ''' <param name="initDir">Initial directory to use if path is not set</param>
     ''' <param name="initDirAlt">Alternate to initDir if DNE</param>
     ''' <remarks></remarks>
-    Private Sub AssignInitDir_OFD(ByRef ofd As System.Windows.Forms.OpenFileDialog, ByVal selPath As System.Windows.Forms.TextBox, ByVal initDir As String, ByVal initDirAlt As String)        
+    Private Sub AssignInitDir_OFD(ByRef ofd As System.Windows.Forms.OpenFileDialog, ByVal selPath As System.Windows.Forms.TextBox, ByVal initDir As String, ByVal initDirAlt As String)
         If selPath.Text <> Nothing And selPath.Text <> String.Empty Then
             'If the textbox text set (NOT nothing and NOT empty), then set InitialDirectory to it            
             ofd.InitialDirectory = Path.GetDirectoryName(selPath.Text)
@@ -1057,7 +1058,7 @@ Public Class Main
                 'If THP does not have audio
 
                 'Just Playback file using crop settings and time frame settings
-                cmd = strQUOT & txtFFMPEG.Text & strBAK & exeFPlay & strQUOT  'FFPlay command: "C:\FDIR\ffplay.exe"
+                cmd = strQUOT & txtFFMPEG.Text & strPATHSEP & exeFPlay & strQUOT  'FFPlay command: "C:\FDIR\ffplay.exe"
                 file = " " & strQUOT & txtRoot.Text & cmbTHP.Text & strQUOT   'input file: "C:\THPDIR\file.THP"
 
                 'Arguments: input_file + -vf "crop=w:h:x:y,select=between(n\,start_frame\,end_frame),setpts=PTS-STARTPTS" & strQUOT
@@ -1090,9 +1091,9 @@ Public Class Main
 
                 'Step 1: Rip video only as mp4 (FFMPEG)
                 'ffmpeg -i video.thp -y -an -vcodec h264 -vf "crop=w:h:x:y, select=between(n\,start_Frame\,end_frame),setpts=PTS-STARTPTS" video.mp4
-                cmd = strQUOT & txtFFMPEG.Text & strBAK & exeFMPeg & strQUOT                    'FFMPEG command: "C:\FDIR\ffmpeg.exe"
+                cmd = strQUOT & txtFFMPEG.Text & strPATHSEP & exeFMPeg & strQUOT                    'FFMPEG command: "C:\FDIR\ffmpeg.exe"
                 file = strQUOT & txtRoot.Text & cmbTHP.Text & strQUOT                           'input file: "C:\THPDIR\file.THP"
-                file2 = strQUOT & txtFFPlayTemp.Text & strBAK & "video.mp4" & strQUOT           'Output file: "C:\THPPlayWorkDir\video.mp4"
+                file2 = strQUOT & txtFFPlayTemp.Text & strPATHSEP & "video.mp4" & strQUOT           'Output file: "C:\THPPlayWorkDir\video.mp4"
 
                 'Args: -i input_file -y -an -vcodec h264 -vf "crop=w:h:x:y, select=between(n\,start_Frame\,end_frame),setpts=PTS-STARTPTS" output_File
                 args = " -i " & file & " -y -an -vcodec h264 -vf " & strQUOT & "crop=" & w & ":" & h & ":" & x & ":" & y & ",select=between(n" & strBAK & "," & _start & strBAK & "," & _end & "),setpts=PTS-STARTPTS" & strQUOT & " " & file2
@@ -1108,7 +1109,7 @@ Public Class Main
 
                 'Step 2: Rip audio only as mp4 (FFMPEG)
                 'ffmpeg -i video.thp -vn -ss audio_Start -to audio_End audio.mp4
-                file2 = strQUOT & txtFFPlayTemp.Text & strBAK & "audio.mp4" & strQUOT   'output file: "C:\THPPlayWorkDir\audio.mp4"
+                file2 = strQUOT & txtFFPlayTemp.Text & strPATHSEP & "audio.mp4" & strQUOT   'output file: "C:\THPPlayWorkDir\audio.mp4"
                 'Args: -i input_file -vn -ss audio_Start -to audio_End output_file
                 'Note ToString("G9") format is the recommended one for "RoundTripping" a single
                 args = " -i " & file & " -y -vn -ss " & _aStart.ToString("G9") & " -to " & _aEnd.ToString("G9") & " " & file2
@@ -1124,9 +1125,9 @@ Public Class Main
 
                 'Step 3: Merge both mp4 streams (FFMPEG)
                 'ffmpeg -i video.mp4 -i audio.mp4 -c:v copy -c:a copy temp.mp4
-                file = strQUOT & txtFFPlayTemp.Text & strBAK & "video.mp4" & strQUOT        'Input video file: "C:\FFPlayWorkDir\video.mp4"
-                file2 = strQUOT & txtFFPlayTemp.Text & strBAK & "audio.mp4" & strQUOT       'Input audio file: "C:\FFPlayWorkDir\audio.mp4"
-                file3 = strQUOT & txtFFPlayTemp.Text & strBAK & "temp.mp4" & strQUOT        'Output final video file: "C:\FFPlayWorkDir\temp.mp4"
+                file = strQUOT & txtFFPlayTemp.Text & strPATHSEP & "video.mp4" & strQUOT        'Input video file: "C:\FFPlayWorkDir\video.mp4"
+                file2 = strQUOT & txtFFPlayTemp.Text & strPATHSEP & "audio.mp4" & strQUOT       'Input audio file: "C:\FFPlayWorkDir\audio.mp4"
+                file3 = strQUOT & txtFFPlayTemp.Text & strPATHSEP & "temp.mp4" & strQUOT        'Output final video file: "C:\FFPlayWorkDir\temp.mp4"
                 args = " -i " & file & " -i " & file2 & " -y -c:v copy -c:a copy " & file3  'Args: -i video_input -i audio_input -c:v copy -c:a copy output_file
 
                 startInfo.FileName = cmd & args
@@ -1140,8 +1141,8 @@ Public Class Main
 
                 'Step 4: playback final video
                 'ffplay.exe "temp.mp4"
-                cmd = strQUOT & txtFFMPEG.Text & strBAK & exeFPlay & strQUOT                'FFPlay command: "C:\FDIR\ffplay.exe"
-                file = " " & strQUOT & txtFFPlayTemp.Text & strBAK & "temp.mp4" & strQUOT   'Playback file: "C:\FFPlayWorkDir\temp.mp4"
+                cmd = strQUOT & txtFFMPEG.Text & strPATHSEP & exeFPlay & strQUOT                'FFPlay command: "C:\FDIR\ffplay.exe"
+                file = " " & strQUOT & txtFFPlayTemp.Text & strPATHSEP & "temp.mp4" & strQUOT   'Playback file: "C:\FFPlayWorkDir\temp.mp4"
 
                 startInfo.FileName = cmd & file
                 startInfo.UseShellExecute = False
@@ -1178,7 +1179,7 @@ Public Class Main
             End If
 
             'Delete "C:\FFPlayWorkDir\video.mp4", "\audio.mp4", and "temp.mp4" if exist
-            Dim FFPlayRoot As String = txtFFPlayTemp.Text & strBAK              'FFPlay directory
+            Dim FFPlayRoot As String = txtFFPlayTemp.Text & strPATHSEP              'FFPlay directory
             Dim File As String = strQUOT & FFPlayRoot & "video.mp4" & strQUOT   'Abs path to file to try deleting
             If System.IO.File.Exists(File) Then My.Computer.FileSystem.DeleteFile(File)
             'If tracking, update progress
@@ -1276,7 +1277,7 @@ Public Class Main
 
             'Step 1: Convert THP to temp MP4. Encode THP to H264 MP4 with crop filter
             '"C:\FFMPegPath\ffmpeg.exe"
-            cmd = strQUOT & txtFFMPEG.Text & strBAK & exeFMPeg & strQUOT
+            cmd = strQUOT & txtFFMPEG.Text & strPATHSEP & exeFMPeg & strQUOT
             ' -i C:\PathToTHP\DIRtoTHP\file.thp -vcodec h264 -y -filter:v "crop=out_w:out_h:x:y" "C:\OutputDir\output.mp4"
             cmd &= " -y -i " & strQUOT & inFile & strQUOT & " -vcodec h264 -filter:v " & strQUOT & "crop=" & w & ":" & h & ":" & x & ":" & y & strQUOT & " " & strQUOT & tempFile & strQUOT
 
@@ -1294,7 +1295,7 @@ Public Class Main
 
             'Step 2: Convert temp mp4 to final MP4, cutting between start and end frames
             '"C:\FFMPegPath\ffmpeg.exe"
-            cmd = strQUOT & txtFFMPEG.Text & strBAK & exeFMPeg & strQUOT
+            cmd = strQUOT & txtFFMPEG.Text & strPATHSEP & exeFMPeg & strQUOT
             ' -y -i C:\PathToTHP\DIRtoTHP\file.thp -vcodec h264 -an -vf select="between(n\,start_frame\,end_frame),setpts=PTS-STARTPTS" "C:\OutputDir\output.mp4"
             cmd &= " -y -i " & strQUOT & tempFile & strQUOT & " -vcodec h264 -an -vf select=" & strQUOT & "between(n" & strBAK & "," & _start & strBAK & "," & _end & "),setpts=PTS-STARTPTS" & strQUOT
             cmd &= " " & strQUOT & outFile & strQUOT
@@ -1322,7 +1323,7 @@ Public Class Main
                 'ffmpeg.exe -y -i video.thp -vn -ss audio_Start -to audio_End "C:\OutputDir\file.wav" 
 
                 '"C:\FFMPegPath\FFMPEG.exe"
-                cmd = strQUOT & txtFFMPEG.Text & strBAK & exeFMPeg & strQUOT
+                cmd = strQUOT & txtFFMPEG.Text & strPATHSEP & exeFMPeg & strQUOT
                 '-y -i "C:\PathToTHP\DIRtoTHP\file.thp" -vn -ss audio_Start -to audio_End output_file
                 'Note ToString("G9") format is the recommended one for "RoundTripping" a single
                 cmd &= " -y -i " & strQUOT & inFile & strQUOT & " -vn -ss " & _aStart.ToString("G9") & " -to " & _aEnd.ToString("G9") & " "
@@ -1342,7 +1343,7 @@ Public Class Main
                 'Keep only 1st frame for each multiplicty, rename to "dummy_N.bmp", delete excess frames
 
                 '"C:\FFMPegPath\FFMPEG.exe" -y 
-                cmd = strQUOT & txtFFMPEG.Text & strBAK & exeFMPeg & strQUOT & " -y "
+                cmd = strQUOT & txtFFMPEG.Text & strPATHSEP & exeFMPeg & strQUOT & " -y "
 
                 'Output ctrl MP4 to .bmp frames
                 Dim d As String = ""                                                    'Printf digit formatter thingy (pad to N digits)
@@ -1520,7 +1521,7 @@ Public Class Main
             Dim wmax As UShort = w2 - w1                            'Get dif of b-a as wmax
             txtTD_CW.Text = KeepInRange(txtTD_CW.Text, wmin, wmax)  'Keep w in range
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in KeepWInRange()", True)
+            'Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in KeepWInRange()", True)
         End Try
     End Sub
 
@@ -1536,7 +1537,7 @@ Public Class Main
             Dim hmax As UShort = h2 - h1                            'Get dif of b-a as hmax
             txtTD_CH.Text = KeepInRange(txtTD_CH.Text, hmin, hmax)  'Keep h in range
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in KeepHInRange()", True)
+            'Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in KeepHInRange()", True)
         End Try
     End Sub
 
@@ -1863,7 +1864,7 @@ Public Class Main
     ''' <returns>Numeric string in range</returns>
     ''' <remarks></remarks>
     Private Function KeepInRange(ByVal inp As String, ByVal min As UShort, ByVal max As UShort) As String
-        Dim outp As String = ""                             'Output
+        Dim outp As String = inp                            'Output
         Try
             Dim val As UShort = TryParseErr_UShort(inp)     'Get numeric value of input
             Dim newVal As UShort = 0                        'New value to apply
@@ -1879,7 +1880,8 @@ Public Class Main
             End If
             outp = newVal.ToString()                        'Set output as strinng of newval
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in KeepInRange func!", True)
+            'Function can be overzealous with the error checking here. Don't log error messaging, but use current inp param as newVal if TryParseErr_UShort fails, due to maskbox null stuff
+            'Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in KeepInRange func!", True) Then
         End Try
         Return outp
     End Function
@@ -2067,19 +2069,19 @@ Public Class Main
 
                     'Iterate through all frames from 1 to Frames
                     For cnt = 1 To frames
-                        file = path & strBAK & "dummy_" & k.ToString() & ".bmp"                             'file =     "C:\WorkingDir\dummy_N.bmp"
-                        file2 = path & strBAK & "dummy_" & k.ToString() & "_" & cnt.ToString(dgs) & ".bmp"  'file2 =    "C:\WorkingDir\dummy_N_FFF.bmp"
+                        file = path & strPATHSEP & "dummy_" & k.ToString() & ".bmp"                             'file =     "C:\WorkingDir\dummy_N.bmp"
+                        file2 = path & strPATHSEP & "dummy_" & k.ToString() & "_" & cnt.ToString(dgs) & ".bmp"  'file2 =    "C:\WorkingDir\dummy_N_FFF.bmp"
                         My.Computer.FileSystem.CopyFile(file, file2)                                        'Copy file to file2
                     Next cnt
 
                     'Properly convert bmp files to MP4: ffmpeg -y -f image2 -framerate FPS -i dummy_N_%03d.bmp out.mp4
-                    cmd = strQUOT & txtFFMPEG.Text & strBAK & exeFMPeg & strQUOT                                            '"C:\FFMPegPath\FFMPeg.exe"
+                    cmd = strQUOT & txtFFMPEG.Text & strPATHSEP & exeFMPeg & strQUOT                                            '"C:\FFMPegPath\FFMPeg.exe"
                     cmd &= " -y -f image2 -framerate " & FPS                                                                ' -y -f image2 -framerate FPS
 
-                    file = strQUOT & path & strBAK & "dummy_" & k.ToString() & "_%0" & dg.ToString() & "d.bmp" & strQUOT
+                    file = strQUOT & path & strPATHSEP & "dummy_" & k.ToString() & "_%0" & dg.ToString() & "d.bmp" & strQUOT
                     cmd &= " -i " & file                                                                                    ' -i "C:\WorkingDir\dummy_M_%0Nd.bmp"
 
-                    file = strQUOT & path & strBAK & "dummy_" & k.ToString() & ".mp4" & strQUOT
+                    file = strQUOT & path & strPATHSEP & "dummy_" & k.ToString() & ".mp4" & strQUOT
                     cmd &= (" " & file)                                                                                     ' "C:\WorkingDir\out.mp4"
 
                     'Run cmd
@@ -2104,20 +2106,20 @@ Public Class Main
                     UpdateProg_Cur(CurPrg, "VStack Column " + j.ToString())
                     parm = ""                                                                                                       'Clear parm string
                     ReDim parms(r)                                                                                                  'Redim parm array to the amount of rows
-                    cmd = strQUOT & txtFFMPEG.Text & strBAK & exeFMPeg & strQUOT & " -y "                                           '"C:\FFMPegPath\FFMPeg.exe" -y
+                    cmd = strQUOT & txtFFMPEG.Text & strPATHSEP & exeFMPeg & strQUOT & " -y "                                           '"C:\FFMPegPath\FFMPeg.exe" -y
 
                     'Iterate through all rows 1 to r
                     'Concatenate all input file args ("-i filename") onto cmd, build input pads
                     For i = 1 To r Step 1
                         suffix = suffixes(i, j) & "_" & k.ToString()                                                                'Get appropriate video cell suffix ("_AX_Y")
-                        file = strQUOT & path & strBAK & filename & suffix & ".mp4" & strQUOT
+                        file = strQUOT & path & strPATHSEP & filename & suffix & ".mp4" & strQUOT
                         cmd &= "-i " & file                                                                                         '-i "C:\WorkingDir\filename_AX_Y.mp4"
                         cmd &= " "
                         parms(i) = "[" & (i - 1).ToString() + ":v]"                                                                 'Generate input pad for element in array ("[N:v]")
                         parm &= parms(i)                                                                                            'Concatenate index onto parm
                     Next i
 
-                    file = strQUOT & path & strBAK & "c" & j.ToString() & ".mp4" & strQUOT                                          'Filename for output column video ("cN.mp4"). "C:\WorkingDir\cN.mp4"
+                    file = strQUOT & path & strPATHSEP & "c" & j.ToString() & ".mp4" & strQUOT                                          'Filename for output column video ("cN.mp4"). "C:\WorkingDir\cN.mp4"
 
                     If r > 1 Then
                         'If multiple rows
@@ -2146,10 +2148,10 @@ Public Class Main
                 UpdateProg_Cur(CurPrg, "Step 2: Limit each giant vstacked column to " & (TryParseErr_UShort(frames)).ToString() & " frames (dN.mp4). Do for all columns (" & c.ToString() & " " & Plural(c, "column", "columns") & ")")
                 For j = 1 To c Step 1
                     UpdateProg_Cur(CurPrg, "Frame limit column " & j.ToString() & " (c" & j.ToString() & ".mp4 to d" & j.ToString() & ".mp4)")
-                    cmd = strQUOT & txtFFMPEG.Text & strBAK & exeFMPeg & strQUOT & " -y "           '"C:\FFMPegDir\FFMPeg.exe" -y
-                    file = strQUOT & path & strBAK & "c" & j.ToString() & ".mp4" & strQUOT
+                    cmd = strQUOT & txtFFMPEG.Text & strPATHSEP & exeFMPeg & strQUOT & " -y "           '"C:\FFMPegDir\FFMPeg.exe" -y
+                    file = strQUOT & path & strPATHSEP & "c" & j.ToString() & ".mp4" & strQUOT
                     cmd &= "-i " & file                                                             '-i "C:\WorkingDir\cN.mp4"
-                    file = strQUOT & path & strBAK & "d" & j.ToString() & ".mp4" & strQUOT
+                    file = strQUOT & path & strPATHSEP & "d" & j.ToString() & ".mp4" & strQUOT
                     'End frame is exclusive; add one to frame count for value to use
                     cmd &= " -filter_complex trim=start_frame=0:end_frame=" & (TryParseErr_UShort(frames) + 1).ToString() & " -vcodec h264 " & file   ' -filter_complex trim=start_frame=X:end_frame=Y -vcodec h264 "C:\WorkingDir\dN.mp4"
 
@@ -2167,17 +2169,17 @@ Public Class Main
                 UpdateProg_Cur(CurPrg, "Step 3: Combine each giant, frame-limited column (dN.mp4) into a near-final composite video for this multiplicity (m" & k.ToString() & ".mp4) . Do for all columns (" & c.ToString() & " " & Plural(c, "column", "columns") & ")")
                 parm = ""                                                               'Clear parm string
                 ReDim parms(c)                                                          'ReDim parms to amount of columns
-                cmd = strQUOT & txtFFMPEG.Text & strBAK & exeFMPeg & strQUOT & " -y "   '"C:\FFMPegDir\FFMPeg.exe" - y
+                cmd = strQUOT & txtFFMPEG.Text & strPATHSEP & exeFMPeg & strQUOT & " -y "   '"C:\FFMPegDir\FFMPeg.exe" - y
                 'Iterate through all columns 1 to c
                 'Concatenate all input file args ("-i dN.mp4") onto cmd, build input pads. Similar to Step 1 with vstack
                 For j = 1 To c Step 1
-                    file = strQUOT & path & strBAK & "d" & j.ToString() & ".mp4" & strQUOT
+                    file = strQUOT & path & strPATHSEP & "d" & j.ToString() & ".mp4" & strQUOT
                     cmd &= "-i " & file
                     cmd &= " "
                     parms(j) = "[" & (j - 1).ToString() + ":v]"
                     parm &= parms(j)
                 Next j
-                file = strQUOT & path & strBAK & "m" & k.ToString() & ".mp4" & strQUOT
+                file = strQUOT & path & strPATHSEP & "m" & k.ToString() & ".mp4" & strQUOT
 
                 If c > 1 Then
                     'If multiple columns
@@ -2210,7 +2212,7 @@ Public Class Main
             CurPrg(1) = 1
             UpdateProg_Cur(CurPrg)
             UpdateProg_Ttl(TtlPrg, "Step 5: Concatenate each composite multiplicity video (all 'mN.mp4' files in step 3) to a nearly-final mp4 file ('" & filename & ".mp4')")
-            
+
             'https://stackoverflow.com/questions/5415006/ffmpeg-combine-merge-multiple-mp4-videos-not-working-output-only-contains-the
             'ffmpeg -f concat -i inputs.txt -vcodec h264 Mux1.mp4
             If m > 1 Then
@@ -2218,7 +2220,7 @@ Public Class Main
                 UpdateProg_Cur(CurPrg, "Video has multiplicity! Creating near-final composite video...", True, False)
 
                 '"C:\FFMPegDir\FFMPeg.exe" -y -f concat -i
-                cmd = strQUOT & txtFFMPEG.Text & strBAK & exeFMPeg & strQUOT & " -y -f concat -i "
+                cmd = strQUOT & txtFFMPEG.Text & strPATHSEP & exeFMPeg & strQUOT & " -y -f concat -i "
 
                 'Redim files to 0-based multiplicity
                 ReDim Files(m - 1)
@@ -2228,8 +2230,8 @@ Public Class Main
                     Files(k - 1) = "m" & k.ToString() & ".mp4"
                 Next k
                 WriteTxtFile(path, Files)                                                                           'Write file list (File.txt) to WorkingDir
-                file = strQUOT & path & strBAK & "File.txt" & strQUOT                                               'That file is located at "C:\WorkingDir\File.Txt"
-                cmd &= file & " -vcodec h264 " & strQUOT & path & strBAK & filename & ".mp4" & strQUOT '"C:\WorkingDir\File.Txt" -vcodec h264 "C:\WorkingDir\filename.mp4"
+                file = strQUOT & path & strPATHSEP & "File.txt" & strQUOT                                               'That file is located at "C:\WorkingDir\File.Txt"
+                cmd &= file & " -vcodec h264 " & strQUOT & path & strPATHSEP & filename & ".mp4" & strQUOT '"C:\WorkingDir\File.Txt" -vcodec h264 "C:\WorkingDir\filename.mp4"
 
                 'Run cmd
                 startInfo.FileName = cmd
@@ -2241,8 +2243,8 @@ Public Class Main
             Else
                 'If video has no multiplicity, just copy "C:\WorkingDir\m1.mp4" to "C:\WorkingDir\filename.mp4"
                 UpdateProg_Cur(CurPrg, "Video does NOT have multiplicity! Use 1st/only multiplicity as near-final composite video...", True, False)
-                file = path & strBAK & "m1.mp4"             '"C:\WorkingDir\m1.mp4"
-                file2 = path & strBAK & filename & ".mp4"   '"C:\WorkingDir\filename.mp4"
+                file = path & strPATHSEP & "m1.mp4"             '"C:\WorkingDir\m1.mp4"
+                file2 = path & strPATHSEP & filename & ".mp4"   '"C:\WorkingDir\filename.mp4"
                 My.Computer.FileSystem.CopyFile(file, file2)
             End If
             CurPrg(0) += 1
@@ -2267,7 +2269,7 @@ Public Class Main
 
                     'Setup similar to Step 5
                     '"C:\FFMPegDir\FFMPeg.exe" -y -f concat -i
-                    cmd = strQUOT & txtFFMPEG.Text & strBAK & exeFMPeg & strQUOT & " -y -f concat -i "
+                    cmd = strQUOT & txtFFMPEG.Text & strPATHSEP & exeFMPeg & strQUOT & " -y -f concat -i "
                     'Redim files to 0-based multiplicity
                     ReDim Files(m - 1)
                     'Iterate multiplicity from 1 to m
@@ -2276,8 +2278,8 @@ Public Class Main
                         Files(k - 1) = "dummy_" & k.ToString() & ".mp4"
                     Next k
                     WriteTxtFile(path, Files)                                                                       'Write file list (File.txt) to WorkingDir
-                    file = strQUOT & path & strBAK & "File.txt" & strQUOT                                           'That file is located at "C:\WorkingDir\File.Txt"
-                    cmd &= file & " -vcodec h264 " & strQUOT & path & strBAK & "dummy.mp4" & strQUOT   '"C:\WorkingDir\File.Txt" -vcodec h264 "C:\WorkingDir\dummy.mp4"
+                    file = strQUOT & path & strPATHSEP & "File.txt" & strQUOT                                           'That file is located at "C:\WorkingDir\File.Txt"
+                    cmd &= file & " -vcodec h264 " & strQUOT & path & strPATHSEP & "dummy.mp4" & strQUOT   '"C:\WorkingDir\File.Txt" -vcodec h264 "C:\WorkingDir\dummy.mp4"
 
                     'Run cmd
                     startInfo.FileName = cmd
@@ -2289,8 +2291,8 @@ Public Class Main
                 Else
                     'If no multiplicity, copy "C:\WorkingDir\dummy_1.mp4" to "C:\WorkingDir\dummy.mp4"
                     UpdateProg_Cur(CurPrg, "Video does NOT have multiplicity; just use only dummy video (dummy_1.mp4) as compositie (dummy.mp4)")
-                    file = path & strBAK & "dummy_1.mp4"
-                    file2 = path & strBAK & "dummy.mp4"
+                    file = path & strPATHSEP & "dummy_1.mp4"
+                    file2 = path & strPATHSEP & "dummy.mp4"
                     My.Computer.FileSystem.MoveFile(file, file2, True)
                 End If
                 CurPrg(0) += 1
@@ -2303,14 +2305,14 @@ Public Class Main
                 UpdateProg_Ttl(TtlPrg, "Step 7: Vstack the video in step 5 ('" & filename & ".mp4') with the composite dummy video in step 6 ('dummy.mp4') into a file called 'final.mp4', then rename as final '" & filename & ".mp4'")
                 UpdateProg_Cur(CurPrg, "VStacking composite dummy video (dummy.mp4) to bottom of base composite video (" & filename & ".mp4)...", True, False)
 
-                cmd = strQUOT & txtFFMPEG.Text & strBAK & exeFMPeg & strQUOT & " -y"    '"C:\FFMPegDir\FFMPeg.exe" -y
-                file = strQUOT & path & strBAK & filename & ".mp4" & strQUOT
+                cmd = strQUOT & txtFFMPEG.Text & strPATHSEP & exeFMPeg & strQUOT & " -y"    '"C:\FFMPegDir\FFMPeg.exe" -y
+                file = strQUOT & path & strPATHSEP & filename & ".mp4" & strQUOT
                 cmd &= " -i " & file                                                    ' -i "C:\WorkingDir\filename.mp4"
-                file = strQUOT & path & strBAK & "dummy.mp4" & strQUOT
+                file = strQUOT & path & strPATHSEP & "dummy.mp4" & strQUOT
 
                 cmd &= " -i " & file
                 cmd &= " -filter_complex vstack -vcodec h264 "
-                file = strQUOT & path & strBAK & "final.mp4" & strQUOT
+                file = strQUOT & path & strPATHSEP & "final.mp4" & strQUOT
                 cmd &= file                                                             ' -i "C:\WorkingDir\dummy.mp4 -filter_complex vstack -vcodec h264 "C:\WorkingDir\final.mp4""
 
                 'Run cmd
@@ -2321,8 +2323,8 @@ Public Class Main
                 shell.Close()
 
                 'MoveFile("C:\WorkingDir\final.mp4"->"C:\WorkingDir\filename.mp4")
-                file = path & strBAK & "final.mp4"
-                file2 = path & strBAK & filename & ".mp4"
+                file = path & strPATHSEP & "final.mp4"
+                file2 = path & strPATHSEP & filename & ".mp4"
                 My.Computer.FileSystem.MoveFile(file, file2, True)
 
                 CurPrg(0) += 1
@@ -2358,13 +2360,13 @@ Public Class Main
             CurPrg(0) = 0
             CurPrg(1) = j * m
             UpdateProg_Cur(CurPrg)
-            UpdateProg_Ttl(TtlPrg, "Step 8: Convert final video ('" & filename & ".mp4') into BMP frames, padded to " & i.ToString() & " digits ('frame_%0Nd.bmp')")            
+            UpdateProg_Ttl(TtlPrg, "Step 8: Convert final video ('" & filename & ".mp4') into BMP frames, padded to " & i.ToString() & " digits ('frame_%0Nd.bmp')")
             UpdateProg_Cur(CurPrg, "Generating ~" & CurPrg(1).ToString() & " BMP frames. Please wait; this shall take some time...", True, False)
 
-            cmd = strQUOT & txtFFMPEG.Text & strBAK & exeFMPeg & strQUOT & " -y "           '"C:\FFMPegDir\FFMPeg.exe" -y 
-            file = strQUOT & path & strBAK & filename & ".mp4" & strQUOT
+            cmd = strQUOT & txtFFMPEG.Text & strPATHSEP & exeFMPeg & strQUOT & " -y "           '"C:\FFMPegDir\FFMPeg.exe" -y 
+            file = strQUOT & path & strPATHSEP & filename & ".mp4" & strQUOT
             cmd &= "-i " & file                                                             '-i "C:\WorkingDir\filename.mp4"
-            file = strQUOT & path & strBAK & "frame_%0" & i.ToString() & "d.bmp" & strQUOT
+            file = strQUOT & path & strPATHSEP & "frame_%0" & i.ToString() & "d.bmp" & strQUOT
             cmd &= " " & file                                                               ' "C:\WorkingDir\frame_%0Nd.bmp"
             'Run cmd
             startInfo.FileName = cmd
@@ -2389,7 +2391,7 @@ Public Class Main
             CurPrg(0) = 0
             CurPrg(1) = 1
             UpdateProg_Cur(CurPrg)
-            UpdateProg_Ttl(TtlPrg, "Step 8.1: Find, copy, and hack Irfanview advanced options INI file")            
+            UpdateProg_Ttl(TtlPrg, "Step 8.1: Find, copy, and hack Irfanview advanced options INI file")
             UpdateProg_Cur(CurPrg, "Hack Irfanview INI file...", True, False)
             Dim success As Boolean = HackINIFile(path)
             If success = False Then Throw New System.Exception("Irfanview INI hack failed!")
@@ -2405,17 +2407,17 @@ Public Class Main
             CurPrg(0) = 0
             CurPrg(1) = j
             UpdateProg_Cur(CurPrg)
-            UpdateProg_Ttl(TtlPrg, "Step 8.2: Convert BMP frames into JPG frames, using Irfanview and the JPG Quality value (" & nudTE_jpgq.Value.ToString() & "%)")            
+            UpdateProg_Ttl(TtlPrg, "Step 8.2: Convert BMP frames into JPG frames, using Irfanview and the JPG Quality value (" & nudTE_jpgq.Value.ToString() & "%)")
             UpdateProg_Cur(CurPrg, "Generating " & j.ToString() & " JPG " & Plural(j, "frame", "frames") & ". Please wait; this shall take some time...", True, False)
             Log_MsgBox("Generating JPG frames; please wait!", MsgBoxStyle.Information, "JPG Rendering")
             For i = 1 To j                                                                          'Iterate frames from 1 to j
                 cmd = strQUOT & txtiView.Text & strQUOT                                             '"C:\iView32\iView32.exe"
                 file2 = StrDup(cnt, "0")                                                            '"0Nd". Create ToString dig formatter
-                file = strQUOT & path & strBAK & "frame_" & i.ToString(file2) & ".bmp" & strQUOT
+                file = strQUOT & path & strPATHSEP & "frame_" & i.ToString(file2) & ".bmp" & strQUOT
                 cmd &= " " & file                                                                   ' "C:\WorkingDir\frames_%0Nd.bmp
                 'cmd &= " /jpgq=" & nudTE_jpgq.Value.ToString() & " /convert="                      ' /jpgq=N /convert-
                 cmd &= " /ini /jpgq=" & nudTE_jpgq.Value.ToString() & "/convert="                                                            '/ini /convert=
-                file = strQUOT & path & strBAK & "frame_" & i.ToString(file2) & ".jpg" & strQUOT
+                file = strQUOT & path & strPATHSEP & "frame_" & i.ToString(file2) & ".jpg" & strQUOT
                 cmd &= file                                                                   ' "C:\WorkingDir\frames_%0Nd.jpg
 
                 'Run cmd
@@ -2462,10 +2464,10 @@ Public Class Main
 
                 '"C:\THPConvDir\THPConv.exe" -j "C:\WorkingDir\*.jpg" -r RR.RR -d "C:\WorkingDir\filename.thp"
                 cmd = strQUOT & txtTHPConv.Text & strQUOT
-                file = "-j " & strQUOT & path & strBAK & "*.jpg" & strQUOT
+                file = "-j " & strQUOT & path & strPATHSEP & "*.jpg" & strQUOT
                 cmd &= " " & file
                 cmd &= " -r " & FPS.ToString("F2")
-                file = strQUOT & path & strBAK & filename & ".thp" & strQUOT
+                file = strQUOT & path & strPATHSEP & filename & ".thp" & strQUOT
                 cmd &= " -d " & file
             Else
                 'If audio, convert jpg frames and add audio file at appropriate framerate
@@ -2473,12 +2475,12 @@ Public Class Main
 
                 '"C:\THPConvDir\THPConv.exe" -j "C:\WorkingDir\*.jpg" -s "C:\WorkingDir\filename.wav" -r RR.RR -d "C:\WorkingDir\filename.thp"
                 cmd = strQUOT & txtTHPConv.Text & strQUOT
-                file = "-j " & strQUOT & path & strBAK & "*.jpg" & strQUOT
+                file = "-j " & strQUOT & path & strPATHSEP & "*.jpg" & strQUOT
                 cmd &= " " & file
-                file = strQUOT & path & strBAK & filename & ".wav" & strQUOT
+                file = strQUOT & path & strPATHSEP & filename & ".wav" & strQUOT
                 cmd &= " -s " & file
                 cmd &= " -r " & FPS.ToString("F2")
-                file = strQUOT & path & strBAK & filename & ".thp" & strQUOT
+                file = strQUOT & path & strPATHSEP & filename & ".thp" & strQUOT
                 cmd &= " -d " & file
             End If
 
@@ -2497,7 +2499,7 @@ Public Class Main
             CurPrg(0) = 0
             CurPrg(1) = 1
             UpdateProg_Cur(CurPrg)
-            UpdateProg_Ttl(TtlPrg, "Step 11: Cleanup all temporary files")            
+            UpdateProg_Ttl(TtlPrg, "Step 11: Cleanup all temporary files")
             Dim textS() As String =
             {
                 "Delete padless final video (" & filename & ".mp4)",
@@ -2527,7 +2529,7 @@ Public Class Main
             CurPrg(1) = 1
             CurPrg(0) = CurPrg(1)
             UpdateProg_Cur(CurPrg)
-            UpdateProg_Ttl(TtlPrg, "Step 12: DONE")            
+            UpdateProg_Ttl(TtlPrg, "Step 12: DONE")
             UpdateProg_Cur(CurPrg, "THP Encoding finished!", True, True)
 
             'Stop elevator music (if allowed)
@@ -2913,7 +2915,7 @@ Public Class Main
 
             If justBMPs = False Then
                 'Delete thpfilename.mp4 (final mp4 without padding) if exists
-                File = Path & strBAK & filename & ".mp4"
+                File = Path & strPATHSEP & filename & ".mp4"
                 If track = True Then
                     CurPrg(0) = 0
                     CurPrg(1) = 1
@@ -2937,7 +2939,7 @@ Public Class Main
 
                 For j = 1 To c Step 1
                     'if cN.mp4 or dN.mp4 exists, delete
-                    File = Path & strBAK & "c" & j.ToString() & ".mp4"
+                    File = Path & strPATHSEP & "c" & j.ToString() & ".mp4"
                     If System.IO.File.Exists(File) Then My.Computer.FileSystem.DeleteFile(File)
                     If track = True Then
                         k += 1
@@ -2945,7 +2947,7 @@ Public Class Main
                         UpdateProg_Cur(CurPrg)
                     End If
 
-                    File = Path & strBAK & "d" & j.ToString() & ".mp4"
+                    File = Path & strPATHSEP & "d" & j.ToString() & ".mp4"
                     If System.IO.File.Exists(File) Then My.Computer.FileSystem.DeleteFile(File)
                     If track = True Then
                         k += 1
@@ -2970,7 +2972,7 @@ Public Class Main
 
                 For k = 1 To m Step 1
                     'if mN.mp4 exists, delete
-                    File = Path & strBAK & "m" & k.ToString() & ".mp4"
+                    File = Path & strPATHSEP & "m" & k.ToString() & ".mp4"
                     If System.IO.File.Exists(File) Then My.Computer.FileSystem.DeleteFile(File)
                     If track = True Then
                         CurPrg(0) = k
@@ -3030,7 +3032,7 @@ Public Class Main
                         CurPrg(1) = 1
                         UpdateProg_Cur(CurPrg, track_stringS(6), True, False)
                     End If
-                    File = Path & strBAK & "final.mp4"
+                    File = Path & strPATHSEP & "final.mp4"
                     If System.IO.File.Exists(File) Then My.Computer.FileSystem.DeleteFile(File)
                     If track Then
                         CurPrg(0) = CurPrg(1)
@@ -3048,7 +3050,7 @@ Public Class Main
                 End If
 
                 'Delete file.txt if exists, a list of files used for -i in ffmpeg.exe
-                File = Path & strBAK & "File.txt"
+                File = Path & strPATHSEP & "File.txt"
                 If System.IO.File.Exists(File) Then My.Computer.FileSystem.DeleteFile(File)
                 If track Then
                     CurPrg(0) += 1
@@ -3056,14 +3058,14 @@ Public Class Main
                 End If
 
                 'Also delete Irfanview JPG INI files
-                File = Path & strBAK & "i_view32.ini"
+                File = Path & strPATHSEP & "i_view32.ini"
                 If System.IO.File.Exists(File) Then My.Computer.FileSystem.DeleteFile(File)
                 If track Then
                     CurPrg(0) += 1
                     UpdateProg_Cur(CurPrg)
                 End If
 
-                File = Path & strBAK & "i_view32_temp.ini"
+                File = Path & strPATHSEP & "i_view32_temp.ini"
                 If System.IO.File.Exists(File) Then My.Computer.FileSystem.DeleteFile(File)
                 If track Then
                     CurPrg(0) += 1
@@ -3263,7 +3265,7 @@ Public Class Main
                 nudTD_M.Maximum = 1
             Else
                 'Update the text multi box
-                txtTE_M.Text = "_1 to" & strNL & "_" & m.ToString()                
+                txtTE_M.Text = "_1 to" & strNL & "_" & m.ToString()
 
                 'Update the time rip NUD
                 nudTD_M.Minimum = 0
@@ -3336,7 +3338,7 @@ Public Class Main
             shtStart = 1
 
             Do
-                shtPos(bytItems) = InStr(shtStart, strPath, strBAK) 'Find the next strBAK character, record its position in array
+                shtPos(bytItems) = InStr(shtStart, strPath, strPATHSEP) 'Find the next strPATHSEP character, record its position in array
                 If shtPos(bytItems) <> 0 Then
                     'If strBAK is found
                     blnFound = True
@@ -3365,7 +3367,7 @@ Public Class Main
     ''' <remarks>Used for -i param for ffmpeg.exe</remarks>
     Private Sub WriteTxtFile(ByVal Path As String, ByRef Files() As String)
         Try
-            Dim TextFile As String = Path & strBAK & "File.txt" 'The filepath to write
+            Dim TextFile As String = Path & strPATHSEP & "File.txt" 'The filepath to write
             'If the textfile exists, remove it for clean slate
             If My.Computer.FileSystem.FileExists(TextFile) Then My.Computer.FileSystem.DeleteFile(TextFile)
 
@@ -3519,7 +3521,7 @@ Public Class Main
             Dim iViewINI2 As String                                     '2nd options INI file (at %Appdata%/whatever)
             Dim iViewINI2Temp As String                                 'Same as iViewINI2, but temporary INI that will be hacked
 
-            iViewPath &= (strBAK & INI)                                 'Get the 1st INI file (exe folder\INI const)
+            iViewPath &= (strPATHSEP & INI)                                 'Get the 1st INI file (exe folder\INI const)
             Dim strEntry As String                                      'Line from INI file
             Dim blnFound As Boolean = False                             'String match found?
             Dim chrInd As Integer                                       'Index of a char in line
@@ -3550,15 +3552,15 @@ Public Class Main
             chrInd += 2                                                 'Increment by 2. !@ This may be wrong?
             iViewINI = Mid(strEntry, chrInd)                            'Get substring of everything after = sign
             iViewINI = LTrim(iViewINI)                                  'Left trim it
-            iViewINI &= (strBAK & INI)                                  'Add "\INI" to EOP
+            iViewINI &= (strPATHSEP & INI)                                  'Add "\INI" to EOP
             iViewINI = Environment.ExpandEnvironmentVariables(iViewINI) 'Expand any environ vars within (defaul INI usually has %APPDATA% envvar)
 
             'Close INI file, copy over INI file, then load it for reading/writing to new temp file
             xrINIData.Close()
             xrINIData.Dispose()
             xrINIData = Nothing
-            iViewINI2 = workDir & strBAK & INI
-            iViewINI2Temp = workDir & strBAK & INITEMP
+            iViewINI2 = workDir & strPATHSEP & INI
+            iViewINI2Temp = workDir & strPATHSEP & INITEMP
             My.Computer.FileSystem.CopyFile(iViewINI, iViewINI2, True)
             xrINIData = File.OpenText(iViewINI2)                                        'Open the INI2 file
             xwINIData = My.Computer.FileSystem.OpenTextFileWriter(iViewINI2Temp, False) 'Open a new INI2Temp file for writing
@@ -3613,7 +3615,7 @@ Public Class Main
             xwINIData.Dispose()
             xwINIData = Nothing
             My.Computer.FileSystem.DeleteFile(iViewINI2)
-            My.Computer.FileSystem.RenameFile(iViewINI2Temp, Path.GetFileName(iViewINI2))            
+            My.Computer.FileSystem.RenameFile(iViewINI2Temp, Path.GetFileName(iViewINI2))
             success = True
         Catch ex As Exception
             Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error finding, copying, and/or hacking INI Irfanview INI file!", True)
@@ -3696,7 +3698,7 @@ Public Class Main
     ''' <returns>Byte</returns>
     ''' <remarks></remarks>
     Private Function TryParseErr_Byte(ByVal inp As String) As Byte
-        Dim outp As Byte = 0
+        Dim outp As Byte = Byte.MaxValue
         Dim result As Boolean = Byte.TryParse(inp, outp)
         If result = False Then
             Throw New System.Exception("Error parsing string into Byte")
@@ -3710,7 +3712,7 @@ Public Class Main
     ''' <returns>Byte</returns>
     ''' <remarks></remarks>
     Private Function TryParseErr_UShort(ByVal inp As String) As UShort
-        Dim outp As UShort = 0
+        Dim outp As UShort = UShort.MaxValue
         Dim result As Boolean = UShort.TryParse(inp, outp)
         If result = False Then
             Throw New System.Exception("Error parsing string into UShort")
@@ -3724,7 +3726,7 @@ Public Class Main
     ''' <returns>Byte</returns>
     ''' <remarks></remarks>
     Private Function TryParseErr_Single(ByVal inp As String) As Single
-        Dim outp As Single = 0
+        Dim outp As Single = Single.PositiveInfinity
         Dim result As Boolean = Single.TryParse(inp, outp)
         If result = False Then
             Throw New System.Exception("Error parsing string into Single")
