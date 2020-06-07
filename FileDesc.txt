@@ -1,3 +1,4 @@
+n/a
 When a cup is highlighted in Battle Mode. Top=Wii, Bot=Retro. 5 courses per cup
 Video displayed when a track is highlighted for Battle Retro Cup. Subvideo in cell B3 is empty
 Video displayed when selecting a battle mode type. Top=Balloon Battle (Block Plaza), Bot=Coin Runners (Delfino Pier)

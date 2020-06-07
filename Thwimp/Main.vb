@@ -25,7 +25,7 @@ Public Class Main
     'Debug mode?
     'If enabled, don't hide THP tab, and use current contents for quick debugging)
     'If disabled, clear options tab items and forcibly set them every run
-    Shared DEBUG As Boolean = True
+    Shared DEBUG As Boolean = False
 
     'Command-Line Interface Mode?
     'This flag will be set if called from CommandLine with args, and will change the runtime behavior for errors etc.
@@ -135,28 +135,35 @@ Public Class Main
         'Load Options tab
         tabApp.SelectedIndex = 1
 
-        'if not debug mode, disable form elements in THP tab (until the data in the "Options" tab is filled out)
-        'Hide THPFile lable and combo box, THP Info Group box, THP Dec/Encoder boxes, Log group box
-        If DEBUG = False Then
-            txtRoot.Text = Nothing
-            txtFFMPEG.Text = Nothing
-            txtFFPlayTemp.Text = Nothing
-            txtiView.Text = Nothing
-            txtTHPConv.Text = Nothing
+        'if not debug mode, disable form elements in THP tab (until the data in the "Options" tab is filled out)        
+        If DEBUG = False Then HideTHPData()
 
-            lblTHPFile.Visible = False
-            cmbTHP.Visible = False
-            grpTHPInfo.Visible = False
-            grpTHPDec.Visible = False
-            grpTHPEnc.Visible = False
-            'grpLog.Visible = False
-        End If
+        'No longer do this; due to bugs it cawses (see issue #11)
 
         'Auto-assign DataFile directory to this exe's (default dir)
-        txtDataDir.Text = strPATH
+        'txtDataDir.Text = strPATH
 
         'Load the THP combo box data from the ext. files
-        InitTHPData()
+        'InitTHPData()
+    End Sub
+
+    ''' <summary>
+    ''' Hides THPFile label and combo box, THP Info Group box, THP Dec/Encoder boxes
+    ''' </summary>
+    ''' <remarks></remarks>
+    Private Sub HideTHPData()
+        txtRoot.Text = Nothing
+        txtFFMPEG.Text = Nothing
+        txtFFPlayTemp.Text = Nothing
+        txtiView.Text = Nothing
+        txtTHPConv.Text = Nothing
+
+        lblTHPFile.Visible = False
+        cmbTHP.Visible = False
+        grpTHPInfo.Visible = False
+        grpTHPDec.Visible = False
+        grpTHPEnc.Visible = False
+        'grpLog.Visible = False
     End Sub
 
     ''' <summary>
@@ -164,9 +171,10 @@ Public Class Main
     ''' </summary>
     ''' <remarks>Similar to InitIMGData in setup from BreakGold Editor; same purpose</remarks>
     Public Sub InitTHPData()
-        Dim xFileData As StreamReader   'Streamreader object for reading the data from the files
-        Dim strEntry As String          'String data read from the [File].ReadLine() method
-        Dim bytItems As Byte            'Number of items in the parallel arrays
+        Dim xFileData As StreamReader = Nothing  'Streamreader object for reading the data from the files
+        Dim DataPath As String = txtDataDir.Text 'Path for set of data files
+        Dim strEntry As String                   'String data read from the [File].ReadLine() method
+        Dim bytItems As Byte                     'Number of items in the parallel arrays
 
         Dim bytCtr1 As Byte             'Generic Counter variable #1
         Dim bytCtr2 As Byte             'Generic Counter variable #2
@@ -183,58 +191,48 @@ Public Class Main
         Dim bytErrFlag As Byte = 0      'Counts the number of invalid entries, if = bytDataEnt bad entries, disable THPDec, ThpRip, and ThpEnc group boxes
 
         Try
+            cmbTHP.Items.Clear()        'Clear all cmbThp items, in case of error/in order to reset when loading new THP data
+
             bytItems = 0
-            xFileData = File.OpenText(strPATH & strPATHSEP & LISTING)   'Open the LISTING file
+            xFileData = File.OpenText(DataPath & strPATHSEP & LISTING)   'Open the LISTING file
 
             'Count the amount of items
             While xFileData.EndOfStream() <> True
                 strEntry = xFileData.ReadLine()                   'Read a line from the file
                 bytItems += 1
             End While
-            ReDim THPs(bytItems)                                  'Redim the THPs array appropriately
-            'Close the LISTING file
-            xFileData.Close()
-            xFileData.Dispose()
-            xFileData = Nothing
+            ReDim THPs(bytItems)                                  'Redim the THPs array appropriately            
+            KillStream(xFileData)                                 'Close the LISTING file
 
             'Load all relative file paths into THPs(#).File
-            xFileData = File.OpenText(strPATH & strPATHSEP & LISTING)   'Open the LISTING file
+            xFileData = File.OpenText(DataPath & strPATHSEP & LISTING) 'Open the LISTING file
             For bytCtr1 = 1 To bytItems Step 1                      'Iterate through all of the lines
                 strEntry = xFileData.ReadLine()                     'Read a line
                 THPs(bytCtr1).File = strEntry                       'Dump file paths into appropriate array entry
                 cmbTHP.Items.Add(THPs(bytCtr1).File)                'Dump data into Combo box
-            Next bytCtr1
-            'Close the LISTING file
-            xFileData.Close()
-            xFileData.Dispose()
-            xFileData = Nothing
+            Next bytCtr1            
+            KillStream(xFileData)                                   'Close the LISTING file
 
             'Load all descriptions into THPs(#).Desc array
-            xFileData = File.OpenText(strPATH & strPATHSEP & DESC)      'Open the DESC file
+            xFileData = File.OpenText(DataPath & strPATHSEP & DESC) 'Open the DESC file
             For bytCtr1 = 1 To bytItems Step 1                      'Iterate through all lines
                 strEntry = xFileData.ReadLine()                     'Read a line
                 THPs(bytCtr1).Desc = strEntry                       'Dump the data into the array slots
-            Next bytCtr1
-            'Close the DESC file
-            xFileData.Close()
-            xFileData.Dispose()
-            xFileData = Nothing
+            Next bytCtr1            
+            KillStream(xFileData)                                   'Close the DESC file
 
             'Load all ctrl descriptions into THPs(#).visual.cdesc array
-            xFileData = File.OpenText(strPATH & strPATHSEP & CDESC)     'Open the CDESC file
+            xFileData = File.OpenText(DataPath & strPATHSEP & CDESC) 'Open the CDESC file
             For bytCtr1 = 1 To bytItems Step 1                      'Iterate through all lines
                 strEntry = xFileData.ReadLine()                     'Read a line
                 THPs(bytCtr1).visual.CDesc = strEntry               'Dump the data into the array slots
             Next bytCtr1
-            'Close the DESC file
-            xFileData.Close()
-            xFileData.Dispose()
-            xFileData = Nothing
+            KillStream(xFileData)                                   'Close the DESC file
             '-------------------------
             'Get data from the DATA file
 
             'Load all AV data into THPs(#).visual and THPs(#).audial struct elements
-            xFileData = File.OpenText(strPATH & strPATHSEP & DATA)      'Load the DATA file
+            xFileData = File.OpenText(DataPath & strPATHSEP & DATA) 'Load the DATA file
             For bytCtr1 = 1 To bytItems Step 1                      'Iterate through all lines
                 strEntry = xFileData.ReadLine()                     'Read a line
 
@@ -321,13 +319,17 @@ Public Class Main
                     THPs(bytCtr1).Bad = False
                 End If
 
-            Next bytCtr1 'Repeat for all lines
+            Next bytCtr1                'Repeat for all lines
+            KillStream(xFileData)       'Close the DATA file
 
-            'Close the DATA file
-            xFileData.Close()
-            xFileData.Dispose()
-            xFileData = Nothing
+            'Set index to 0, manually fire a SelectedIndexChanged
+            'Since 1st ID is (supposed to be) a dummy entry, will hide some invalid controls.
+            'When user selects a valid entry, will be restored etc
+            cmbTHP.SelectedIndex = 0
+            cmbTHP_SelectedIndexChanged(Nothing, Nothing)
         Catch ex As Exception
+            KillStream(xFileData)       'Kill any lingering streams
+            HideTHPData()               'Due to failure to load THP Data fully, hide THP Data form
             Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Data file parsing/ I/O error!", True)
         End Try
     End Sub
@@ -478,7 +480,7 @@ Public Class Main
     Private Sub btnBrowseFFMPEG_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnBrowseFFMPEG.Click
         Try
             'Load the LoadFMPegRoot Load Dialog Box, user selects root directory of FFMpeg exes
-            AssignSelPath_FBD(LoadFFMPEGRoot, txtFFMPEG)
+            AssignSelPath_FBD(LoadFFMPEGRoot, txtFFMPEG, My.Computer.FileSystem.SpecialDirectories.ProgramFiles)
             If LoadFFMPEGRoot.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
             txtFFMPEG.Text = LoadFFMPEGRoot.SelectedPath    'Dump the path into the textbox, for later retrieval
             CheckPathsSet()                             'Handle enabling THP Tab
@@ -494,9 +496,10 @@ Public Class Main
     ''' <param name="e"></param>
     ''' <remarks></remarks>
     Private Sub btnBrowseFFPlayTemp_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnBrowseFFPlayTemp.Click
+        Dim DL_Folder As String = GetDownloadsFolder()
         Try
-            'Load the LoadFFPlayWork Load Dialog Box, user selects working directory
-            AssignSelPath_FBD(LoadFFPlayWork, txtFFPlayTemp)
+            'Load the LoadFFPlayWork Load Dialog Box, user selects working directory            
+            AssignSelPath_FBD(LoadFFPlayWork, txtFFPlayTemp, DL_Folder)
             If LoadFFPlayWork.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
             txtFFPlayTemp.Text = LoadFFPlayWork.SelectedPath    'Dump the path into the textbox, for later retrieval
             CheckPathsSet()                                     'Handle enabling THP Tab
@@ -534,9 +537,10 @@ Public Class Main
     Private Sub btnDataDir_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnDataDir.Click
         Try
             'Load the LoadDataDir Load Dialog Box, user selects root directory for data files                        
-            AssignSelPath_FBD(LoadDataDir, txtDataDir)
+            AssignSelPath_FBD(LoadDataDir, txtDataDir, strPATH)
             If LoadDataDir.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
             txtDataDir.Text = LoadDataDir.SelectedPath  'Dump the path into the textbox, for later retrieval
+            InitTHPData()                               'Load THP data from new data dir
             CheckPathsSet()                             'Handle enabling THP Tab
         Catch ex As Exception
             Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btnDataDir_Click!", True)
@@ -544,17 +548,20 @@ Public Class Main
     End Sub
 
     ''' <summary>
-    ''' If the correpsonding path text box for a FolderBrowserDialog is set, use it's selectpath as initial directory; else set selectedPath to root for initial directory
+    ''' If the correpsonding path text box for a FolderBrowserDialog is set, use it's selectedpath as initial directory; else set selectedPath to a specific directory
     ''' </summary>
     ''' <param name="fbd">FolderBrowserDialog ref</param>
     ''' <param name="dir">Corresponding textbox with path</param>
+    ''' <param name="defaultDir">Default directory (if any) if not set. Default is root</param>
     ''' <remarks></remarks>
-    Private Sub AssignSelPath_FBD(ByRef fbd As System.Windows.Forms.FolderBrowserDialog, ByVal dir As System.Windows.Forms.TextBox)
+    Private Sub AssignSelPath_FBD(ByRef fbd As System.Windows.Forms.FolderBrowserDialog, ByVal dir As System.Windows.Forms.TextBox, Optional ByVal defaultDir As String = "")
         'If the textbox text set (NOT nothing and NOT empty), then set selectedPath to it; else set to String.Empty
         If dir.Text <> Nothing And dir.Text <> String.Empty Then
             fbd.SelectedPath = dir.Text
         Else
-            fbd.SelectedPath = String.Empty
+            'If deafultDir is "", then set to String.Empty (root dir); else whatever
+            If defaultDir = "" Then defaultDir = String.Empty
+            fbd.SelectedPath = defaultDir
         End If
     End Sub
 
@@ -607,9 +614,12 @@ Public Class Main
             ofdLoadSettings.InitialDirectory = strPATH  'InitialDirectory is exe path
             If ofdLoadSettings.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
 
-            'Parse its contents; if succesful loading, then Handle enabling THP Tab
+            'Parse its contents; if succesful loading, then Handle enabling THP Tab and InitTHPData from new data dir path obtained
             Dim success As Boolean = LoadSettings(ofdLoadSettings.FileName)
-            If success Then CheckPathsSet()
+            If success Then
+                InitTHPData()
+                CheckPathsSet()
+            End If
         Catch ex As Exception
             Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btnLoadSettings_Click!", True)
         End Try
@@ -623,9 +633,9 @@ Public Class Main
     ''' <remarks></remarks>
     Private Function LoadSettings(ByVal _file As String)
         Dim Success As Boolean = False  'Succesful parsing?
-        Dim xFileData As StreamReader   'Streamreader object for parsing the INI file
+        Dim xFileData As StreamReader = Nothing 'Streamreader object for parsing the INI file
         Dim _error As String            'Text for logs/errors
-        Dim line As Integer = 1     'Current line number in INI text file (used for logging)
+        Dim line As Integer = 1         'Current line number in INI text file (used for logging)
         Try
             Dim strEntry As String      'ReadLine from INI file            
             Dim version As String       'Thwimp INI version
@@ -736,19 +746,14 @@ Public Class Main
             End While
 
             'Successful parsing!
+            KillStream(xFileData)
             Success = True
         Catch ex As Exception
-            'If error, log error message + INI Line number that threw error
+            'If error, close lingering stream, log error message + INI Line number that threw error
+            KillStream(xFileData)
             _error = ex.Message & strNL & "INI line: " & line
             Log_MsgBox(_error, MsgBoxStyle.Critical, "Error loading settings INI file!", True)
-        End Try
-
-        'If xFileData is not null, then close, dispose, and nullify
-        If IsNothing(xFileData) = False Then
-            xFileData.Close()
-            xFileData.Dispose()
-            xFileData = Nothing
-        End If
+        End Try        
 
         'Return success
         Return Success
@@ -781,8 +786,8 @@ Public Class Main
     ''' <returns>Success?</returns>
     ''' <remarks></remarks>
     Private Function SaveSettings(ByVal _file As String)
-        Dim Success As Boolean = False  'Successful saving?
-        Dim xFileData As StreamWriter   'Streamwriter object for writing INI data 
+        Dim Success As Boolean = False              'Successful saving?
+        Dim xFileData As StreamWriter = Nothing     'Streamwriter object for writing INI data 
         Try
             Dim strEntry As String      'Line to write
             Dim val As Byte             'Value, as byte
@@ -825,21 +830,13 @@ Public Class Main
             SaveSettings_Bool(xFileData, "log_Full", sep, chkLogFull.Checked)
 
             'Sucessful writing!
+            KillStream(xFileData, False, _file)
             Success = True
         Catch ex As Exception
+            'Delete corrupted INI file if still exists onFailure
+            KillStream(xFileData, True, _file)
             Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error loading settings INI file!", True)
         End Try
-
-        If IsNothing(xFileData) = False Then
-            xFileData.Close()
-            xFileData.Dispose()
-            xFileData = Nothing
-        End If
-
-        'Delete corrupted INI file if exists onFailure
-        If Success = False Then
-            If My.Computer.FileSystem.FileExists(_file) Then My.Computer.FileSystem.DeleteFile(_file)
-        End If
         Return Success
     End Function
 
@@ -1470,7 +1467,7 @@ Public Class Main
             txtTD_CX.Text = KeepInRange(txtTD_CX.Text, xmin, xmax)      'Set string within numeric range
             KeepWInRange()                                              'Keep W in range
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in txtTD_CX_Validated!", True)
+            'Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in txtTD_CX_Validated!", True)
         End Try
     End Sub
     ''' <summary>
@@ -1487,7 +1484,7 @@ Public Class Main
             txtTD_CY.Text = KeepInRange(txtTD_CY.Text, ymin, ymax)      'Set string within numeric range
             KeepHInRange()                                              'Keep H in range
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in txtTD_CY_Validated!", True)
+            'Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in txtTD_CY_Validated!", True)
         End Try
     End Sub
     ''' <summary>
@@ -1564,6 +1561,7 @@ Public Class Main
     Private Sub nudTD_M_ValueChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles nudTD_M.ValueChanged
         nudTD_M_ChangeMe()
     End Sub
+
     ''' <summary>
     ''' Updates the default start/end frame rip values when the multiplicity NUD is changed, the chkRipM value, and the chkRipDumF value
     ''' </summary>
@@ -2764,16 +2762,13 @@ Public Class Main
             xFileData = New StreamWriter(_file, False, System.Text.Encoding.ASCII)
             Dim strEntry As String = txtLog.Text
             xFileData.Write(strEntry)
+            KillStream(xFileData, False, _file)
             success = True
         Catch ex As Exception
+            'Kill lingering stream (but DON'T delete; corrupted error log file is better than nothing...)
+            KillStream(xFileData, False, _file)
             Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error saving log file!")
-        End Try
-
-        If IsNothing(xFileData) = False Then
-            xFileData.Close()
-            xFileData.Dispose()
-            xFileData = Nothing
-        End If
+        End Try        
 
         'If success writing, then clear textboxes
         If success Then btnLogClear.PerformClick()
@@ -3280,7 +3275,7 @@ Public Class Main
 
 
     '===========================
-    'DOS file path functions
+    'DOS file path/stream functions
 
     ''' <summary>
     ''' Given a full file path, returns the directory
@@ -3366,12 +3361,11 @@ Public Class Main
     ''' <param name="Files">Array of filenames</param>
     ''' <remarks>Used for -i param for ffmpeg.exe</remarks>
     Private Sub WriteTxtFile(ByVal Path As String, ByRef Files() As String)
-        Try
-            Dim TextFile As String = Path & strPATHSEP & "File.txt" 'The filepath to write
+        Dim xFileData As StreamWriter = Nothing                 'Streamwriter object to write File.txt
+        Dim TextFile As String = Path & strPATHSEP & "File.txt" 'The filepath to write
+        Try            
             'If the textfile exists, remove it for clean slate
             If My.Computer.FileSystem.FileExists(TextFile) Then My.Computer.FileSystem.DeleteFile(TextFile)
-
-            Dim xFileData As StreamWriter           'Streamwriter object to write File.txt
             xFileData = File.CreateText(TextFile)   'Create File.txt
 
             Dim i As Byte = 0                       'Generic iterator
@@ -3384,10 +3378,9 @@ Public Class Main
                 xFileData.WriteLine(line)   'Write the line
             Next i
             'Close and dispose the SW
-            xFileData.Close()
-            xFileData.Dispose()
-            xFileData = Nothing
+            KillStream(xFileData, False, TextFile)
         Catch ex As Exception
+            KillStream(xFileData, False, TextFile)
             Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "File I/O error in WriteTxtFile!", True)
         End Try
     End Sub
@@ -3496,10 +3489,80 @@ Public Class Main
         Return cnt
     End Function
 
+
+    ''' <summary>
+    ''' DLL Import func to get an (extra) special folder path
+    ''' Accessing DL folder: https://www.codeproject.com/Questions/393318/Accessing-the-User-Downloads-Folder-in-VB-NET
+    ''' Syntax sugar from [DLLImports("foo")] to Declare Func Foo Lib "Foobar.dll"(stuff): https://stackoverflow.com/a/3081728
+    ''' </summary>
+    ''' <param name="rfid">SHblabla param1</param>
+    ''' <param name="dwFlags">SHblabla param2</param>
+    ''' <param name="hToken">SHblabla param3</param>
+    ''' <param name="pszPath">SHblabla param4</param>
+    ''' <returns>Stuff</returns>
+    ''' <remarks>Orig DLL func: https://docs.microsoft.com/en-us/windows/win32/api/shlobj_core/nf-shlobj_core-shgetknownfolderpath </remarks>
+    Private Declare Function SHGetKnownFolderPath Lib "Shell32.dll" (<MarshalAs(UnmanagedType.LPStruct)> ByVal rfid As Guid, ByVal dwFlags As UInt32, ByVal hToken As IntPtr, ByRef pszPath As IntPtr) As Int32
+
+    ''' <summary>
+    ''' Function to get extra special DL folder path
+    ''' Accessing DL folder: https://www.codeproject.com/Questions/393318/Accessing-the-User-Downloads-Folder-in-VB-NET
+    ''' </summary>
+    ''' <returns>Folder path or "" if DLL failure (legacy versions of Windows)</returns>
+    ''' <remarks></remarks>
+    Public Function GetDownloadsFolder() As String
+        Dim sResult As String = ""
+        Dim ppszPath As IntPtr
+        Dim gGuid As Guid = New Guid("{374DE290-123F-4565-9164-39C4925E467B}")
+        Try
+            If SHGetKnownFolderPath(gGuid, 0, 0, ppszPath) = 0 Then
+                sResult = Marshal.PtrToStringUni(ppszPath)
+                Marshal.FreeCoTaskMem(ppszPath)
+            End If
+        Catch ex As Exception
+            sResult = ""
+            Log_MsgBox(ex.Message, MsgBoxStyle.Exclamation, "DLL func call failure within GetDownloadsFolder()! Using root directory...", True)
+        End Try
+        Return sResult
+    End Function
+
+    ''' <summary>
+    ''' Macro function to kill a lingering StreamReader (if something, close, dispose, set to nothing)
+    ''' </summary>
+    ''' <param name="xFileData">StreamReader to handle</param>
+    ''' <remarks></remarks>
+    Private Sub KillStream(ByVal xFileData As StreamReader)
+        If IsNothing(xFileData) = False Then
+            xFileData.Close()
+            xFileData.Dispose()
+            xFileData = Nothing
+        End If
+    End Sub
+
+    ''' <summary>
+    ''' Macro function to kill a lingering StreamWriter (if something, close, dispose, set to nothing).
+    ''' Also can delete file being written to
+    ''' </summary>
+    ''' <param name="xFileData">StreamWriter to handle</param>
+    ''' <param name="Delete">Delete file?</param>
+    ''' <param name="_file">File to delete</param>
+    ''' <remarks></remarks>
+    Private Sub KillStream(ByVal xFileData As StreamWriter, ByVal Delete As Boolean, ByVal _file As String)
+        If IsNothing(xFileData) = False Then
+            xFileData.Close()
+            xFileData.Dispose()
+            xFileData = Nothing
+
+            'If delete flag, AND if file exists, delete it
+            If Delete = True Then
+                If My.Computer.FileSystem.FileExists(_file) Then My.Computer.FileSystem.DeleteFile(_file)
+            End If
+        End If
+    End Sub
+
     ''' <summary>
     ''' Copies i_view32.ini APPDATA file pointed to from INI_Folder var within i_view32.ini (at i_view32.exe folder) to THP working directory, hacks JPG "Save Progressive" value to 0 and changes "Save Quality" setting.
     ''' This file will be used later for JPG conversion, to ensure NO Progressive JPG (fixes THPConv encoding bugs)
-
+    ''' 
     ''' This is a bugfix for Bug #5.
     ''' Bug: Using a spaceless symlink to iview creates non-progressive JPG files which work with THPConv
     ''' (due to inability to find i_view32.ini file which usually has JPG "Save Progressive" option as true,
@@ -3509,29 +3572,29 @@ Public Class Main
     ''' <returns>Sucessful INI hack?</returns>
     Private Function HackINIFile(ByVal workDir As String)
         Dim success As Boolean = False
-        Const INI As String = "i_view32.ini"             'File name for Irfanview INI files
-        Const INITEMP As String = "i_view32_temp.ini"    'File name for temp Irfanview INI file
+        Const INI As String = "i_view32.ini"                            'File name for Irfanview INI files
+        Const INITEMP As String = "i_view32_temp.ini"                   'File name for temp Irfanview INI file
+        Dim iViewINI2 As String = workDir & strPATHSEP & INI            '2nd options INI file (at %Appdata%/whatever)
+        Dim iViewINI2Temp As String = workDir & strPATHSEP & INITEMP    'Same as iViewINI2, but temporary INI that will be hacked
 
-        Dim xrINIData As StreamReader            'Streamreader object for reading the i_view32.ini files
-        Dim xwINIData As StreamWriter            'Streamwriter object for hacked INI file
+        Dim xrINIData As StreamReader = Nothing                         'Streamreader object for reading the i_view32.ini files
+        Dim xwINIData As StreamWriter = Nothing                         'Streamwriter object for hacked INI file
         Try
             Dim iView As String = txtiView.Text                         'irfanview exe path
             Dim iViewPath As String = Path.GetDirectoryName(iView)      'path of irfanview exe
             Dim iViewINI As String                                      '1st INI file (at exe dir)
-            Dim iViewINI2 As String                                     '2nd options INI file (at %Appdata%/whatever)
-            Dim iViewINI2Temp As String                                 'Same as iViewINI2, but temporary INI that will be hacked
 
-            iViewPath &= (strPATHSEP & INI)                                 'Get the 1st INI file (exe folder\INI const)
+            iViewPath &= (strPATHSEP & INI)                             'Get the 1st INI file (exe folder\INI const)
             Dim strEntry As String                                      'Line from INI file
             Dim blnFound As Boolean = False                             'String match found?
             Dim chrInd As Integer                                       'Index of a char in line
 
-            xrINIData = File.OpenText(iViewPath)                         'Open the INI file
+            xrINIData = File.OpenText(iViewPath)                        'Open the INI file
 
             'Read each line, until find "[Others]" marker
             blnFound = False
             While xrINIData.EndOfStream() <> True
-                strEntry = xrINIData.ReadLine()                    'Read a line from the file
+                strEntry = xrINIData.ReadLine()                         'Read a line from the file
 
                 'If marker found, flag as found and exit loop
                 If strEntry.Contains("[Others]") Then
@@ -3552,15 +3615,11 @@ Public Class Main
             chrInd += 2                                                 'Increment by 2. !@ This may be wrong?
             iViewINI = Mid(strEntry, chrInd)                            'Get substring of everything after = sign
             iViewINI = LTrim(iViewINI)                                  'Left trim it
-            iViewINI &= (strPATHSEP & INI)                                  'Add "\INI" to EOP
-            iViewINI = Environment.ExpandEnvironmentVariables(iViewINI) 'Expand any environ vars within (defaul INI usually has %APPDATA% envvar)
+            iViewINI &= (strPATHSEP & INI)                              'Add "\INI" to EOP
+            iViewINI = Environment.ExpandEnvironmentVariables(iViewINI) 'Expand any environ vars within (default INI usually has %APPDATA% envvar)
 
             'Close INI file, copy over INI file, then load it for reading/writing to new temp file
-            xrINIData.Close()
-            xrINIData.Dispose()
-            xrINIData = Nothing
-            iViewINI2 = workDir & strPATHSEP & INI
-            iViewINI2Temp = workDir & strPATHSEP & INITEMP
+            KillStream(xrINIData)
             My.Computer.FileSystem.CopyFile(iViewINI, iViewINI2, True)
             xrINIData = File.OpenText(iViewINI2)                                        'Open the INI2 file
             xwINIData = My.Computer.FileSystem.OpenTextFileWriter(iViewINI2Temp, False) 'Open a new INI2Temp file for writing
@@ -3608,32 +3667,18 @@ Public Class Main
             If blnFound = False Then Throw New System.Exception("Failed to find 'Save Progressive' or 'Save Quality' settings under '[JPEG]' marker in " & strQUOT & iViewINI2 & strQUOT & " file. Irfanview INI hack was unsuccessful, and thus ripped JPG files used for THP Encoding may be created as wrong progressive JPG types or wrong JPG quality applied. These errors shall cause THP encoding to fail!")
 
             'Close all files, delete iViewINI2, rename iViewINI2TEMP to iViewINI2, show success
-            xrINIData.Close()
-            xrINIData.Dispose()
-            xrINIData = Nothing
-            xwINIData.Close()
-            xwINIData.Dispose()
-            xwINIData = Nothing
+            KillStream(xrINIData)
+            KillStream(xwINIData, False, iViewINI2Temp)
             My.Computer.FileSystem.DeleteFile(iViewINI2)
             My.Computer.FileSystem.RenameFile(iViewINI2Temp, Path.GetFileName(iViewINI2))
             success = True
         Catch ex As Exception
+            'Close any lingering streams
+            KillStream(xrINIData)
+            KillStream(xwINIData, False, iViewINI2Temp)
             Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error finding, copying, and/or hacking INI Irfanview INI file!", True)
             success = False
         End Try
-
-        'Close any lingering Streams if not null
-        If IsNothing(xrINIData) = False Then
-            xrINIData.Close()
-            xrINIData.Dispose()
-            xrINIData = Nothing
-        End If
-
-        If IsNothing(xwINIData) = False Then
-            xwINIData.Close()
-            xwINIData.Dispose()
-            xwINIData = Nothing
-        End If
 
         Return success
     End Function
@@ -3727,10 +3772,15 @@ Public Class Main
     ''' <remarks></remarks>
     Private Function TryParseErr_Single(ByVal inp As String) As Single
         Dim outp As Single = Single.PositiveInfinity
-        Dim result As Boolean = Single.TryParse(inp, outp)
-        If result = False Then
-            Throw New System.Exception("Error parsing string into Single")
-        End If
+
+        'Bugfix for culture stuff (2nd bug of Issue #11)
+        'https://stackoverflow.com/a/12165465
+
+        'TryParse single on a Float using InvariantCulture
+        Dim style As System.Globalization.NumberStyles = System.Globalization.NumberStyles.Float
+        Dim culture As System.Globalization.CultureInfo = System.Globalization.CultureInfo.InvariantCulture
+        Dim result As Boolean = Single.TryParse(inp, style, culture, outp)
+        If result = False Then Throw New System.Exception("Error parsing string into Single")
         Return outp
     End Function
 End Class

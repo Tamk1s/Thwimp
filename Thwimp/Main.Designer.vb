@@ -25,12 +25,6 @@ Partial Class Main
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(Main))
         Me.LoadTHPRoot = New System.Windows.Forms.FolderBrowserDialog()
         Me.TabTHP = New System.Windows.Forms.TabPage()
-        Me.grpLog = New System.Windows.Forms.GroupBox()
-        Me.btnLogSave = New System.Windows.Forms.Button()
-        Me.btnLogClear = New System.Windows.Forms.Button()
-        Me.picLog = New System.Windows.Forms.PictureBox()
-        Me.txtLog = New System.Windows.Forms.TextBox()
-        Me.grpTHPEnc = New System.Windows.Forms.GroupBox()
         Me.grpTHPEnc_Prog = New System.Windows.Forms.GroupBox()
         Me.lblTHPEnc_Prg_Cur = New System.Windows.Forms.Label()
         Me.lblTHPEnc_Prg_Ttl = New System.Windows.Forms.Label()
@@ -38,6 +32,12 @@ Partial Class Main
         Me.txtTHPEnc_Prg_Ttl = New System.Windows.Forms.TextBox()
         Me.prgCur = New System.Windows.Forms.ProgressBar()
         Me.prgTotal = New System.Windows.Forms.ProgressBar()
+        Me.grpLog = New System.Windows.Forms.GroupBox()
+        Me.btnLogSave = New System.Windows.Forms.Button()
+        Me.btnLogClear = New System.Windows.Forms.Button()
+        Me.picLog = New System.Windows.Forms.PictureBox()
+        Me.txtLog = New System.Windows.Forms.TextBox()
+        Me.grpTHPEnc = New System.Windows.Forms.GroupBox()
         Me.lblTE_jpgq = New System.Windows.Forms.Label()
         Me.nudTE_jpgq = New System.Windows.Forms.NumericUpDown()
         Me.txtTE_D = New System.Windows.Forms.MaskedTextBox()
@@ -202,10 +202,10 @@ Partial Class Main
         Me.ofdSaveSettings = New System.Windows.Forms.OpenFileDialog()
         Me.SaveLog = New System.Windows.Forms.OpenFileDialog()
         Me.TabTHP.SuspendLayout()
+        Me.grpTHPEnc_Prog.SuspendLayout()
         Me.grpLog.SuspendLayout()
         CType(Me.picLog, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.grpTHPEnc.SuspendLayout()
-        Me.grpTHPEnc_Prog.SuspendLayout()
         CType(Me.nudTE_jpgq, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.grpTHPDec.SuspendLayout()
         Me.grpTHPDec_Crop.SuspendLayout()
@@ -252,6 +252,83 @@ Partial Class Main
         Me.TabTHP.TabIndex = 1
         Me.TabTHP.Text = "THP"
         Me.TabTHP.UseVisualStyleBackColor = True
+        '
+        'grpTHPEnc_Prog
+        '
+        Me.grpTHPEnc_Prog.Controls.Add(Me.lblTHPEnc_Prg_Cur)
+        Me.grpTHPEnc_Prog.Controls.Add(Me.lblTHPEnc_Prg_Ttl)
+        Me.grpTHPEnc_Prog.Controls.Add(Me.txtTHPEnc_Prg_Cur)
+        Me.grpTHPEnc_Prog.Controls.Add(Me.txtTHPEnc_Prg_Ttl)
+        Me.grpTHPEnc_Prog.Controls.Add(Me.prgCur)
+        Me.grpTHPEnc_Prog.Controls.Add(Me.prgTotal)
+        Me.grpTHPEnc_Prog.Location = New System.Drawing.Point(308, 615)
+        Me.grpTHPEnc_Prog.Name = "grpTHPEnc_Prog"
+        Me.grpTHPEnc_Prog.Size = New System.Drawing.Size(227, 329)
+        Me.grpTHPEnc_Prog.TabIndex = 48
+        Me.grpTHPEnc_Prog.TabStop = False
+        Me.grpTHPEnc_Prog.Text = "Progress"
+        '
+        'lblTHPEnc_Prg_Cur
+        '
+        Me.lblTHPEnc_Prg_Cur.AutoSize = True
+        Me.lblTHPEnc_Prg_Cur.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lblTHPEnc_Prg_Cur.Location = New System.Drawing.Point(150, 309)
+        Me.lblTHPEnc_Prg_Cur.Name = "lblTHPEnc_Prg_Cur"
+        Me.lblTHPEnc_Prg_Cur.Size = New System.Drawing.Size(71, 17)
+        Me.lblTHPEnc_Prg_Cur.TabIndex = 50
+        Me.lblTHPEnc_Prg_Cur.Text = "100.00%"
+        '
+        'lblTHPEnc_Prg_Ttl
+        '
+        Me.lblTHPEnc_Prg_Ttl.AutoSize = True
+        Me.lblTHPEnc_Prg_Ttl.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lblTHPEnc_Prg_Ttl.Location = New System.Drawing.Point(150, 149)
+        Me.lblTHPEnc_Prg_Ttl.Name = "lblTHPEnc_Prg_Ttl"
+        Me.lblTHPEnc_Prg_Ttl.Size = New System.Drawing.Size(71, 17)
+        Me.lblTHPEnc_Prg_Ttl.TabIndex = 49
+        Me.lblTHPEnc_Prg_Ttl.Text = "100.00%"
+        '
+        'txtTHPEnc_Prg_Cur
+        '
+        Me.txtTHPEnc_Prg_Cur.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.txtTHPEnc_Prg_Cur.Location = New System.Drawing.Point(2, 178)
+        Me.txtTHPEnc_Prg_Cur.Multiline = True
+        Me.txtTHPEnc_Prg_Cur.Name = "txtTHPEnc_Prg_Cur"
+        Me.txtTHPEnc_Prg_Cur.ReadOnly = True
+        Me.txtTHPEnc_Prg_Cur.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
+        Me.txtTHPEnc_Prg_Cur.Size = New System.Drawing.Size(219, 124)
+        Me.txtTHPEnc_Prg_Cur.TabIndex = 7
+        Me.txtTHPEnc_Prg_Cur.TabStop = False
+        '
+        'txtTHPEnc_Prg_Ttl
+        '
+        Me.txtTHPEnc_Prg_Ttl.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.txtTHPEnc_Prg_Ttl.Location = New System.Drawing.Point(3, 19)
+        Me.txtTHPEnc_Prg_Ttl.Multiline = True
+        Me.txtTHPEnc_Prg_Ttl.Name = "txtTHPEnc_Prg_Ttl"
+        Me.txtTHPEnc_Prg_Ttl.ReadOnly = True
+        Me.txtTHPEnc_Prg_Ttl.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
+        Me.txtTHPEnc_Prg_Ttl.Size = New System.Drawing.Size(218, 124)
+        Me.txtTHPEnc_Prg_Ttl.TabIndex = 6
+        Me.txtTHPEnc_Prg_Ttl.TabStop = False
+        '
+        'prgCur
+        '
+        Me.prgCur.Location = New System.Drawing.Point(2, 305)
+        Me.prgCur.Name = "prgCur"
+        Me.prgCur.Size = New System.Drawing.Size(141, 23)
+        Me.prgCur.Step = 1
+        Me.prgCur.Style = System.Windows.Forms.ProgressBarStyle.Continuous
+        Me.prgCur.TabIndex = 1
+        '
+        'prgTotal
+        '
+        Me.prgTotal.Location = New System.Drawing.Point(3, 149)
+        Me.prgTotal.Name = "prgTotal"
+        Me.prgTotal.Size = New System.Drawing.Size(135, 23)
+        Me.prgTotal.Step = 1
+        Me.prgTotal.Style = System.Windows.Forms.ProgressBarStyle.Continuous
+        Me.prgTotal.TabIndex = 0
         '
         'grpLog
         '
@@ -343,83 +420,6 @@ Partial Class Main
         Me.grpTHPEnc.TabIndex = 42
         Me.grpTHPEnc.TabStop = False
         Me.grpTHPEnc.Text = "THP Encoder"
-        '
-        'grpTHPEnc_Prog
-        '
-        Me.grpTHPEnc_Prog.Controls.Add(Me.lblTHPEnc_Prg_Cur)
-        Me.grpTHPEnc_Prog.Controls.Add(Me.lblTHPEnc_Prg_Ttl)
-        Me.grpTHPEnc_Prog.Controls.Add(Me.txtTHPEnc_Prg_Cur)
-        Me.grpTHPEnc_Prog.Controls.Add(Me.txtTHPEnc_Prg_Ttl)
-        Me.grpTHPEnc_Prog.Controls.Add(Me.prgCur)
-        Me.grpTHPEnc_Prog.Controls.Add(Me.prgTotal)
-        Me.grpTHPEnc_Prog.Location = New System.Drawing.Point(308, 615)
-        Me.grpTHPEnc_Prog.Name = "grpTHPEnc_Prog"
-        Me.grpTHPEnc_Prog.Size = New System.Drawing.Size(227, 329)
-        Me.grpTHPEnc_Prog.TabIndex = 48
-        Me.grpTHPEnc_Prog.TabStop = False
-        Me.grpTHPEnc_Prog.Text = "Progress"
-        '
-        'lblTHPEnc_Prg_Cur
-        '
-        Me.lblTHPEnc_Prg_Cur.AutoSize = True
-        Me.lblTHPEnc_Prg_Cur.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblTHPEnc_Prg_Cur.Location = New System.Drawing.Point(150, 309)
-        Me.lblTHPEnc_Prg_Cur.Name = "lblTHPEnc_Prg_Cur"
-        Me.lblTHPEnc_Prg_Cur.Size = New System.Drawing.Size(71, 17)
-        Me.lblTHPEnc_Prg_Cur.TabIndex = 50
-        Me.lblTHPEnc_Prg_Cur.Text = "100.00%"
-        '
-        'lblTHPEnc_Prg_Ttl
-        '
-        Me.lblTHPEnc_Prg_Ttl.AutoSize = True
-        Me.lblTHPEnc_Prg_Ttl.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblTHPEnc_Prg_Ttl.Location = New System.Drawing.Point(150, 149)
-        Me.lblTHPEnc_Prg_Ttl.Name = "lblTHPEnc_Prg_Ttl"
-        Me.lblTHPEnc_Prg_Ttl.Size = New System.Drawing.Size(71, 17)
-        Me.lblTHPEnc_Prg_Ttl.TabIndex = 49
-        Me.lblTHPEnc_Prg_Ttl.Text = "100.00%"
-        '
-        'txtTHPEnc_Prg_Cur
-        '
-        Me.txtTHPEnc_Prg_Cur.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.txtTHPEnc_Prg_Cur.Location = New System.Drawing.Point(2, 178)
-        Me.txtTHPEnc_Prg_Cur.Multiline = True
-        Me.txtTHPEnc_Prg_Cur.Name = "txtTHPEnc_Prg_Cur"
-        Me.txtTHPEnc_Prg_Cur.ReadOnly = True
-        Me.txtTHPEnc_Prg_Cur.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
-        Me.txtTHPEnc_Prg_Cur.Size = New System.Drawing.Size(219, 124)
-        Me.txtTHPEnc_Prg_Cur.TabIndex = 7
-        Me.txtTHPEnc_Prg_Cur.TabStop = False
-        '
-        'txtTHPEnc_Prg_Ttl
-        '
-        Me.txtTHPEnc_Prg_Ttl.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.txtTHPEnc_Prg_Ttl.Location = New System.Drawing.Point(3, 19)
-        Me.txtTHPEnc_Prg_Ttl.Multiline = True
-        Me.txtTHPEnc_Prg_Ttl.Name = "txtTHPEnc_Prg_Ttl"
-        Me.txtTHPEnc_Prg_Ttl.ReadOnly = True
-        Me.txtTHPEnc_Prg_Ttl.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
-        Me.txtTHPEnc_Prg_Ttl.Size = New System.Drawing.Size(218, 124)
-        Me.txtTHPEnc_Prg_Ttl.TabIndex = 6
-        Me.txtTHPEnc_Prg_Ttl.TabStop = False
-        '
-        'prgCur
-        '
-        Me.prgCur.Location = New System.Drawing.Point(2, 305)
-        Me.prgCur.Name = "prgCur"
-        Me.prgCur.Size = New System.Drawing.Size(141, 23)
-        Me.prgCur.Step = 1
-        Me.prgCur.Style = System.Windows.Forms.ProgressBarStyle.Continuous
-        Me.prgCur.TabIndex = 1
-        '
-        'prgTotal
-        '
-        Me.prgTotal.Location = New System.Drawing.Point(3, 149)
-        Me.prgTotal.Name = "prgTotal"
-        Me.prgTotal.Size = New System.Drawing.Size(135, 23)
-        Me.prgTotal.Step = 1
-        Me.prgTotal.Style = System.Windows.Forms.ProgressBarStyle.Continuous
-        Me.prgTotal.TabIndex = 0
         '
         'lblTE_jpgq
         '
@@ -1741,7 +1741,7 @@ Partial Class Main
         Me.cmbTHP.Name = "cmbTHP"
         Me.cmbTHP.Size = New System.Drawing.Size(455, 24)
         Me.cmbTHP.TabIndex = 0
-        Me.cmbTHP.Text = "\battle\battle_cup_select.thp"
+        Me.cmbTHP.Text = "============================="
         '
         'TabOptions
         '
@@ -2264,13 +2264,13 @@ Partial Class Main
         Me.Text = "Thwimp"
         Me.TabTHP.ResumeLayout(False)
         Me.TabTHP.PerformLayout()
+        Me.grpTHPEnc_Prog.ResumeLayout(False)
+        Me.grpTHPEnc_Prog.PerformLayout()
         Me.grpLog.ResumeLayout(False)
         Me.grpLog.PerformLayout()
         CType(Me.picLog, System.ComponentModel.ISupportInitialize).EndInit()
         Me.grpTHPEnc.ResumeLayout(False)
         Me.grpTHPEnc.PerformLayout()
-        Me.grpTHPEnc_Prog.ResumeLayout(False)
-        Me.grpTHPEnc_Prog.PerformLayout()
         CType(Me.nudTE_jpgq, System.ComponentModel.ISupportInitialize).EndInit()
         Me.grpTHPDec.ResumeLayout(False)
         Me.grpTHPDec.PerformLayout()
