@@ -66,14 +66,11 @@ Partial Class Main
         Me.grpTHPDec = New System.Windows.Forms.GroupBox()
         Me.grpTHPDec_Crop = New System.Windows.Forms.GroupBox()
         Me.chkRipDumF = New System.Windows.Forms.CheckBox()
-        Me.txtTD_S = New System.Windows.Forms.Label()
         Me.radTD_All = New System.Windows.Forms.RadioButton()
         Me.radTD_Dum = New System.Windows.Forms.RadioButton()
         Me.txtTD_FE = New System.Windows.Forms.MaskedTextBox()
         Me.txtTD_FS = New System.Windows.Forms.MaskedTextBox()
-        Me.txtTD_R = New System.Windows.Forms.Label()
         Me.lblTD_FE = New System.Windows.Forms.Label()
-        Me.txtTD_C = New System.Windows.Forms.Label()
         Me.lblTD_FS = New System.Windows.Forms.Label()
         Me.radTD_B6 = New System.Windows.Forms.RadioButton()
         Me.txtTD_CH = New System.Windows.Forms.MaskedTextBox()
@@ -201,6 +198,10 @@ Partial Class Main
         Me.LoadDataDir = New System.Windows.Forms.FolderBrowserDialog()
         Me.ofdSaveSettings = New System.Windows.Forms.OpenFileDialog()
         Me.SaveLog = New System.Windows.Forms.OpenFileDialog()
+        Me.grpTHPDec_Pre = New System.Windows.Forms.GroupBox()
+        Me.grpTHPDec_Time = New System.Windows.Forms.GroupBox()
+        Me.grpTHPDec_Settings = New System.Windows.Forms.GroupBox()
+        Me.lblTD_SpPre = New System.Windows.Forms.Label()
         Me.TabTHP.SuspendLayout()
         Me.grpTHPEnc_Prog.SuspendLayout()
         Me.grpLog.SuspendLayout()
@@ -228,6 +229,9 @@ Partial Class Main
         Me.grpOptions.SuspendLayout()
         CType(Me.picOptions, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.tabApp.SuspendLayout()
+        Me.grpTHPDec_Pre.SuspendLayout()
+        Me.grpTHPDec_Time.SuspendLayout()
+        Me.grpTHPDec_Settings.SuspendLayout()
         Me.SuspendLayout()
         '
         'LoadTHPRoot
@@ -248,7 +252,7 @@ Partial Class Main
         Me.TabTHP.Margin = New System.Windows.Forms.Padding(4)
         Me.TabTHP.Name = "TabTHP"
         Me.TabTHP.Padding = New System.Windows.Forms.Padding(4)
-        Me.TabTHP.Size = New System.Drawing.Size(553, 951)
+        Me.TabTHP.Size = New System.Drawing.Size(577, 951)
         Me.TabTHP.TabIndex = 1
         Me.TabTHP.Text = "THP"
         Me.TabTHP.UseVisualStyleBackColor = True
@@ -261,7 +265,7 @@ Partial Class Main
         Me.grpTHPEnc_Prog.Controls.Add(Me.txtTHPEnc_Prg_Ttl)
         Me.grpTHPEnc_Prog.Controls.Add(Me.prgCur)
         Me.grpTHPEnc_Prog.Controls.Add(Me.prgTotal)
-        Me.grpTHPEnc_Prog.Location = New System.Drawing.Point(308, 615)
+        Me.grpTHPEnc_Prog.Location = New System.Drawing.Point(341, 614)
         Me.grpTHPEnc_Prog.Name = "grpTHPEnc_Prog"
         Me.grpTHPEnc_Prog.Size = New System.Drawing.Size(227, 329)
         Me.grpTHPEnc_Prog.TabIndex = 48
@@ -336,7 +340,7 @@ Partial Class Main
         Me.grpLog.Controls.Add(Me.btnLogClear)
         Me.grpLog.Controls.Add(Me.picLog)
         Me.grpLog.Controls.Add(Me.txtLog)
-        Me.grpLog.Location = New System.Drawing.Point(7, 773)
+        Me.grpLog.Location = New System.Drawing.Point(23, 773)
         Me.grpLog.Name = "grpLog"
         Me.grpLog.Size = New System.Drawing.Size(290, 171)
         Me.grpLog.TabIndex = 44
@@ -414,7 +418,7 @@ Partial Class Main
         Me.grpTHPEnc.Controls.Add(Me.chkTE_B4)
         Me.grpTHPEnc.Controls.Add(Me.chkTE_B5)
         Me.grpTHPEnc.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.grpTHPEnc.Location = New System.Drawing.Point(307, 412)
+        Me.grpTHPEnc.Location = New System.Drawing.Point(340, 411)
         Me.grpTHPEnc.Name = "grpTHPEnc"
         Me.grpTHPEnc.Size = New System.Drawing.Size(228, 197)
         Me.grpTHPEnc.TabIndex = 42
@@ -709,49 +713,19 @@ Partial Class Main
         Me.grpTHPDec.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.grpTHPDec.Location = New System.Drawing.Point(7, 411)
         Me.grpTHPDec.Name = "grpTHPDec"
-        Me.grpTHPDec.Size = New System.Drawing.Size(294, 356)
+        Me.grpTHPDec.Size = New System.Drawing.Size(327, 356)
         Me.grpTHPDec.TabIndex = 25
         Me.grpTHPDec.TabStop = False
         Me.grpTHPDec.Text = "THP Viewer/Ripper"
         '
         'grpTHPDec_Crop
         '
-        Me.grpTHPDec_Crop.Controls.Add(Me.chkRipDumF)
-        Me.grpTHPDec_Crop.Controls.Add(Me.txtTD_S)
-        Me.grpTHPDec_Crop.Controls.Add(Me.radTD_All)
-        Me.grpTHPDec_Crop.Controls.Add(Me.radTD_Dum)
-        Me.grpTHPDec_Crop.Controls.Add(Me.txtTD_FE)
-        Me.grpTHPDec_Crop.Controls.Add(Me.txtTD_FS)
-        Me.grpTHPDec_Crop.Controls.Add(Me.txtTD_R)
-        Me.grpTHPDec_Crop.Controls.Add(Me.lblTD_FE)
-        Me.grpTHPDec_Crop.Controls.Add(Me.txtTD_C)
-        Me.grpTHPDec_Crop.Controls.Add(Me.lblTD_FS)
-        Me.grpTHPDec_Crop.Controls.Add(Me.radTD_B6)
-        Me.grpTHPDec_Crop.Controls.Add(Me.txtTD_CH)
-        Me.grpTHPDec_Crop.Controls.Add(Me.radTD_B5)
-        Me.grpTHPDec_Crop.Controls.Add(Me.txtTD_CY)
-        Me.grpTHPDec_Crop.Controls.Add(Me.chkRipM)
-        Me.grpTHPDec_Crop.Controls.Add(Me.radTD_B4)
-        Me.grpTHPDec_Crop.Controls.Add(Me.txtTD_CW)
-        Me.grpTHPDec_Crop.Controls.Add(Me.lblTD_FM)
-        Me.grpTHPDec_Crop.Controls.Add(Me.lblTD_CH)
-        Me.grpTHPDec_Crop.Controls.Add(Me.nudTD_M)
-        Me.grpTHPDec_Crop.Controls.Add(Me.radTD_B1)
-        Me.grpTHPDec_Crop.Controls.Add(Me.txtTD_CX)
-        Me.grpTHPDec_Crop.Controls.Add(Me.radTD_A2)
-        Me.grpTHPDec_Crop.Controls.Add(Me.radTD_A3)
-        Me.grpTHPDec_Crop.Controls.Add(Me.lblTD_CY)
-        Me.grpTHPDec_Crop.Controls.Add(Me.radTD_B3)
-        Me.grpTHPDec_Crop.Controls.Add(Me.lblTD_CW)
-        Me.grpTHPDec_Crop.Controls.Add(Me.radTD_A1)
-        Me.grpTHPDec_Crop.Controls.Add(Me.lblTD_CX)
-        Me.grpTHPDec_Crop.Controls.Add(Me.radTD_A4)
-        Me.grpTHPDec_Crop.Controls.Add(Me.radTD_B2)
-        Me.grpTHPDec_Crop.Controls.Add(Me.radTD_A5)
-        Me.grpTHPDec_Crop.Controls.Add(Me.radTD_A6)
-        Me.grpTHPDec_Crop.Location = New System.Drawing.Point(6, 79)
+        Me.grpTHPDec_Crop.Controls.Add(Me.grpTHPDec_Settings)
+        Me.grpTHPDec_Crop.Controls.Add(Me.grpTHPDec_Time)
+        Me.grpTHPDec_Crop.Controls.Add(Me.grpTHPDec_Pre)
+        Me.grpTHPDec_Crop.Location = New System.Drawing.Point(6, 48)
         Me.grpTHPDec_Crop.Name = "grpTHPDec_Crop"
-        Me.grpTHPDec_Crop.Size = New System.Drawing.Size(282, 271)
+        Me.grpTHPDec_Crop.Size = New System.Drawing.Size(315, 302)
         Me.grpTHPDec_Crop.TabIndex = 26
         Me.grpTHPDec_Crop.TabStop = False
         Me.grpTHPDec_Crop.Text = "Crop Settings"
@@ -762,7 +736,7 @@ Partial Class Main
         Me.chkRipDumF.AutoSize = True
         Me.chkRipDumF.Enabled = False
         Me.chkRipDumF.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.chkRipDumF.Location = New System.Drawing.Point(23, 144)
+        Me.chkRipDumF.Location = New System.Drawing.Point(9, 87)
         Me.chkRipDumF.Name = "chkRipDumF"
         Me.chkRipDumF.Size = New System.Drawing.Size(77, 38)
         Me.chkRipDumF.TabIndex = 65
@@ -770,21 +744,11 @@ Partial Class Main
         Me.chkRipDumF.Text = "Dum" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "Frames"
         Me.chkRipDumF.UseVisualStyleBackColor = True
         '
-        'txtTD_S
-        '
-        Me.txtTD_S.AutoSize = True
-        Me.txtTD_S.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.txtTD_S.Location = New System.Drawing.Point(205, 77)
-        Me.txtTD_S.Name = "txtTD_S"
-        Me.txtTD_S.Size = New System.Drawing.Size(61, 17)
-        Me.txtTD_S.TabIndex = 64
-        Me.txtTD_S.Text = "Special"
-        '
         'radTD_All
         '
         Me.radTD_All.AutoSize = True
         Me.radTD_All.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.radTD_All.Location = New System.Drawing.Point(208, 97)
+        Me.radTD_All.Location = New System.Drawing.Point(115, 102)
         Me.radTD_All.Name = "radTD_All"
         Me.radTD_All.Size = New System.Drawing.Size(44, 21)
         Me.radTD_All.TabIndex = 63
@@ -796,7 +760,7 @@ Partial Class Main
         '
         Me.radTD_Dum.AutoSize = True
         Me.radTD_Dum.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.radTD_Dum.Location = New System.Drawing.Point(208, 124)
+        Me.radTD_Dum.Location = New System.Drawing.Point(116, 129)
         Me.radTD_Dum.Name = "radTD_Dum"
         Me.radTD_Dum.Size = New System.Drawing.Size(58, 21)
         Me.radTD_Dum.TabIndex = 62
@@ -807,7 +771,7 @@ Partial Class Main
         'txtTD_FE
         '
         Me.txtTD_FE.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.txtTD_FE.Location = New System.Drawing.Point(191, 243)
+        Me.txtTD_FE.Location = New System.Drawing.Point(174, 76)
         Me.txtTD_FE.Mask = "0000"
         Me.txtTD_FE.Name = "txtTD_FE"
         Me.txtTD_FE.Size = New System.Drawing.Size(46, 22)
@@ -816,47 +780,27 @@ Partial Class Main
         'txtTD_FS
         '
         Me.txtTD_FS.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.txtTD_FS.Location = New System.Drawing.Point(92, 243)
+        Me.txtTD_FS.Location = New System.Drawing.Point(67, 76)
         Me.txtTD_FS.Mask = "0000"
         Me.txtTD_FS.Name = "txtTD_FS"
         Me.txtTD_FS.Size = New System.Drawing.Size(46, 22)
         Me.txtTD_FS.TabIndex = 31
         '
-        'txtTD_R
-        '
-        Me.txtTD_R.AutoSize = True
-        Me.txtTD_R.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.txtTD_R.Location = New System.Drawing.Point(56, 40)
-        Me.txtTD_R.Name = "txtTD_R"
-        Me.txtTD_R.Size = New System.Drawing.Size(38, 17)
-        Me.txtTD_R.TabIndex = 48
-        Me.txtTD_R.Text = "Row"
-        '
         'lblTD_FE
         '
         Me.lblTD_FE.AutoSize = True
         Me.lblTD_FE.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblTD_FE.Location = New System.Drawing.Point(155, 246)
+        Me.lblTD_FE.Location = New System.Drawing.Point(133, 79)
         Me.lblTD_FE.Name = "lblTD_FE"
         Me.lblTD_FE.Size = New System.Drawing.Size(41, 17)
         Me.lblTD_FE.TabIndex = 33
         Me.lblTD_FE.Text = "End:"
         '
-        'txtTD_C
-        '
-        Me.txtTD_C.AutoSize = True
-        Me.txtTD_C.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.txtTD_C.Location = New System.Drawing.Point(123, 16)
-        Me.txtTD_C.Name = "txtTD_C"
-        Me.txtTD_C.Size = New System.Drawing.Size(61, 17)
-        Me.txtTD_C.TabIndex = 48
-        Me.txtTD_C.Text = "Column"
-        '
         'lblTD_FS
         '
         Me.lblTD_FS.AutoSize = True
         Me.lblTD_FS.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblTD_FS.Location = New System.Drawing.Point(41, 246)
+        Me.lblTD_FS.Location = New System.Drawing.Point(16, 79)
         Me.lblTD_FS.Name = "lblTD_FS"
         Me.lblTD_FS.Size = New System.Drawing.Size(48, 17)
         Me.lblTD_FS.TabIndex = 30
@@ -866,7 +810,7 @@ Partial Class Main
         '
         Me.radTD_B6.AutoSize = True
         Me.radTD_B6.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.radTD_B6.Location = New System.Drawing.Point(155, 171)
+        Me.radTD_B6.Location = New System.Drawing.Point(60, 156)
         Me.radTD_B6.Name = "radTD_B6"
         Me.radTD_B6.Size = New System.Drawing.Size(46, 21)
         Me.radTD_B6.TabIndex = 61
@@ -877,7 +821,7 @@ Partial Class Main
         'txtTD_CH
         '
         Me.txtTD_CH.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.txtTD_CH.Location = New System.Drawing.Point(191, 219)
+        Me.txtTD_CH.Location = New System.Drawing.Point(174, 52)
         Me.txtTD_CH.Mask = "0000"
         Me.txtTD_CH.Name = "txtTD_CH"
         Me.txtTD_CH.Size = New System.Drawing.Size(46, 22)
@@ -887,7 +831,7 @@ Partial Class Main
         '
         Me.radTD_B5.AutoSize = True
         Me.radTD_B5.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.radTD_B5.Location = New System.Drawing.Point(155, 144)
+        Me.radTD_B5.Location = New System.Drawing.Point(60, 129)
         Me.radTD_B5.Name = "radTD_B5"
         Me.radTD_B5.Size = New System.Drawing.Size(46, 21)
         Me.radTD_B5.TabIndex = 60
@@ -898,7 +842,7 @@ Partial Class Main
         'txtTD_CY
         '
         Me.txtTD_CY.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.txtTD_CY.Location = New System.Drawing.Point(191, 191)
+        Me.txtTD_CY.Location = New System.Drawing.Point(174, 24)
         Me.txtTD_CY.Mask = "0000"
         Me.txtTD_CY.Name = "txtTD_CY"
         Me.txtTD_CY.Size = New System.Drawing.Size(46, 22)
@@ -910,7 +854,7 @@ Partial Class Main
         Me.chkRipM.AutoSize = True
         Me.chkRipM.Enabled = False
         Me.chkRipM.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.chkRipM.Location = New System.Drawing.Point(23, 123)
+        Me.chkRipM.Location = New System.Drawing.Point(9, 66)
         Me.chkRipM.Name = "chkRipM"
         Me.chkRipM.Size = New System.Drawing.Size(69, 21)
         Me.chkRipM.TabIndex = 48
@@ -922,7 +866,7 @@ Partial Class Main
         '
         Me.radTD_B4.AutoSize = True
         Me.radTD_B4.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.radTD_B4.Location = New System.Drawing.Point(155, 117)
+        Me.radTD_B4.Location = New System.Drawing.Point(60, 102)
         Me.radTD_B4.Name = "radTD_B4"
         Me.radTD_B4.Size = New System.Drawing.Size(46, 21)
         Me.radTD_B4.TabIndex = 59
@@ -933,7 +877,7 @@ Partial Class Main
         'txtTD_CW
         '
         Me.txtTD_CW.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.txtTD_CW.Location = New System.Drawing.Point(92, 219)
+        Me.txtTD_CW.Location = New System.Drawing.Point(67, 52)
         Me.txtTD_CW.Mask = "0000"
         Me.txtTD_CW.Name = "txtTD_CW"
         Me.txtTD_CW.Size = New System.Drawing.Size(46, 22)
@@ -943,7 +887,7 @@ Partial Class Main
         '
         Me.lblTD_FM.AutoSize = True
         Me.lblTD_FM.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblTD_FM.Location = New System.Drawing.Point(29, 77)
+        Me.lblTD_FM.Location = New System.Drawing.Point(15, 20)
         Me.lblTD_FM.Name = "lblTD_FM"
         Me.lblTD_FM.Size = New System.Drawing.Size(38, 17)
         Me.lblTD_FM.TabIndex = 49
@@ -953,7 +897,7 @@ Partial Class Main
         '
         Me.lblTD_CH.AutoSize = True
         Me.lblTD_CH.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblTD_CH.Location = New System.Drawing.Point(139, 222)
+        Me.lblTD_CH.Location = New System.Drawing.Point(114, 55)
         Me.lblTD_CH.Name = "lblTD_CH"
         Me.lblTD_CH.Size = New System.Drawing.Size(60, 17)
         Me.lblTD_CH.TabIndex = 29
@@ -962,7 +906,7 @@ Partial Class Main
         'nudTD_M
         '
         Me.nudTD_M.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.nudTD_M.Location = New System.Drawing.Point(23, 97)
+        Me.nudTD_M.Location = New System.Drawing.Point(9, 40)
         Me.nudTD_M.Maximum = New Decimal(New Integer() {255, 0, 0, 0})
         Me.nudTD_M.Name = "nudTD_M"
         Me.nudTD_M.Size = New System.Drawing.Size(52, 22)
@@ -974,7 +918,7 @@ Partial Class Main
         '
         Me.radTD_B1.AutoSize = True
         Me.radTD_B1.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.radTD_B1.Location = New System.Drawing.Point(155, 36)
+        Me.radTD_B1.Location = New System.Drawing.Point(60, 21)
         Me.radTD_B1.Name = "radTD_B1"
         Me.radTD_B1.Size = New System.Drawing.Size(46, 21)
         Me.radTD_B1.TabIndex = 56
@@ -985,7 +929,7 @@ Partial Class Main
         'txtTD_CX
         '
         Me.txtTD_CX.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.txtTD_CX.Location = New System.Drawing.Point(92, 191)
+        Me.txtTD_CX.Location = New System.Drawing.Point(67, 24)
         Me.txtTD_CX.Mask = "0000"
         Me.txtTD_CX.Name = "txtTD_CX"
         Me.txtTD_CX.Size = New System.Drawing.Size(46, 22)
@@ -995,7 +939,7 @@ Partial Class Main
         '
         Me.radTD_A2.AutoSize = True
         Me.radTD_A2.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.radTD_A2.Location = New System.Drawing.Point(101, 63)
+        Me.radTD_A2.Location = New System.Drawing.Point(6, 48)
         Me.radTD_A2.Name = "radTD_A2"
         Me.radTD_A2.Size = New System.Drawing.Size(46, 21)
         Me.radTD_A2.TabIndex = 51
@@ -1007,7 +951,7 @@ Partial Class Main
         '
         Me.radTD_A3.AutoSize = True
         Me.radTD_A3.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.radTD_A3.Location = New System.Drawing.Point(101, 90)
+        Me.radTD_A3.Location = New System.Drawing.Point(6, 75)
         Me.radTD_A3.Name = "radTD_A3"
         Me.radTD_A3.Size = New System.Drawing.Size(46, 21)
         Me.radTD_A3.TabIndex = 52
@@ -1019,7 +963,7 @@ Partial Class Main
         '
         Me.lblTD_CY.AutoSize = True
         Me.lblTD_CY.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblTD_CY.Location = New System.Drawing.Point(143, 194)
+        Me.lblTD_CY.Location = New System.Drawing.Point(119, 27)
         Me.lblTD_CY.Name = "lblTD_CY"
         Me.lblTD_CY.Size = New System.Drawing.Size(55, 17)
         Me.lblTD_CY.TabIndex = 28
@@ -1029,7 +973,7 @@ Partial Class Main
         '
         Me.radTD_B3.AutoSize = True
         Me.radTD_B3.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.radTD_B3.Location = New System.Drawing.Point(155, 90)
+        Me.radTD_B3.Location = New System.Drawing.Point(60, 75)
         Me.radTD_B3.Name = "radTD_B3"
         Me.radTD_B3.Size = New System.Drawing.Size(46, 21)
         Me.radTD_B3.TabIndex = 58
@@ -1041,7 +985,7 @@ Partial Class Main
         '
         Me.lblTD_CW.AutoSize = True
         Me.lblTD_CW.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblTD_CW.Location = New System.Drawing.Point(35, 222)
+        Me.lblTD_CW.Location = New System.Drawing.Point(10, 55)
         Me.lblTD_CW.Name = "lblTD_CW"
         Me.lblTD_CW.Size = New System.Drawing.Size(54, 17)
         Me.lblTD_CW.TabIndex = 2
@@ -1051,7 +995,7 @@ Partial Class Main
         '
         Me.radTD_A1.AutoSize = True
         Me.radTD_A1.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.radTD_A1.Location = New System.Drawing.Point(101, 36)
+        Me.radTD_A1.Location = New System.Drawing.Point(6, 21)
         Me.radTD_A1.Name = "radTD_A1"
         Me.radTD_A1.Size = New System.Drawing.Size(46, 21)
         Me.radTD_A1.TabIndex = 50
@@ -1063,7 +1007,7 @@ Partial Class Main
         '
         Me.lblTD_CX.AutoSize = True
         Me.lblTD_CX.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblTD_CX.Location = New System.Drawing.Point(34, 194)
+        Me.lblTD_CX.Location = New System.Drawing.Point(9, 27)
         Me.lblTD_CX.Name = "lblTD_CX"
         Me.lblTD_CX.Size = New System.Drawing.Size(55, 17)
         Me.lblTD_CX.TabIndex = 1
@@ -1073,7 +1017,7 @@ Partial Class Main
         '
         Me.radTD_A4.AutoSize = True
         Me.radTD_A4.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.radTD_A4.Location = New System.Drawing.Point(101, 117)
+        Me.radTD_A4.Location = New System.Drawing.Point(6, 102)
         Me.radTD_A4.Name = "radTD_A4"
         Me.radTD_A4.Size = New System.Drawing.Size(46, 21)
         Me.radTD_A4.TabIndex = 53
@@ -1085,7 +1029,7 @@ Partial Class Main
         '
         Me.radTD_B2.AutoSize = True
         Me.radTD_B2.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.radTD_B2.Location = New System.Drawing.Point(155, 63)
+        Me.radTD_B2.Location = New System.Drawing.Point(60, 48)
         Me.radTD_B2.Name = "radTD_B2"
         Me.radTD_B2.Size = New System.Drawing.Size(46, 21)
         Me.radTD_B2.TabIndex = 57
@@ -1097,7 +1041,7 @@ Partial Class Main
         '
         Me.radTD_A5.AutoSize = True
         Me.radTD_A5.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.radTD_A5.Location = New System.Drawing.Point(101, 144)
+        Me.radTD_A5.Location = New System.Drawing.Point(6, 129)
         Me.radTD_A5.Name = "radTD_A5"
         Me.radTD_A5.Size = New System.Drawing.Size(46, 21)
         Me.radTD_A5.TabIndex = 54
@@ -1109,7 +1053,7 @@ Partial Class Main
         '
         Me.radTD_A6.AutoSize = True
         Me.radTD_A6.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.radTD_A6.Location = New System.Drawing.Point(101, 171)
+        Me.radTD_A6.Location = New System.Drawing.Point(6, 156)
         Me.radTD_A6.Name = "radTD_A6"
         Me.radTD_A6.Size = New System.Drawing.Size(46, 21)
         Me.radTD_A6.TabIndex = 55
@@ -1120,9 +1064,9 @@ Partial Class Main
         'btnRip
         '
         Me.btnRip.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.btnRip.Location = New System.Drawing.Point(197, 23)
+        Me.btnRip.Location = New System.Drawing.Point(197, 25)
         Me.btnRip.Name = "btnRip"
-        Me.btnRip.Size = New System.Drawing.Size(75, 53)
+        Me.btnRip.Size = New System.Drawing.Size(75, 24)
         Me.btnRip.TabIndex = 3
         Me.btnRip.Text = "&Rip"
         Me.btnRip.UseVisualStyleBackColor = True
@@ -1133,7 +1077,7 @@ Partial Class Main
         Me.chkRip_DSound.Checked = True
         Me.chkRip_DSound.CheckState = System.Windows.Forms.CheckState.Checked
         Me.chkRip_DSound.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.chkRip_DSound.Location = New System.Drawing.Point(6, 40)
+        Me.chkRip_DSound.Location = New System.Drawing.Point(5, 21)
         Me.chkRip_DSound.Name = "chkRip_DSound"
         Me.chkRip_DSound.Size = New System.Drawing.Size(116, 21)
         Me.chkRip_DSound.TabIndex = 0
@@ -1143,9 +1087,9 @@ Partial Class Main
         'btnPlay
         '
         Me.btnPlay.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.btnPlay.Location = New System.Drawing.Point(123, 23)
+        Me.btnPlay.Location = New System.Drawing.Point(122, 25)
         Me.btnPlay.Name = "btnPlay"
-        Me.btnPlay.Size = New System.Drawing.Size(75, 53)
+        Me.btnPlay.Size = New System.Drawing.Size(75, 24)
         Me.btnPlay.TabIndex = 2
         Me.btnPlay.Text = "&Play"
         Me.btnPlay.UseVisualStyleBackColor = True
@@ -1169,7 +1113,7 @@ Partial Class Main
         Me.grpTHPInfo.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.grpTHPInfo.Location = New System.Drawing.Point(7, 37)
         Me.grpTHPInfo.Name = "grpTHPInfo"
-        Me.grpTHPInfo.Size = New System.Drawing.Size(528, 368)
+        Me.grpTHPInfo.Size = New System.Drawing.Size(563, 368)
         Me.grpTHPInfo.TabIndex = 0
         Me.grpTHPInfo.TabStop = False
         Me.grpTHPInfo.Text = "THP Info"
@@ -1179,7 +1123,7 @@ Partial Class Main
         Me.grpVideo.Controls.Add(Me.grpVTDims)
         Me.grpVideo.Controls.Add(Me.grpVPlayback)
         Me.grpVideo.Controls.Add(Me.grpVArrInfo)
-        Me.grpVideo.Location = New System.Drawing.Point(6, 21)
+        Me.grpVideo.Location = New System.Drawing.Point(21, 21)
         Me.grpVideo.Name = "grpVideo"
         Me.grpVideo.Size = New System.Drawing.Size(511, 240)
         Me.grpVideo.TabIndex = 0
@@ -1636,7 +1580,7 @@ Partial Class Main
         '
         Me.lblFDesc.AutoSize = True
         Me.lblFDesc.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblFDesc.Location = New System.Drawing.Point(293, 264)
+        Me.lblFDesc.Location = New System.Drawing.Point(309, 264)
         Me.lblFDesc.Name = "lblFDesc"
         Me.lblFDesc.Size = New System.Drawing.Size(116, 17)
         Me.lblFDesc.TabIndex = 22
@@ -1650,7 +1594,7 @@ Partial Class Main
         Me.grpAudio.Controls.Add(Me.lblA_S)
         Me.grpAudio.Controls.Add(Me.txtA_A)
         Me.grpAudio.Controls.Add(Me.lblA_A)
-        Me.grpAudio.Location = New System.Drawing.Point(6, 267)
+        Me.grpAudio.Location = New System.Drawing.Point(22, 267)
         Me.grpAudio.Name = "grpAudio"
         Me.grpAudio.Size = New System.Drawing.Size(200, 91)
         Me.grpAudio.TabIndex = 21
@@ -1723,7 +1667,7 @@ Partial Class Main
         'txtFDesc
         '
         Me.txtFDesc.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.txtFDesc.Location = New System.Drawing.Point(208, 284)
+        Me.txtFDesc.Location = New System.Drawing.Point(224, 284)
         Me.txtFDesc.Multiline = True
         Me.txtFDesc.Name = "txtFDesc"
         Me.txtFDesc.ReadOnly = True
@@ -1739,7 +1683,7 @@ Partial Class Main
         Me.cmbTHP.FormattingEnabled = True
         Me.cmbTHP.Location = New System.Drawing.Point(80, 11)
         Me.cmbTHP.Name = "cmbTHP"
-        Me.cmbTHP.Size = New System.Drawing.Size(455, 24)
+        Me.cmbTHP.Size = New System.Drawing.Size(490, 24)
         Me.cmbTHP.TabIndex = 0
         Me.cmbTHP.Text = "============================="
         '
@@ -1751,7 +1695,7 @@ Partial Class Main
         Me.TabOptions.Margin = New System.Windows.Forms.Padding(4)
         Me.TabOptions.Name = "TabOptions"
         Me.TabOptions.Padding = New System.Windows.Forms.Padding(4)
-        Me.TabOptions.Size = New System.Drawing.Size(553, 951)
+        Me.TabOptions.Size = New System.Drawing.Size(577, 951)
         Me.TabOptions.TabIndex = 0
         Me.TabOptions.Text = "Options"
         Me.TabOptions.UseVisualStyleBackColor = True
@@ -1766,7 +1710,7 @@ Partial Class Main
         Me.grpHelp.Controls.Add(Me.btnWiki)
         Me.grpHelp.Controls.Add(Me.btnWeb)
         Me.grpHelp.Controls.Add(Me.btnAbout)
-        Me.grpHelp.Location = New System.Drawing.Point(6, 309)
+        Me.grpHelp.Location = New System.Drawing.Point(19, 309)
         Me.grpHelp.Name = "grpHelp"
         Me.grpHelp.Size = New System.Drawing.Size(540, 635)
         Me.grpHelp.TabIndex = 54
@@ -1887,7 +1831,7 @@ Partial Class Main
         Me.grpOptions.Controls.Add(Me.txtiView)
         Me.grpOptions.Controls.Add(Me.lblTHPConv)
         Me.grpOptions.Controls.Add(Me.lbliView)
-        Me.grpOptions.Location = New System.Drawing.Point(3, 7)
+        Me.grpOptions.Location = New System.Drawing.Point(16, 7)
         Me.grpOptions.Name = "grpOptions"
         Me.grpOptions.Size = New System.Drawing.Size(543, 296)
         Me.grpOptions.TabIndex = 53
@@ -2186,7 +2130,7 @@ Partial Class Main
         Me.tabApp.Margin = New System.Windows.Forms.Padding(4)
         Me.tabApp.Name = "tabApp"
         Me.tabApp.SelectedIndex = 0
-        Me.tabApp.Size = New System.Drawing.Size(561, 980)
+        Me.tabApp.Size = New System.Drawing.Size(585, 980)
         Me.tabApp.TabIndex = 0
         Me.tabApp.TabStop = False
         '
@@ -2249,11 +2193,81 @@ Partial Class Main
         Me.SaveLog.DefaultExt = "log"
         Me.SaveLog.Filter = "Log file|*.log"
         '
+        'grpTHPDec_Pre
+        '
+        Me.grpTHPDec_Pre.Controls.Add(Me.lblTD_SpPre)
+        Me.grpTHPDec_Pre.Controls.Add(Me.radTD_Dum)
+        Me.grpTHPDec_Pre.Controls.Add(Me.radTD_All)
+        Me.grpTHPDec_Pre.Controls.Add(Me.radTD_A1)
+        Me.grpTHPDec_Pre.Controls.Add(Me.radTD_A6)
+        Me.grpTHPDec_Pre.Controls.Add(Me.radTD_A5)
+        Me.grpTHPDec_Pre.Controls.Add(Me.radTD_B2)
+        Me.grpTHPDec_Pre.Controls.Add(Me.radTD_A4)
+        Me.grpTHPDec_Pre.Controls.Add(Me.radTD_B3)
+        Me.grpTHPDec_Pre.Controls.Add(Me.radTD_A3)
+        Me.grpTHPDec_Pre.Controls.Add(Me.radTD_A2)
+        Me.grpTHPDec_Pre.Controls.Add(Me.radTD_B6)
+        Me.grpTHPDec_Pre.Controls.Add(Me.radTD_B1)
+        Me.grpTHPDec_Pre.Controls.Add(Me.radTD_B4)
+        Me.grpTHPDec_Pre.Controls.Add(Me.radTD_B5)
+        Me.grpTHPDec_Pre.Location = New System.Drawing.Point(110, 7)
+        Me.grpTHPDec_Pre.Name = "grpTHPDec_Pre"
+        Me.grpTHPDec_Pre.Size = New System.Drawing.Size(196, 180)
+        Me.grpTHPDec_Pre.TabIndex = 51
+        Me.grpTHPDec_Pre.TabStop = False
+        Me.grpTHPDec_Pre.Text = "Preset (Row/Column)"
+        '
+        'grpTHPDec_Time
+        '
+        Me.grpTHPDec_Time.Controls.Add(Me.lblTD_FM)
+        Me.grpTHPDec_Time.Controls.Add(Me.nudTD_M)
+        Me.grpTHPDec_Time.Controls.Add(Me.chkRipDumF)
+        Me.grpTHPDec_Time.Controls.Add(Me.chkRipM)
+        Me.grpTHPDec_Time.Font = New System.Drawing.Font("Microsoft Sans Serif", 6.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.grpTHPDec_Time.Location = New System.Drawing.Point(4, 40)
+        Me.grpTHPDec_Time.Name = "grpTHPDec_Time"
+        Me.grpTHPDec_Time.Size = New System.Drawing.Size(100, 133)
+        Me.grpTHPDec_Time.TabIndex = 66
+        Me.grpTHPDec_Time.TabStop = False
+        Me.grpTHPDec_Time.Text = "Time/Info"
+        '
+        'grpTHPDec_Settings
+        '
+        Me.grpTHPDec_Settings.Controls.Add(Me.lblTD_CX)
+        Me.grpTHPDec_Settings.Controls.Add(Me.lblTD_CW)
+        Me.grpTHPDec_Settings.Controls.Add(Me.lblTD_CY)
+        Me.grpTHPDec_Settings.Controls.Add(Me.txtTD_FE)
+        Me.grpTHPDec_Settings.Controls.Add(Me.txtTD_CX)
+        Me.grpTHPDec_Settings.Controls.Add(Me.txtTD_FS)
+        Me.grpTHPDec_Settings.Controls.Add(Me.lblTD_CH)
+        Me.grpTHPDec_Settings.Controls.Add(Me.lblTD_FE)
+        Me.grpTHPDec_Settings.Controls.Add(Me.txtTD_CW)
+        Me.grpTHPDec_Settings.Controls.Add(Me.lblTD_FS)
+        Me.grpTHPDec_Settings.Controls.Add(Me.txtTD_CY)
+        Me.grpTHPDec_Settings.Controls.Add(Me.txtTD_CH)
+        Me.grpTHPDec_Settings.Location = New System.Drawing.Point(39, 186)
+        Me.grpTHPDec_Settings.Name = "grpTHPDec_Settings"
+        Me.grpTHPDec_Settings.Size = New System.Drawing.Size(232, 109)
+        Me.grpTHPDec_Settings.TabIndex = 67
+        Me.grpTHPDec_Settings.TabStop = False
+        Me.grpTHPDec_Settings.Text = "Settings"
+        '
+        'lblTD_SpPre
+        '
+        Me.lblTD_SpPre.AutoSize = True
+        Me.lblTD_SpPre.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lblTD_SpPre.Location = New System.Drawing.Point(112, 57)
+        Me.lblTD_SpPre.Name = "lblTD_SpPre"
+        Me.lblTD_SpPre.Size = New System.Drawing.Size(63, 34)
+        Me.lblTD_SpPre.TabIndex = 48
+        Me.lblTD_SpPre.Text = "Special" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "Presets"
+        Me.lblTD_SpPre.TextAlign = System.Drawing.ContentAlignment.BottomCenter
+        '
         'Main
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(8.0!, 16.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(564, 986)
+        Me.ClientSize = New System.Drawing.Size(592, 986)
         Me.Controls.Add(Me.tabApp)
         Me.DoubleBuffered = True
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle
@@ -2275,7 +2289,6 @@ Partial Class Main
         Me.grpTHPDec.ResumeLayout(False)
         Me.grpTHPDec.PerformLayout()
         Me.grpTHPDec_Crop.ResumeLayout(False)
-        Me.grpTHPDec_Crop.PerformLayout()
         CType(Me.nudTD_M, System.ComponentModel.ISupportInitialize).EndInit()
         Me.grpTHPInfo.ResumeLayout(False)
         Me.grpTHPInfo.PerformLayout()
@@ -2304,6 +2317,12 @@ Partial Class Main
         Me.grpOptions.PerformLayout()
         CType(Me.picOptions, System.ComponentModel.ISupportInitialize).EndInit()
         Me.tabApp.ResumeLayout(False)
+        Me.grpTHPDec_Pre.ResumeLayout(False)
+        Me.grpTHPDec_Pre.PerformLayout()
+        Me.grpTHPDec_Time.ResumeLayout(False)
+        Me.grpTHPDec_Time.PerformLayout()
+        Me.grpTHPDec_Settings.ResumeLayout(False)
+        Me.grpTHPDec_Settings.PerformLayout()
         Me.ResumeLayout(False)
 
     End Sub
@@ -2430,8 +2449,6 @@ Partial Class Main
     Friend WithEvents lblTD_FM As System.Windows.Forms.Label
     Friend WithEvents nudTD_M As System.Windows.Forms.NumericUpDown
     Friend WithEvents chkRipM As System.Windows.Forms.CheckBox
-    Friend WithEvents txtTD_R As System.Windows.Forms.Label
-    Friend WithEvents txtTD_C As System.Windows.Forms.Label
     Friend WithEvents radTD_B6 As System.Windows.Forms.RadioButton
     Friend WithEvents radTD_B5 As System.Windows.Forms.RadioButton
     Friend WithEvents radTD_B4 As System.Windows.Forms.RadioButton
@@ -2446,7 +2463,6 @@ Partial Class Main
     Friend WithEvents radTD_A6 As System.Windows.Forms.RadioButton
     Friend WithEvents radTD_Dum As System.Windows.Forms.RadioButton
     Friend WithEvents radTD_All As System.Windows.Forms.RadioButton
-    Friend WithEvents txtTD_S As System.Windows.Forms.Label
     Friend WithEvents chkRipDumF As System.Windows.Forms.CheckBox
     Friend WithEvents lblFFPlayTemp As System.Windows.Forms.Label
     Friend WithEvents btnBrowseFFPlayTemp As System.Windows.Forms.Button
@@ -2486,4 +2502,8 @@ Partial Class Main
     Friend WithEvents ofdSaveSettings As System.Windows.Forms.OpenFileDialog
     Friend WithEvents LoadiView As System.Windows.Forms.OpenFileDialog
     Friend WithEvents SaveLog As System.Windows.Forms.OpenFileDialog
+    Friend WithEvents grpTHPDec_Pre As System.Windows.Forms.GroupBox
+    Friend WithEvents grpTHPDec_Settings As System.Windows.Forms.GroupBox
+    Friend WithEvents grpTHPDec_Time As System.Windows.Forms.GroupBox
+    Friend WithEvents lblTD_SpPre As System.Windows.Forms.Label
 End Class

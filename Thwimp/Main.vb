@@ -394,9 +394,55 @@ Public Class Main
             HandleArrState()                                'Show naming conventions for this THP file
             HandleRipTimeMasks()                            'Updates the masks for the start/end lengths for ripping (time)
             txtTE_D.Text = txtVF_T.Text.Length.ToString()   'Set default value in THPEnc for digits, based on the string.length of the video's total frames
+            ReselectPreset()
         Catch ex As Exception
             Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in cmbTHP_SelectedIndexChanged!", True)
         End Try
+    End Sub
+
+    ''' <summary>
+    ''' Helper function for cmbTHP_SelectedIndexChanged which reselects the current preset when changing the cmbTHP index
+    ''' This updates the crop settings with the current preset
+    ''' </summary>
+    ''' <remarks></remarks>
+    Private Sub ReselectPreset()
+        Const maxColumns As Byte = 2                                        'Max amount of preset columns
+        Const maxRows As Byte = 6                                           'Max amount of preset rows
+        Const maxSpecial As Byte = 2                                        'Max amount of special presets
+        Const maxPresets As Byte = (maxColumns * maxRows) + maxSpecial      'Total amount of presets
+
+        'Array of preset radio buttons
+        Dim Rad(maxPresets) As System.Windows.Forms.RadioButton
+        Rad(0) = radTD_A1
+        Rad(1) = radTD_A2
+        Rad(2) = radTD_A3
+        Rad(3) = radTD_A4
+        Rad(4) = radTD_A5
+        Rad(5) = radTD_A6
+
+        Rad(6) = radTD_B1
+        Rad(7) = radTD_B2
+        Rad(8) = radTD_B3
+        Rad(9) = radTD_B4
+        Rad(10) = radTD_B5
+        Rad(11) = radTD_B6
+
+        Rad(12) = radTD_All
+        Rad(13) = radTD_Dum
+
+        'Iterate through all radio buttons
+        Dim i As Byte = 0
+        For i = 0 To (maxPresets - 1) Step 1
+
+            'Get this current checked state
+            Dim state As Boolean = Rad(i).Checked
+            If state = True Then
+                'If true, set to false then true, to force a checked change event
+                Rad(i).Checked = False
+                Rad(i).Checked = True
+                Exit For
+            End If
+        Next i
     End Sub
 
     ''' <summary>
@@ -1002,6 +1048,11 @@ Public Class Main
     ''' <remarks></remarks>
     Private Sub btnPlay_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnPlay.Click
         Try
+            'Total/current progress for progress bar.
+            'Index(0)=current progress, Index(1)=max progress
+            Dim TtlPrg(2) As Single
+            Dim CurPrg(2) As Single
+
             Dim startInfo As ProcessStartInfo
             startInfo = New ProcessStartInfo
 
@@ -1052,6 +1103,14 @@ Public Class Main
 
             Dim hasAudio As Boolean = THPHasAudio()
             If hasAudio = False Then
+                'If no audio, then just 0/100% states for current/total progress
+                TtlPrg(0) = 0
+                TtlPrg(1) = 1
+                CurPrg(0) = 0
+                CurPrg(1) = 1
+                UpdateProg_Ttl(TtlPrg, "Apply physical and time crop settings, playback THP file.")
+                UpdateProg_Cur(CurPrg, "THP video does NOT use audio! Apply crop settings...", True, True)
+
                 'If THP does not have audio
 
                 'Just Playback file using crop settings and time frame settings
@@ -1069,6 +1128,12 @@ Public Class Main
                 shell.Start()
                 shell.WaitForExit()
                 shell.Close()
+
+                'Max out prog bars
+                TtlPrg(0) += 1
+                CurPrg(0) += 1
+                UpdateProg_Ttl(TtlPrg, "Done!")
+                UpdateProg_Cur(CurPrg, "THP Playback finished!", False, False)
             Else
                 'If THP has audio, we must rip/convert audio and video streams as MP4
                 'with crop/time frame settings applied, and then re-merge for playback
@@ -1088,6 +1153,13 @@ Public Class Main
 
                 'Step 1: Rip video only as mp4 (FFMPEG)
                 'ffmpeg -i video.thp -y -an -vcodec h264 -vf "crop=w:h:x:y, select=between(n\,start_Frame\,end_frame),setpts=PTS-STARTPTS" video.mp4
+                'Total Prog = 25% delta, current prog = 0/100% states
+                TtlPrg(0) = 0
+                TtlPrg(1) = 4
+                CurPrg(0) = 0
+                CurPrg(1) = 1
+                UpdateProg_Ttl(TtlPrg, "Step 1: Rip THP video only as MP4")
+                UpdateProg_Cur(CurPrg, "THP video DOES use audio! Ripping video only as MP4...", True, False)
                 cmd = strQUOT & txtFFMPEG.Text & strPATHSEP & exeFMPeg & strQUOT                    'FFMPEG command: "C:\FDIR\ffmpeg.exe"
                 file = strQUOT & txtRoot.Text & cmbTHP.Text & strQUOT                           'input file: "C:\THPDIR\file.THP"
                 file2 = strQUOT & txtFFPlayTemp.Text & strPATHSEP & "video.mp4" & strQUOT           'Output file: "C:\THPPlayWorkDir\video.mp4"
@@ -1105,7 +1177,14 @@ Public Class Main
                 shell.Close()
 
                 'Step 2: Rip audio only as mp4 (FFMPEG)
-                'ffmpeg -i video.thp -vn -ss audio_Start -to audio_End audio.mp4
+                'ffmpeg -i video.thp -vn -ss audio_Start -to audio_End audio.mp4                
+                CurPrg(0) += 1
+                UpdateProg_Cur(CurPrg, "MP4 video ripped!", False, True)
+
+                CurPrg(0) = 0
+                TtlPrg(0) += 1
+                UpdateProg_Ttl(TtlPrg, "Step 2: Rip THP audio only as MP4")
+                UpdateProg_Cur(CurPrg, "Ripping audio only as MP4...", True, False)
                 file2 = strQUOT & txtFFPlayTemp.Text & strPATHSEP & "audio.mp4" & strQUOT   'output file: "C:\THPPlayWorkDir\audio.mp4"
                 'Args: -i input_file -vn -ss audio_Start -to audio_End output_file
                 'Note ToString("G9") format is the recommended one for "RoundTripping" a single
@@ -1122,6 +1201,13 @@ Public Class Main
 
                 'Step 3: Merge both mp4 streams (FFMPEG)
                 'ffmpeg -i video.mp4 -i audio.mp4 -c:v copy -c:a copy temp.mp4
+                CurPrg(0) += 1
+                UpdateProg_Cur(CurPrg, "MP4 audio ripped!", False, True)
+
+                CurPrg(0) = 0
+                TtlPrg(0) += 1
+                UpdateProg_Ttl(TtlPrg, "Step 3: Merge both MP4 A/V streams")
+                UpdateProg_Cur(CurPrg, "Merging audio and video MP4 streams...", True, False)
                 file = strQUOT & txtFFPlayTemp.Text & strPATHSEP & "video.mp4" & strQUOT        'Input video file: "C:\FFPlayWorkDir\video.mp4"
                 file2 = strQUOT & txtFFPlayTemp.Text & strPATHSEP & "audio.mp4" & strQUOT       'Input audio file: "C:\FFPlayWorkDir\audio.mp4"
                 file3 = strQUOT & txtFFPlayTemp.Text & strPATHSEP & "temp.mp4" & strQUOT        'Output final video file: "C:\FFPlayWorkDir\temp.mp4"
@@ -1138,6 +1224,13 @@ Public Class Main
 
                 'Step 4: playback final video
                 'ffplay.exe "temp.mp4"
+                CurPrg(0) += 1
+                UpdateProg_Cur(CurPrg, "MP4 A/V streams merged!", False, True)
+
+                CurPrg(0) = 0
+                TtlPrg(0) += 1
+                UpdateProg_Ttl(TtlPrg, "Step 4: Playback final video")
+                UpdateProg_Cur(CurPrg, "Playing back final THP video...", True, False)
                 cmd = strQUOT & txtFFMPEG.Text & strPATHSEP & exeFPlay & strQUOT                'FFPlay command: "C:\FDIR\ffplay.exe"
                 file = " " & strQUOT & txtFFPlayTemp.Text & strPATHSEP & "temp.mp4" & strQUOT   'Playback file: "C:\FFPlayWorkDir\temp.mp4"
 
@@ -1148,6 +1241,11 @@ Public Class Main
                 shell.Start()
                 shell.WaitForExit()
                 shell.Close()
+
+                TtlPrg(0) += 1
+                UpdateProg_Ttl(TtlPrg, "Done!")
+                CurPrg(0) += 1
+                UpdateProg_Cur(CurPrg, "Edited THP video succesfully played back!", True, True)
             End If
         Catch ex As Exception
             Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error during playback!", True)
@@ -1218,6 +1316,13 @@ Public Class Main
     Private Sub btnRip_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnRip.Click
         'Open ofdRip, user selects path/base filename
         Try
+            'Total/current progress for progress bar.
+            'Index(0)=current progress, Index(1)=max progress
+            Dim TtlPrg(2) As Single
+            Dim CurPrg(2) As Single
+            'Text reg for prog msg
+            Dim Text As String = ""
+
             Dim inFile As String = txtRoot.Text & cmbTHP.Text   'Input file. C:\PathToTHP\DIRtoTHP\file.thp"
             Dim initDir As String = FileDir(inFile)             'Initial directory. Directory of inFile
             Dim newFile As String = FileAndExt(cmbTHP.Text)     'New file. "Filename.thp" from inFile
@@ -1272,7 +1377,24 @@ Public Class Main
                 End If
             End If
 
+
+            'Rip steps:
             'Step 1: Convert THP to temp MP4. Encode THP to H264 MP4 with crop filter
+            'Step 2: Convert temp mp4 to final MP4, cutting between start and end frames
+            'Step 3: Extract audio as wav (if any) with time trimming
+            'Step 4: If ripping dummy ctrl frames, convert the cropped MP4 file (cropped to the ctrl area) to bmp frames, keep only 1st frame for each multiplicity
+            'Step 5: Cleanup temporary files
+
+
+            'Step 1: Convert THP to temp MP4. Encode THP to H264 MP4 with crop filter
+            'Total prog = 5 steps, current prog = variable
+            TtlPrg(0) = 0
+            TtlPrg(1) = 5
+            CurPrg(0) = 0
+            CurPrg(1) = 1
+            Text = "Ripping THP video elements." & strNL & "Step 1: Convert THP to temp MP4. Encode THP to H264 MP4 with crop filter"
+            UpdateProg_Ttl(TtlPrg, Text)
+            UpdateProg_Cur(CurPrg, "Converting...", True, False)
             '"C:\FFMPegPath\ffmpeg.exe"
             cmd = strQUOT & txtFFMPEG.Text & strPATHSEP & exeFMPeg & strQUOT
             ' -i C:\PathToTHP\DIRtoTHP\file.thp -vcodec h264 -y -filter:v "crop=out_w:out_h:x:y" "C:\OutputDir\output.mp4"
@@ -1288,10 +1410,15 @@ Public Class Main
             shell.StartInfo = startInfo
             shell.Start()
             shell.WaitForExit()
-
+            CurPrg(0) += 1
+            UpdateProg_Cur(CurPrg, "Temp, physically cropped MP4 video created!", False, True)
 
             'Step 2: Convert temp mp4 to final MP4, cutting between start and end frames
             '"C:\FFMPegPath\ffmpeg.exe"
+            CurPrg(0) = 0
+            TtlPrg(0) += 1
+            UpdateProg_Ttl(TtlPrg, "Step 2: Convert temp mp4 to final MP4, cutting between start and end frames")
+            UpdateProg_Cur(CurPrg, "Converting...", True, False)
             cmd = strQUOT & txtFFMPEG.Text & strPATHSEP & exeFMPeg & strQUOT
             ' -y -i C:\PathToTHP\DIRtoTHP\file.thp -vcodec h264 -an -vf select="between(n\,start_frame\,end_frame),setpts=PTS-STARTPTS" "C:\OutputDir\output.mp4"
             cmd &= " -y -i " & strQUOT & tempFile & strQUOT & " -vcodec h264 -an -vf select=" & strQUOT & "between(n" & strBAK & "," & _start & strBAK & "," & _end & "),setpts=PTS-STARTPTS" & strQUOT
@@ -1305,10 +1432,17 @@ Public Class Main
             shell.StartInfo = startInfo
             shell.Start()
             shell.WaitForExit()
+            CurPrg(0) += 1
+            UpdateProg_Cur(CurPrg, "Final, time cropped MP4 video created!", False, True)
 
-            'Extract audio as wav (if any) with trimming
+            'Step 3: Extract audio as wav (if any) with time trimming
+            CurPrg(0) = 0
+            TtlPrg(0) += 1
+            UpdateProg_Ttl(TtlPrg, "Step 3: Extract audio as wav (if any) with time trimming")
             Dim hasAudio As Boolean = THPHasAudio()
             If hasAudio Then
+                Text = "Video DOES have an audio stream!" & strNL & "Extracting time-trimmed audio stream..."
+                UpdateProg_Cur(CurPrg, Text, True, False)
                 'If THP has audio
 
                 'If DirectSound checked, do SDL driver workaround
@@ -1332,12 +1466,29 @@ Public Class Main
                 shell.StartInfo = startInfo
                 shell.Start()
                 shell.WaitForExit()
+                CurPrg(0) += 1
+            Else
+                UpdateProg_Cur(CurPrg, "Video does NOT have an audio stream!", True, False)
+                CurPrg(0) += 1
             End If
+            UpdateProg_Cur(CurPrg, "Audio stream extraction done!", False, True)
 
+            'Step 4: If ripping dummy ctrl frames, convert the cropped MP4 file (cropped to the ctrl area) to bmp frames, keep only 1st frame for each multiplicity
+            CurPrg(0) = 0
+            TtlPrg(0) += 1
+            UpdateProg_Ttl(TtlPrg, "Step 4: If ripping dummy ctrl frames, convert the cropped MP4 file (cropped to the ctrl area) to bmp frames, keep only 1st frame for each multiplicity.")
             If type = True Then
+                Dim m As Byte = TryParseErr_Byte(txtVM_M.Text)             '0-based multiplicity value
+                m -= 1
+
                 'If ripping dummy ctrl frames.
                 'Convert the cropped MP4 file (cropped to the ctrl area) to bmp frames ("dummyTemp_%0Nd.bmp"),
                 'Keep only 1st frame for each multiplicty, rename to "dummy_N.bmp", delete excess frames
+
+                'Set max current progress to 2 + # of mults
+                CurPrg(1) = 2 + m
+                Text = "Video HAS dummy frames!" & strNL & "Ripping all bmp frames..."
+                UpdateProg_Cur(CurPrg, Text, True, False)
 
                 '"C:\FFMPegPath\FFMPEG.exe" -y 
                 cmd = strQUOT & txtFFMPEG.Text & strPATHSEP & exeFMPeg & strQUOT & " -y "
@@ -1358,16 +1509,20 @@ Public Class Main
                 shell.StartInfo = startInfo
                 shell.Start()
                 shell.WaitForExit()
+                UpdateProg_Cur(CurPrg, "All BMP frames ripped!", False, True)
+                UpdateProg_Cur(CurPrg, "Finding and keeping appropriate BMP frames...")
 
                 'Rename the appropriate frames to "dummy_N.bmp", remove the others 
                 Dim i As Byte = 0                           'Generic iterator
                 Dim j As UShort = 0                         'Frame value
-                Dim frames As UShort = TryParseErr_UShort(txtVF_S.Text)    'The amount of frames per subvideo
-                Dim m As Byte = TryParseErr_Byte(txtVM_M.Text)             '0-based multiplicity value
-                m -= 1
+                Dim frames As UShort = TryParseErr_UShort(txtVF_S.Text)    'The amount of frames per subvideo                
 
                 'Iterate through the mults (0-based)
                 For i = 0 To m Step 1
+                    CurPrg(0) += 1                                      'Increment current prog foreach mult
+                    Text = "Mult " & (i + 1).ToString()                 'Log "Mult M"
+                    UpdateProg_Cur(CurPrg, Text)
+
                     j = i * frames                                      'Frame ID = multiplicity ID * amount of frames. This gets 1st frame for each multplicity.
                     j += 1                                              'Make FrameID 1-based
                     d = "_" & j.ToString(StrDup(dgs, "0")) & ".bmp"     'Set d as the frame ID string "_%0Nd.bmp"
@@ -1379,14 +1534,35 @@ Public Class Main
                     My.Computer.FileSystem.MoveFile(file2, file, True)
                 Next i
 
-                'Delete all extra "dummyTemp_%0Nd.bmp" files
-                file = FileDir(outFile)                 'file = C:\WorkingDir
-                file2 = "dummyTemp*.bmp"                'file2 = dummyTemp*.bmp
-                DeleteFilesFromFolder(file, file2)
+                CurPrg(0) = CurPrg(1)
+                UpdateProg_Cur(CurPrg, "All appropriate BMP frames found and kept!", False, True)
+
+                'Step 5: Cleanup temporary files (Delete all extra "dummyTemp_%0Nd.bmp" files)
+                TtlPrg(0) += 1
+                CurPrg(0) = 0
+                CurPrg(1) = 1
+                UpdateProg_Ttl(TtlPrg, "Step 5: Cleanup temporary files")
+                UpdateProg_Cur(CurPrg, "", True, False)
+                file = FileDir(outFile)                                                         'file = C:\WorkingDir
+                file2 = "dummyTemp*.bmp"                                                        'file2 = dummyTemp*.bmp
+                DeleteFilesFromFolder(file, file2, True, "Cleaning up files...", True, False)   'Delete files (with logging)
+            Else
+                CurPrg(1) = 1
+                Text = "Video does NOT have dummy frames!" & strNL
+                UpdateProg_Cur(CurPrg, Text, True, False)
+                CurPrg(0) += 1
+                UpdateProg_Cur(CurPrg, "Dummy frame extraction done!", False, True)
+
+                TtlPrg(0) += 1
+                UpdateProg_Ttl(TtlPrg, "Step 5: Cleanup temporary files")
             End If
 
             'Delete temp.mp4
             DeleteFilesFromFolder(FileDir(outFile), "temp.mp4")
+            TtlPrg(0) = TtlPrg(1)
+            CurPrg(0) = CurPrg(1)
+            UpdateProg_Ttl(TtlPrg, "Done!")
+            UpdateProg_Cur(CurPrg, "Cleanup done!", True, True)
 
             'Thwimp kicks dat Koopa shell away!
             shell.Close()
