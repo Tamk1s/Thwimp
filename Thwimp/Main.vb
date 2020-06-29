@@ -44,6 +44,8 @@ Public Class Main
     Const CDESC As String = "FileCDesc.txt"                 '~                      description info for the control signal
     Const DESC As String = "FileDesc.txt"                   '~                      description info for the image files
     Const DATA As String = "FileData.txt"                   '~                      hard-coded image data for the image files
+    Const INFO As String = "FileSet.txt"                    '~                      fileset info
+    Const TEMPFLOG As String = "full_log.txt"               'Temporary file for log file
 
     'Exe utils used by app
     Shared strFMPackPath As String = ""                     'Path to FFMPEG exes (ffmpeg, ffplay)
@@ -132,6 +134,10 @@ Public Class Main
     Private Sub Main_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
         'Initialize the application with some setup code
 
+        'Init log, with current build version, time, date
+        Dim info As String = Application.ProductName & ": " & Application.ProductVersion
+        Log(info, MsgBoxStyle.Information, True)
+
         'Load Options tab
         tabApp.SelectedIndex = 1
 
@@ -171,6 +177,8 @@ Public Class Main
     ''' </summary>
     ''' <remarks>Similar to InitIMGData in setup from BreakGold Editor; same purpose</remarks>
     Public Sub InitTHPData()
+        InitTHP_FSInfo()                         'Load fileset info
+
         Dim xFileData As StreamReader = Nothing  'Streamreader object for reading the data from the files
         Dim DataPath As String = txtDataDir.Text 'Path for set of data files
         Dim strEntry As String                   'String data read from the [File].ReadLine() method
@@ -210,7 +218,7 @@ Public Class Main
                 strEntry = xFileData.ReadLine()                     'Read a line
                 THPs(bytCtr1).File = strEntry                       'Dump file paths into appropriate array entry
                 cmbTHP.Items.Add(THPs(bytCtr1).File)                'Dump data into Combo box
-            Next bytCtr1            
+            Next bytCtr1
             KillStream(xFileData)                                   'Close the LISTING file
 
             'Load all descriptions into THPs(#).Desc array
@@ -218,7 +226,7 @@ Public Class Main
             For bytCtr1 = 1 To bytItems Step 1                      'Iterate through all lines
                 strEntry = xFileData.ReadLine()                     'Read a line
                 THPs(bytCtr1).Desc = strEntry                       'Dump the data into the array slots
-            Next bytCtr1            
+            Next bytCtr1
             KillStream(xFileData)                                   'Close the DESC file
 
             'Load all ctrl descriptions into THPs(#).visual.cdesc array
@@ -330,7 +338,47 @@ Public Class Main
         Catch ex As Exception
             KillStream(xFileData)       'Kill any lingering streams
             HideTHPData()               'Due to failure to load THP Data fully, hide THP Data form
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Data file parsing/ I/O error!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Data file parsing/ I/O error!", True)
+        End Try
+    End Sub
+
+    ''' <summary>
+    ''' Retrieves FileSet info for this set of THPs
+    ''' </summary>
+    ''' <remarks></remarks>
+    Public Sub InitTHP_FSInfo()
+        Dim xFileData As StreamReader = Nothing                         'Streamreader object for reading the data from the files
+        Dim DataPath As String = txtDataDir.Text                        'Path for set of data files
+        Dim strEntry As String                                          'String data read from the [File].ReadLine() method
+
+        Const bytItems As Byte = 5                                      'Max amount of fields
+        Dim fields(bytItems) As System.Windows.Forms.TextBox            'Array of field textboxes (in order)
+        fields(0) = txtFS_Game
+        fields(1) = txtFS_Desc
+        fields(2) = txtFS_Author
+        fields(3) = txtFS_Ver
+        fields(4) = txtFS_Date
+
+        Dim bytCtr1 As Byte                                             'Generic Counter variable #1
+        Try
+            'Iterate through all fields (0-based), reset text
+            For bytCtr1 = 0 To (bytItems - 1) Step 1
+                fields(bytCtr1).Text = ""
+            Next bytCtr1
+
+            xFileData = File.OpenText(DataPath & strPATHSEP & INFO)     'Open the INFO file
+
+            'Loop while not EOF
+            bytCtr1 = 0
+            While xFileData.EndOfStream() = False
+                strEntry = xFileData.ReadLine()                         'Read a line from the file
+                fields(bytCtr1).Text = strEntry                         'Update text
+                bytCtr1 += 1                                            'Increase iterator
+            End While
+            KillStream(xFileData)                                       'Kill lingering stream
+        Catch ex As Exception
+            KillStream(xFileData)                                       'Kill any lingering streams
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "FileSet info file parsing/ I/O error!", True)
         End Try
     End Sub
 
@@ -396,7 +444,7 @@ Public Class Main
             txtTE_D.Text = txtVF_T.Text.Length.ToString()   'Set default value in THPEnc for digits, based on the string.length of the video's total frames
             ReselectPreset()
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in cmbTHP_SelectedIndexChanged!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error in cmbTHP_SelectedIndexChanged!", True)
         End Try
     End Sub
 
@@ -460,7 +508,7 @@ Public Class Main
             'If both dims are not zero, then hasPadding
             If d.width <> 0 And d.height <> 0 Then outp = True
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in THPHasPad()", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error in THPHasPad()", True)
         End Try
         Return outp
     End Function
@@ -493,7 +541,7 @@ Public Class Main
             txtRoot.Text = LoadTHPRoot.SelectedPath    'Dump the path into the textbox, for later retrieval
             CheckPathsSet()                             'Handle enabling THP Tab
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btnLoadRoot_Click!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error in btnLoadRoot_Click!", True)
         End Try
     End Sub
 
@@ -513,7 +561,7 @@ Public Class Main
             txtiView.Text = LoadiView.FileName      'Dump the path into the textbox, for later retrieval
             CheckPathsSet()                         'Handle enabling THP Tab
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btniView_Click!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error in btniView_Click!", True)
         End Try
     End Sub
 
@@ -531,7 +579,7 @@ Public Class Main
             txtFFMPEG.Text = LoadFFMPEGRoot.SelectedPath    'Dump the path into the textbox, for later retrieval
             CheckPathsSet()                             'Handle enabling THP Tab
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btnBrowseFFMpeg_Click!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error in btnBrowseFFMpeg_Click!", True)
         End Try
     End Sub
 
@@ -550,7 +598,7 @@ Public Class Main
             txtFFPlayTemp.Text = LoadFFPlayWork.SelectedPath    'Dump the path into the textbox, for later retrieval
             CheckPathsSet()                                     'Handle enabling THP Tab
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btnBrowseFFPlayTemp_Click!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error in btnBrowseFFPlayTemp_Click!", True)
         End Try
     End Sub
 
@@ -570,7 +618,7 @@ Public Class Main
             txtTHPConv.Text = LoadTHPConv.FileName      'Dump the path into the textbox, for later retrieval
             CheckPathsSet()                             'Handle enabling THP Tab
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btnBrowseTHPConv_Click!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error in btnBrowseTHPConv_Click!", True)
         End Try
     End Sub
 
@@ -589,7 +637,7 @@ Public Class Main
             InitTHPData()                               'Load THP data from new data dir
             CheckPathsSet()                             'Handle enabling THP Tab
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btnDataDir_Click!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error in btnDataDir_Click!", True)
         End Try
     End Sub
 
@@ -667,7 +715,7 @@ Public Class Main
                 CheckPathsSet()
             End If
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btnLoadSettings_Click!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error in btnLoadSettings_Click!", True)
         End Try
     End Sub
 
@@ -798,7 +846,7 @@ Public Class Main
             'If error, close lingering stream, log error message + INI Line number that threw error
             KillStream(xFileData)
             _error = ex.Message & strNL & "INI line: " & line
-            Log_MsgBox(_error, MsgBoxStyle.Critical, "Error loading settings INI file!", True)
+            Log_MsgBox(ex, _error, MsgBoxStyle.Critical, "Error loading settings INI file!", True)
         End Try        
 
         'Return success
@@ -819,9 +867,9 @@ Public Class Main
 
             'Save settings; if success, then display msgbox
             Dim success As Boolean = SaveSettings(ofdSaveSettings.FileName)
-            If success Then Log_MsgBox("Succesfully saved INI settings to " & ofdSaveSettings.FileName & "!", MsgBoxStyle.Information, "INI saved", True)
+            If success Then Log_MsgBox(Nothing, "Succesfully saved INI settings to " & ofdSaveSettings.FileName & "!", MsgBoxStyle.Information, "INI saved", True)
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btnSaveSettings_Click!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error in btnSaveSettings_Click!", True)
         End Try
     End Sub
 
@@ -881,7 +929,7 @@ Public Class Main
         Catch ex As Exception
             'Delete corrupted INI file if still exists onFailure
             KillStream(xFileData, True, _file)
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error loading settings INI file!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error loading settings INI file!", True)
         End Try
         Return Success
     End Function
@@ -925,17 +973,6 @@ Public Class Main
         chkEMusic.Enabled = chkAudio.Checked
     End Sub
 
-    '!@
-    ''' <summary>
-    ''' On settting chkLogFull.checked, throw msg saying feature unsupported
-    ''' </summary>
-    ''' <param name="sender"></param>
-    ''' <param name="e"></param>
-    ''' <remarks></remarks>
-    Private Sub chkLogFull_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkLogFull.CheckedChanged
-        If chkLogFull.Checked Then Log_MsgBox("Feature not yet implemented!", MsgBoxStyle.Exclamation, "Unsupported", True)
-    End Sub
-
     ''' <summary>
     ''' If the options have been filled in, enable elements in THP tab
     ''' </summary>
@@ -963,7 +1000,7 @@ Public Class Main
             If chkAudio.Checked Then My.Computer.Audio.Play(My.Resources.EagleSoft, AudioPlayMode.Background) 'Play "EagleSoft Ltd"
             About.ShowDialog()                                                          'Show the about box
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error with showing About box!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error with showing About box!", True)
         End Try
     End Sub
 
@@ -1034,7 +1071,7 @@ Public Class Main
     ''' <param name="e"></param>
     ''' <remarks>'!@ Not yet implemented!</remarks>
     Private Sub btnCmdline_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnCmdline.Click
-        Log_MsgBox("Not yet implemented", MsgBoxStyle.Exclamation, "Unsupported", True)
+        Log_MsgBox(Nothing, "Not yet implemented", MsgBoxStyle.Exclamation, "Unsupported", True)
     End Sub
 
     '===========================
@@ -1053,15 +1090,22 @@ Public Class Main
             Dim TtlPrg(2) As Single
             Dim CurPrg(2) As Single
 
-            Dim startInfo As ProcessStartInfo
-            startInfo = New ProcessStartInfo
+            'Dim startInfo As ProcessStartInfo
+            'startInfo = New ProcessStartInfo
+            Dim Envvar(1) As String             'Envvar array
+            Dim Envval(1) As String             'Corresponding value array
 
             'Bug info: https://forum.videohelp.com/threads/388189-ffplay-WASAPI-can-t-initialize-audio-client-error
             'If DirectSound option checked, set SDL_AUDIODRIVE = directsound. This is a workaround to a ffmpeg bug to allow audio
             If chkRip_DSound.Checked = True Then
                 'https://social.msdn.microsoft.com/Forums/vstudio/en-US/a18210d7-44f4-4895-8bcc-d3d1d26719e5/setting-environment-variable-from-vbnet?forum=netfxbcl
                 'set SDL_AUDIODRIVER=directsound
-                startInfo.EnvironmentVariables("SDL_AUDIODRIVER") = "directsound"
+                'startInfo.EnvironmentVariables("SDL_AUDIODRIVER") = "directsound"
+                Envvar(1) = "SDL_AUDIODRIVER"
+                Envval(1) = "directsound"
+            Else
+                Envvar = Nothing
+                Envval = Nothing
             End If
 
             'audio/video filter data
@@ -1099,7 +1143,7 @@ Public Class Main
             'Arguments
             Dim args As String
             'Shell process
-            Dim shell As Process
+            'Dim shell As Process
 
             Dim hasAudio As Boolean = THPHasAudio()
             If hasAudio = False Then
@@ -1121,13 +1165,14 @@ Public Class Main
                 args = file & " -vf " & strQUOT & "crop=" & w & ":" & h & ":" & x & ":" & y & ",select=between(n" & strBAK & "," & _start & strBAK & "," & _end & "),setpts=PTS-STARTPTS" & strQUOT
 
                 'Run the cmd+args
-                startInfo.FileName = cmd & args
-                startInfo.UseShellExecute = False
-                shell = New Process
-                shell.StartInfo = startInfo
-                shell.Start()
-                shell.WaitForExit()
-                shell.Close()
+                'startInfo.FileName = cmd & args
+                'startInfo.UseShellExecute = False
+                'shell = New Process
+                'shell.StartInfo = startInfo
+                'shell.Start()
+                'shell.WaitForExit()
+                'shell.Close()
+                RunProcess(cmd & args, Envvar, Envval)
 
                 'Max out prog bars
                 TtlPrg(0) += 1
@@ -1168,13 +1213,14 @@ Public Class Main
                 args = " -i " & file & " -y -an -vcodec h264 -vf " & strQUOT & "crop=" & w & ":" & h & ":" & x & ":" & y & ",select=between(n" & strBAK & "," & _start & strBAK & "," & _end & "),setpts=PTS-STARTPTS" & strQUOT & " " & file2
 
                 'Run the cmd+args
-                startInfo.FileName = cmd & args
-                startInfo.UseShellExecute = False
-                shell = New Process
-                shell.StartInfo = startInfo
-                shell.Start()
-                shell.WaitForExit()
-                shell.Close()
+                'startInfo.FileName = cmd & args
+                'startInfo.UseShellExecute = False
+                'shell = New Process
+                'shell.StartInfo = startInfo
+                'shell.Start()
+                'shell.WaitForExit()
+                'shell.Close()
+                RunProcess(cmd & args, Envvar, Envval)
 
                 'Step 2: Rip audio only as mp4 (FFMPEG)
                 'ffmpeg -i video.thp -vn -ss audio_Start -to audio_End audio.mp4                
@@ -1191,13 +1237,14 @@ Public Class Main
                 args = " -i " & file & " -y -vn -ss " & _aStart.ToString("G9") & " -to " & _aEnd.ToString("G9") & " " & file2
 
                 'Run the cmd+args
-                startInfo.FileName = cmd & args
-                startInfo.UseShellExecute = False
-                shell = New Process
-                shell.StartInfo = startInfo
-                shell.Start()
-                shell.WaitForExit()
-                shell.Close()
+                'startInfo.FileName = cmd & args
+                'startInfo.UseShellExecute = False
+                'shell = New Process
+                'shell.StartInfo = startInfo
+                'shell.Start()
+                'shell.WaitForExit()
+                'shell.Close()
+                RunProcess(cmd & args, Envvar, Envval)
 
                 'Step 3: Merge both mp4 streams (FFMPEG)
                 'ffmpeg -i video.mp4 -i audio.mp4 -c:v copy -c:a copy temp.mp4
@@ -1213,14 +1260,14 @@ Public Class Main
                 file3 = strQUOT & txtFFPlayTemp.Text & strPATHSEP & "temp.mp4" & strQUOT        'Output final video file: "C:\FFPlayWorkDir\temp.mp4"
                 args = " -i " & file & " -i " & file2 & " -y -c:v copy -c:a copy " & file3  'Args: -i video_input -i audio_input -c:v copy -c:a copy output_file
 
-                startInfo.FileName = cmd & args
-                startInfo.UseShellExecute = False
-                shell = New Process
-                shell.StartInfo = startInfo
-                shell.Start()
-                shell.WaitForExit()
-                shell.Close()
-
+                'startInfo.FileName = cmd & args
+                'startInfo.UseShellExecute = False
+                'shell = New Process
+                'shell.StartInfo = startInfo
+                'shell.Start()
+                'shell.WaitForExit()
+                'shell.Close()
+                RunProcess(cmd & args, Envvar, Envval)
 
                 'Step 4: playback final video
                 'ffplay.exe "temp.mp4"
@@ -1234,13 +1281,14 @@ Public Class Main
                 cmd = strQUOT & txtFFMPEG.Text & strPATHSEP & exeFPlay & strQUOT                'FFPlay command: "C:\FDIR\ffplay.exe"
                 file = " " & strQUOT & txtFFPlayTemp.Text & strPATHSEP & "temp.mp4" & strQUOT   'Playback file: "C:\FFPlayWorkDir\temp.mp4"
 
-                startInfo.FileName = cmd & file
-                startInfo.UseShellExecute = False
-                shell = New Process
-                shell.StartInfo = startInfo
-                shell.Start()
-                shell.WaitForExit()
-                shell.Close()
+                'startInfo.FileName = cmd & file
+                'startInfo.UseShellExecute = False
+                'shell = New Process
+                'shell.StartInfo = startInfo
+                'shell.Start()
+                'shell.WaitForExit()
+                'shell.Close()
+                RunProcess(cmd & file, Envvar, Envval)
 
                 TtlPrg(0) += 1
                 UpdateProg_Ttl(TtlPrg, "Done!")
@@ -1248,7 +1296,7 @@ Public Class Main
                 UpdateProg_Cur(CurPrg, "Edited THP video succesfully played back!", True, True)
             End If
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error during playback!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error during playback!", True)
         End Try
 
         'Cleanup temp playback files
@@ -1303,7 +1351,7 @@ Public Class Main
                 UpdateProg_Cur(CurPrg, track_stringE, False, True)
             End If
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "CleanUp_Playback error!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "CleanUp_Playback error!", True)
         End Try
     End Sub
 
@@ -1322,6 +1370,9 @@ Public Class Main
             Dim CurPrg(2) As Single
             'Text reg for prog msg
             Dim Text As String = ""
+
+            Dim envvar(1) As String                             'Envvar array
+            Dim envval(1) As String                             'Corresponding value array
 
             Dim inFile As String = txtRoot.Text & cmbTHP.Text   'Input file. C:\PathToTHP\DIRtoTHP\file.thp"
             Dim initDir As String = FileDir(inFile)             'Initial directory. Directory of inFile
@@ -1401,15 +1452,16 @@ Public Class Main
             cmd &= " -y -i " & strQUOT & inFile & strQUOT & " -vcodec h264 -filter:v " & strQUOT & "crop=" & w & ":" & h & ":" & x & ":" & y & strQUOT & " " & strQUOT & tempFile & strQUOT
 
             'Run the cmd
-            Dim startInfo As ProcessStartInfo
-            startInfo = New ProcessStartInfo
-            startInfo.FileName = cmd
-            startInfo.UseShellExecute = False
-            Dim shell As Process
-            shell = New Process
-            shell.StartInfo = startInfo
-            shell.Start()
-            shell.WaitForExit()
+            'Dim startInfo As ProcessStartInfo
+            'startInfo = New ProcessStartInfo
+            'startInfo.FileName = cmd
+            'startInfo.UseShellExecute = False
+            'Dim shell As Process
+            'shell = New Process
+            'shell.StartInfo = startInfo
+            'shell.Start()
+            'shell.WaitForExit()
+            RunProcess(cmd)
             CurPrg(0) += 1
             UpdateProg_Cur(CurPrg, "Temp, physically cropped MP4 video created!", False, True)
 
@@ -1425,13 +1477,14 @@ Public Class Main
             cmd &= " " & strQUOT & outFile & strQUOT
 
             'Run the cmd
-            startInfo = New ProcessStartInfo
-            startInfo.FileName = cmd
-            startInfo.UseShellExecute = False
-            shell = New Process
-            shell.StartInfo = startInfo
-            shell.Start()
-            shell.WaitForExit()
+            'startInfo = New ProcessStartInfo
+            'startInfo.FileName = cmd
+            'startInfo.UseShellExecute = False
+            'shell = New Process
+            'shell.StartInfo = startInfo
+            'shell.Start()
+            'shell.WaitForExit()
+            RunProcess(cmd)
             CurPrg(0) += 1
             UpdateProg_Cur(CurPrg, "Final, time cropped MP4 video created!", False, True)
 
@@ -1448,7 +1501,12 @@ Public Class Main
                 'If DirectSound checked, do SDL driver workaround
                 If chkRip_DSound.Checked = True Then
                     'set SDL_AUDIODRIVER=directsound
-                    startInfo.EnvironmentVariables("SDL_AUDIODRIVER") = "directsound"
+                    'startInfo.EnvironmentVariables("SDL_AUDIODRIVER") = "directsound"
+                    envvar(1) = "SDL_AUDIODRIVER"
+                    envval(1) = "directsound"
+                Else
+                    envvar = Nothing
+                    envval = Nothing
                 End If
 
                 'ffmpeg.exe -y -i video.thp -vn -ss audio_Start -to audio_End "C:\OutputDir\file.wav" 
@@ -1462,172 +1520,218 @@ Public Class Main
                 cmd &= strQUOT & outPath & FileAndExt(inFile).Replace(".thp", ".wav") & strQUOT
 
                 'Run the cmd
-                startInfo.FileName = cmd
-                shell.StartInfo = startInfo
-                shell.Start()
-                shell.WaitForExit()
+                'startInfo.FileName = cmd
+                'Shell.StartInfo = startInfo
+                'Shell.Start()
+                'Shell.WaitForExit()
+                RunProcess(cmd, envvar, envval)
                 CurPrg(0) += 1
             Else
                 UpdateProg_Cur(CurPrg, "Video does NOT have an audio stream!", True, False)
                 CurPrg(0) += 1
             End If
-            UpdateProg_Cur(CurPrg, "Audio stream extraction done!", False, True)
+                UpdateProg_Cur(CurPrg, "Audio stream extraction done!", False, True)
 
-            'Step 4: If ripping dummy ctrl frames, convert the cropped MP4 file (cropped to the ctrl area) to bmp frames, keep only 1st frame for each multiplicity
-            CurPrg(0) = 0
-            TtlPrg(0) += 1
-            UpdateProg_Ttl(TtlPrg, "Step 4: If ripping dummy ctrl frames, convert the cropped MP4 file (cropped to the ctrl area) to bmp frames, keep only 1st frame for each multiplicity.")
-            If type = True Then
-                Dim m As Byte = TryParseErr_Byte(txtVM_M.Text)             '0-based multiplicity value
-                m -= 1
-
-                'If ripping dummy ctrl frames.
-                'Convert the cropped MP4 file (cropped to the ctrl area) to bmp frames ("dummyTemp_%0Nd.bmp"),
-                'Keep only 1st frame for each multiplicty, rename to "dummy_N.bmp", delete excess frames
-
-                'Set max current progress to 2 + # of mults
-                CurPrg(1) = 2 + m
-                Text = "Video HAS dummy frames!" & strNL & "Ripping all bmp frames..."
-                UpdateProg_Cur(CurPrg, Text, True, False)
-
-                '"C:\FFMPegPath\FFMPEG.exe" -y 
-                cmd = strQUOT & txtFFMPEG.Text & strPATHSEP & exeFMPeg & strQUOT & " -y "
-
-                'Output ctrl MP4 to .bmp frames
-                Dim d As String = ""                                                    'Printf digit formatter thingy (pad to N digits)
-                Dim dgs As UShort = 0                                                   'Amount of digits for printf formatter thingy            
-                dgs = TryParseErr_UShort(txtVF_T.Text.Length)                           'Set digits to the amount of digits for the total amount of frames in the video
-                d = "%0" & dgs.ToString() & "d"                                         'Set the printf digit formatter to "dgs" digits
-                cmd &= "-i " & strQUOT & outFile & strQUOT                              '-i "C:\OutputDir\file.mp4"
-
-                '"C:\OutputDir\dummyTemp_%0Nd.bmp"
-                file = strQUOT & FileDir(outFile) & "dummyTemp_" & d & ".bmp" & strQUOT
-                cmd &= " " & file
-
-                'Run cmd
-                startInfo.FileName = cmd
-                shell.StartInfo = startInfo
-                shell.Start()
-                shell.WaitForExit()
-                UpdateProg_Cur(CurPrg, "All BMP frames ripped!", False, True)
-                UpdateProg_Cur(CurPrg, "Finding and keeping appropriate BMP frames...")
-
-                'Rename the appropriate frames to "dummy_N.bmp", remove the others 
-                Dim i As Byte = 0                           'Generic iterator
-                Dim j As UShort = 0                         'Frame value
-                Dim frames As UShort = TryParseErr_UShort(txtVF_S.Text)    'The amount of frames per subvideo                
-
-                'Iterate through the mults (0-based)
-                For i = 0 To m Step 1
-                    CurPrg(0) += 1                                      'Increment current prog foreach mult
-                    Text = "Mult " & (i + 1).ToString()                 'Log "Mult M"
-                    UpdateProg_Cur(CurPrg, Text)
-
-                    j = i * frames                                      'Frame ID = multiplicity ID * amount of frames. This gets 1st frame for each multplicity.
-                    j += 1                                              'Make FrameID 1-based
-                    d = "_" & j.ToString(StrDup(dgs, "0")) & ".bmp"     'Set d as the frame ID string "_%0Nd.bmp"
-                    file = "dummy_" & (i + 1).ToString() & ".bmp"       'File = "dummy_N.bmp"
-
-                    'Move file "C:\OutputDir\dummyTemp_ID.bmp" to "C:\OutputDir\dummy_N.bmp"
-                    file = FileDir(outFile) & FileAndExt(file)          'File = "C:\OutputDir\dummy_N.bmp"
-                    file2 = FileDir(outFile) & "dummyTemp" & d          'File2 = "C:\OutputDir\dummyTemp_ID.bmp"
-                    My.Computer.FileSystem.MoveFile(file2, file, True)
-                Next i
-
-                CurPrg(0) = CurPrg(1)
-                UpdateProg_Cur(CurPrg, "All appropriate BMP frames found and kept!", False, True)
-
-                'Step 5: Cleanup temporary files (Delete all extra "dummyTemp_%0Nd.bmp" files)
-                TtlPrg(0) += 1
+                'Step 4: If ripping dummy ctrl frames, convert the cropped MP4 file (cropped to the ctrl area) to bmp frames, keep only 1st frame for each multiplicity
                 CurPrg(0) = 0
-                CurPrg(1) = 1
-                UpdateProg_Ttl(TtlPrg, "Step 5: Cleanup temporary files")
-                UpdateProg_Cur(CurPrg, "", True, False)
-                file = FileDir(outFile)                                                         'file = C:\WorkingDir
-                file2 = "dummyTemp*.bmp"                                                        'file2 = dummyTemp*.bmp
-                DeleteFilesFromFolder(file, file2, True, "Cleaning up files...", True, False)   'Delete files (with logging)
-            Else
-                CurPrg(1) = 1
-                Text = "Video does NOT have dummy frames!" & strNL
-                UpdateProg_Cur(CurPrg, Text, True, False)
-                CurPrg(0) += 1
-                UpdateProg_Cur(CurPrg, "Dummy frame extraction done!", False, True)
-
                 TtlPrg(0) += 1
-                UpdateProg_Ttl(TtlPrg, "Step 5: Cleanup temporary files")
-            End If
+                UpdateProg_Ttl(TtlPrg, "Step 4: If ripping dummy ctrl frames, convert the cropped MP4 file (cropped to the ctrl area) to bmp frames, keep only 1st frame for each multiplicity.")
+                If type = True Then
+                    Dim m As Byte = TryParseErr_Byte(txtVM_M.Text)             '0-based multiplicity value
+                    m -= 1
 
-            'Delete temp.mp4
-            DeleteFilesFromFolder(FileDir(outFile), "temp.mp4")
-            TtlPrg(0) = TtlPrg(1)
-            CurPrg(0) = CurPrg(1)
-            UpdateProg_Ttl(TtlPrg, "Done!")
-            UpdateProg_Cur(CurPrg, "Cleanup done!", True, True)
+                    'If ripping dummy ctrl frames.
+                    'Convert the cropped MP4 file (cropped to the ctrl area) to bmp frames ("dummyTemp_%0Nd.bmp"),
+                    'Keep only 1st frame for each multiplicty, rename to "dummy_N.bmp", delete excess frames
 
-            'Thwimp kicks dat Koopa shell away!
-            shell.Close()
-            If chkAudio.Checked Then My.Computer.Audio.Play(My.Resources.success, AudioPlayMode.Background)
-            Log_MsgBox("Video ripped!", MsgBoxStyle.Information, "Success!", True)
+                    'Set max current progress to 2 + # of mults
+                    CurPrg(1) = 2 + m
+                    Text = "Video HAS dummy frames!" & strNL & "Ripping all bmp frames..."
+                    UpdateProg_Cur(CurPrg, Text, True, False)
+
+                    '"C:\FFMPegPath\FFMPEG.exe" -y 
+                    cmd = strQUOT & txtFFMPEG.Text & strPATHSEP & exeFMPeg & strQUOT & " -y "
+
+                    'Output ctrl MP4 to .bmp frames
+                    Dim d As String = ""                                                    'Printf digit formatter thingy (pad to N digits)
+                    Dim dgs As UShort = 0                                                   'Amount of digits for printf formatter thingy            
+                    dgs = TryParseErr_UShort(txtVF_T.Text.Length)                           'Set digits to the amount of digits for the total amount of frames in the video
+                    d = "%0" & dgs.ToString() & "d"                                         'Set the printf digit formatter to "dgs" digits
+                    cmd &= "-i " & strQUOT & outFile & strQUOT                              '-i "C:\OutputDir\file.mp4"
+
+                    '"C:\OutputDir\dummyTemp_%0Nd.bmp"
+                    file = strQUOT & FileDir(outFile) & "dummyTemp_" & d & ".bmp" & strQUOT
+                    cmd &= " " & file
+
+                    'Run cmd
+                'startInfo.FileName = cmd
+                'Shell.StartInfo = startInfo
+                'Shell.Start()
+                'Shell.WaitForExit()
+                RunProcess(cmd)
+                    UpdateProg_Cur(CurPrg, "All BMP frames ripped!", False, True)
+                    UpdateProg_Cur(CurPrg, "Finding and keeping appropriate BMP frames...")
+
+                    'Rename the appropriate frames to "dummy_N.bmp", remove the others 
+                    Dim i As Byte = 0                           'Generic iterator
+                    Dim j As UShort = 0                         'Frame value
+                    Dim frames As UShort = TryParseErr_UShort(txtVF_S.Text)    'The amount of frames per subvideo                
+
+                    'Iterate through the mults (0-based)
+                    For i = 0 To m Step 1
+                        CurPrg(0) += 1                                      'Increment current prog foreach mult
+                        Text = "Mult " & (i + 1).ToString()                 'Log "Mult M"
+                        UpdateProg_Cur(CurPrg, Text)
+
+                        j = i * frames                                      'Frame ID = multiplicity ID * amount of frames. This gets 1st frame for each multplicity.
+                        j += 1                                              'Make FrameID 1-based
+                        d = "_" & j.ToString(StrDup(dgs, "0")) & ".bmp"     'Set d as the frame ID string "_%0Nd.bmp"
+                        file = "dummy_" & (i + 1).ToString() & ".bmp"       'File = "dummy_N.bmp"
+
+                        'Move file "C:\OutputDir\dummyTemp_ID.bmp" to "C:\OutputDir\dummy_N.bmp"
+                        file = FileDir(outFile) & FileAndExt(file)          'File = "C:\OutputDir\dummy_N.bmp"
+                        file2 = FileDir(outFile) & "dummyTemp" & d          'File2 = "C:\OutputDir\dummyTemp_ID.bmp"
+                        My.Computer.FileSystem.MoveFile(file2, file, True)
+                    Next i
+
+                    CurPrg(0) = CurPrg(1)
+                    UpdateProg_Cur(CurPrg, "All appropriate BMP frames found and kept!", False, True)
+
+                    'Step 5: Cleanup temporary files (Delete all extra "dummyTemp_%0Nd.bmp" files)
+                    TtlPrg(0) += 1
+                    CurPrg(0) = 0
+                    CurPrg(1) = 1
+                    UpdateProg_Ttl(TtlPrg, "Step 5: Cleanup temporary files")
+                    UpdateProg_Cur(CurPrg, "", True, False)
+                    file = FileDir(outFile)                                                         'file = C:\WorkingDir
+                    file2 = "dummyTemp*.bmp"                                                        'file2 = dummyTemp*.bmp
+                    DeleteFilesFromFolder(file, file2, True, "Cleaning up files...", True, False)   'Delete files (with logging)
+                Else
+                    CurPrg(1) = 1
+                    Text = "Video does NOT have dummy frames!" & strNL
+                    UpdateProg_Cur(CurPrg, Text, True, False)
+                    CurPrg(0) += 1
+                    UpdateProg_Cur(CurPrg, "Dummy frame extraction done!", False, True)
+
+                    TtlPrg(0) += 1
+                    UpdateProg_Ttl(TtlPrg, "Step 5: Cleanup temporary files")
+                End If
+
+                'Delete temp.mp4
+                DeleteFilesFromFolder(FileDir(outFile), "temp.mp4")
+                TtlPrg(0) = TtlPrg(1)
+                CurPrg(0) = CurPrg(1)
+                UpdateProg_Ttl(TtlPrg, "Done!")
+                UpdateProg_Cur(CurPrg, "Cleanup done!", True, True)
+
+                'Thwimp kicks dat Koopa shell away!
+            'Shell.Close()
+                If chkAudio.Checked Then My.Computer.Audio.Play(My.Resources.success, AudioPlayMode.Background)
+                Log_MsgBox(Nothing, "Video ripped!", MsgBoxStyle.Information, "Success!", True)
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error during ripping!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error during ripping!", True)
         End Try
     End Sub
 
-    '!@ WIP
     ''' <summary>
-    ''' 
+    ''' Runs a process, with full logging of output (esp FFMPEG)
     ''' </summary>
-    ''' <param name="cmd"></param>
-    ''' <param name="envvar"></param>
-    ''' <param name="envval"></param>
-    ''' <param name="Special"></param>
-    ''' <param name="shell"></param>
-    ''' <param name="outputBuff"></param>
-    ''' <remarks></remarks>
-    'Private Sub RunProcess(ByVal cmd As String, Optional ByRef envvar() As String = Nothing, Optional ByRef envval() As String = Nothing, Optional ByVal Special As Boolean = False, Optional ByRef shell As Process = Nothing, Optional ByRef outputBuff As StreamReader = Nothing)
-    '    Try
-    '        Dim full As Boolean = chkLogFull.Checked
-    '        Dim startInfo As ProcessStartInfo
-    '        startInfo = New ProcessStartInfo
+    ''' <param name="cmd">Cmd to run</param>
+    ''' <param name="envvar">Array of envvars (optional; if none, nothing)</param>
+    ''' <param name="envval">Array of envvals (optional; if none, nothing)</param>
+    ''' <param name="Special">Special callback? (Optional, false)</param>
+    ''' <param name="shell2">Shell byref (optional; nothing)</param>
+    ''' <remarks>FFMPEG Capture: https://www.codeproject.com/Questions/492381/StartInfo-RedirectStandardOutp</remarks>
+    Private Sub RunProcess(ByVal cmd As String, Optional ByRef envvar() As String = Nothing, Optional ByRef envval() As String = Nothing, Optional ByVal Special As Boolean = False, Optional ByRef shell As Process = Nothing, Optional ByVal workDir As String = "")
+        Const _CMD As String = "cmd.exe"                                        'Command prompt exe name
+        Dim logg = ""                                                           'Redirected log text
+        Dim xFileData As StreamReader = Nothing                                 'StreamReader for temp log file
+        Dim _file As String = txtDataDir.Text & strPATHSEP & TEMPFLOG           'Templog file (C:\WordDir\full_log.txt)
+        Try
+            'If eitehr envvar or envval array refs are null, then created new 1D array with string.empty
+            If IsNothing(envvar) = True Then
+                ReDim envvar(1)
+                envvar(1) = ""
+            End If
+            If IsNothing(envval) = True Then
+                ReDim envval(1)
+                envval(1) = ""
+            End If
 
-    '        If ((IsNothing(envvar) = False) And (IsNothing(envval) = False)) Then
-    '            If envvar.Count <> envval.Count Then Throw New System.Exception("Dictionary size mismatch for Envvar/val pairs!")
-    '            Dim i As Byte = 1
-    '            Dim max As Byte = envval.Count()
-    '            max -= 1
-    '            For i = 0 To max
-    '                startInfo.EnvironmentVariables(envvar(i)) = envval(i)
-    '            Next i
-    '        End If
-    '        startInfo.FileName = cmd
-    '        startInfo.UseShellExecute = False
-    '        If full Then
-    '            startInfo.ErrorDialog = False
-    '            startInfo.RedirectStandardOutput = True
-    '        End If
-    '        shell = New Process
-    '        shell.StartInfo = startInfo
-    '        shell.Start()
-    '        If full Then outputBuff = shell.StandardOutput
-    '        If Special = False Then
-    '            shell.WaitForExit()
-    '            If full Then
-    '                Log(outputBuff.ReadToEnd, MsgBoxStyle.Information)
-    '                outputBuff.Close()
-    '                outputBuff.Dispose()
-    '                outputBuff = Nothing
-    '            End If
-    '        End If
-    '    Catch ex As System.Exception
-    '        Dim text As String = ex.Message
-    '        text &= strNL & strNL & "arguments:" & strNL & strNL
-    '        text &= "cmd: " & cmd & strNL
-    '        text &= "specialCawback: " & Special.ToString() & strNL
-    '        text &= "envars: " & envvar.ToString & strNL
-    '        text &= "envals: " & envval.ToString & strNL
-    '        Log_MsgBox(text, MsgBoxStyle.Critical, "RunProcess cmdline error!", True)
-    '    End Try
-    'End Sub
+            Dim full As Boolean = chkLogFull.Checked                                        'Full error logging?
+            Dim arg As String = "/c " & strQUOT & cmd & strQUOT                             'Cmd.exe argument. Std is cmd.exe /c "[cmds}"
+
+            'StartInfo
+            Dim startInfo As ProcessStartInfo
+            startInfo = New ProcessStartInfo(_CMD)                                          'Create new Cmd.exe process
+            If workDir <> "" Then startInfo.WorkingDirectory = workDir
+
+            'If full logging AND not special flag, then cmd.exe /c "[cmds] 1>temp_file 2>&1" for proper redirection
+            'https://stackoverflow.com/a/20789248
+            If full Then
+                If Special = False Then
+                    arg = "/c " & strQUOT & cmd & " 1>" & strQUOT & _file & strQUOT & " 2>&1" & strQUOT
+                    startInfo.CreateNoWindow = True                                         'Disable annoying window
+                    Log(strNL & strNL & _CMD & " " & arg, MsgBoxStyle.Information, False)   'Log the command
+                End If
+            End If
+            startInfo.Arguments = arg                                                       'Set the args
+
+            'Setup envvar/val pairs if exist
+            'Make sure matching dictionary for var/values; else throw error
+            If envvar.Count <> envval.Count Then Throw New System.Exception("Dictionary size mismatch for Envvar/val pairs!")
+            Dim i As Byte = 1                   'Generic iterator
+            Dim max As Byte = envval.Count()    'Max amount of pairs
+            max -= 1                            '0-based
+            'Iterate between all pairs, set variable to value
+            For i = 0 To max
+                If envvar(i) <> "" And envval(i) <> "" Then
+                    startInfo.EnvironmentVariables(envvar(i)) = envval(i)
+                End If
+            Next i
+            'startInfo.FileName = cmd                                                       'Setup cmd
+            startInfo.UseShellExecute = False                                               'DON'T use shell
+
+            'Setup the shell process, run it
+            If IsNothing(shell) Then shell = New Process()
+            shell.StartInfo = startInfo
+            shell.Start()
+
+            'if NOT special flag, then waitforexit, and then log temp file to the log
+            If Special = False Then
+                shell.WaitForExit()
+                If full Then
+                    xFileData = File.OpenText(_file)                                    'Open temp file as streamreader
+                    logg = xFileData.ReadToEnd()                                        'Read it all into logg
+                    logg &= (strNL & strNL)                                             'Append CRFL CRLF
+                    KillStream(xFileData, True, _file)                                  'Kill streamreader
+                    Log(logg, Microsoft.VisualBasic.MsgBoxStyle.Information, False)     'Log it!
+                End If
+                shell.Close()
+                shell.Dispose()
+                shell = Nothing
+            End If
+            'If special flag, then you'll manually need to handle stdout redir and shell (returned ByRef) OUTSIDE of func
+        Catch ex As System.Exception
+            'If error, kill streamreader, and shell2
+            KillStream(xFileData, True, _file)
+            If IsNothing(shell) = False And Special = False Then
+                shell.Close()
+                shell.Dispose()
+                shell = Nothing
+            End If
+
+            'Log cmdline stuff
+            Dim text As String = ex.Message
+            text &= strNL & strNL & "Arguments:" & strNL & strNL
+            text &= "cmd: " & cmd & strNL
+            text &= "specialCawback: " & Special.ToString() & strNL
+            text &= "envars: " & envvar.ToString & strNL
+            text &= "envals: " & envval.ToString & strNL
+            text &= "workdir: " & workDir.ToString & strNL
+            Log_MsgBox(ex, text, MsgBoxStyle.Critical, "RunProcess cmdline error!", True)
+        End Try
+    End Sub
 
     ''' <summary>
     ''' Keeps txtTD_CX in range for total vid width
@@ -1730,7 +1834,7 @@ Public Class Main
             nudTD_M.Value = 0
             nudTD_M_ChangeMe()
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in HandleRipTimeMasks()!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error in HandleRipTimeMasks()!", True)
         End Try
     End Sub
 
@@ -1817,7 +1921,7 @@ Public Class Main
             smax = _end - 1
             txtTD_FS.Text = KeepInRange(txtTD_FS.Text, smin, smax)      'Set string within numeric range
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in txtTD_FS_Validated!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error in txtTD_FS_Validated!", True)
         End Try
     End Sub
 
@@ -1839,7 +1943,7 @@ Public Class Main
             emin = _start + 1
             txtTD_FE.Text = KeepInRange(txtTD_FE.Text, emin, emax)      'Set string within numeric range
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in txtTD_FE_Validated!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error in txtTD_FE_Validated!", True)
         End Try
     End Sub
 
@@ -1952,7 +2056,7 @@ Public Class Main
             txtTD_CW.Text = size.width.ToString()
             txtTD_CH.Text = size.height.ToString()
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in HandleTimeFrameCell()!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error in HandleTimeFrameCell()!", True)
         End Try
     End Sub
 
@@ -2023,7 +2127,7 @@ Public Class Main
                 If nudTD_M.Value <> 0 Then suffix = "_" & TryParseErr_Byte(nudTD_M.Value)
             End If
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in GetCellFrameName()!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error in GetCellFrameName()!", True)
         End Try
         nameResult = nameResult & suffix
         Return nameResult
@@ -2142,6 +2246,7 @@ Public Class Main
         'ffmpeg -i opening.mkv -i episode.mkv -i ending.mkv -filter_complex concat output.mkv"
 
         'Show ofdOutput, let user select the working directory with the input files
+        Dim shell As Process = New Process()
         Try
             If ofdOutput.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
 
@@ -2153,11 +2258,11 @@ Public Class Main
             'Generic text register
             Dim text As String
 
-            Dim startInfo As ProcessStartInfo
-            startInfo = New ProcessStartInfo
-            startInfo.UseShellExecute = False
-            Dim shell As Process
-            shell = New Process
+            'Dim startInfo As ProcessStartInfo
+            'startInfo = New ProcessStartInfo
+            'startInfo.UseShellExecute = False
+            'Dim shell As Process
+            'shell = New Process
 
             Dim path As String = ofdOutput.SelectedPath         'The working directory with our input files.
             Dim filename As String = FileAndExt(cmbTHP.Text)    '"filename.thp" we want to create
@@ -2259,17 +2364,18 @@ Public Class Main
                     cmd &= (" " & file)                                                                                     ' "C:\WorkingDir\out.mp4"
 
                     'Run cmd
-                    startInfo.FileName = cmd
-                    shell.StartInfo = startInfo
-                    shell.Start()
-                    shell.WaitForExit()
+                    'startInfo.FileName = cmd
+                    'shell.StartInfo = startInfo
+                    'shell.Start()
+                    'shell.WaitForExit()
+                    RunProcess(cmd)
 
                     'Cleanup all of the BMP frames
                     CleanUp(path, filename, r, c, m, hasPad, True)
                 Else
                     UpdateProg_Cur(CurPrg, "Step 0: Video does NOT have padding for this multiplicity; skip")
                 End If
-                shell.Close()
+                'shell.Close()
                 CurPrg(0) += 1
 
                 'Do step 1
@@ -2309,13 +2415,14 @@ Public Class Main
                     End If
 
                     'Run cmd
-                    startInfo.FileName = cmd
-                    shell.StartInfo = startInfo
-                    shell.Start()
-                    shell.WaitForExit()
+                    'startInfo.FileName = cmd
+                    'shell.StartInfo = startInfo
+                    'shell.Start()
+                    'shell.WaitForExit()
+                    RunProcess(cmd)
                     CurPrg(0) += 1
                 Next j
-                shell.Close()
+                'shell.Close()
 
                 'Do Step 2
                 'Iterate through columns 1 to C                
@@ -2331,13 +2438,14 @@ Public Class Main
 
                     '"-filter complex trim=start_frame=X:end_frame=Y" only renders frames X-Y for a video
                     'Run cmd
-                    startInfo.FileName = cmd
-                    shell.StartInfo = startInfo
-                    shell.Start()
-                    shell.WaitForExit()
+                    'startInfo.FileName = cmd
+                    'shell.StartInfo = startInfo
+                    'shell.Start()
+                    'shell.WaitForExit()
+                    RunProcess(cmd)
                     CurPrg(0) += 1
                 Next j
-                shell.Close()
+                'shell.Close()
 
                 'Do Step 3
                 UpdateProg_Cur(CurPrg, "Step 3: Combine each giant, frame-limited column (dN.mp4) into a near-final composite video for this multiplicity (m" & k.ToString() & ".mp4) . Do for all columns (" & c.ToString() & " " & Plural(c, "column", "columns") & ")")
@@ -2369,11 +2477,12 @@ Public Class Main
                 End If
 
                 'Run cmd
-                startInfo.FileName = cmd
-                shell.StartInfo = startInfo
-                shell.Start()
-                shell.WaitForExit()
-                shell.Close()
+                'startInfo.FileName = cmd
+                'shell.StartInfo = startInfo
+                'shell.Start()
+                'shell.WaitForExit()
+                'shell.Close()
+                RunProcess(cmd)
                 CurPrg(0) += 1
                 UpdateProg_Cur(CurPrg, "Step 4: Repeat Steps 1-3 for each multiplicity")
             Next k  'Do Step 4
@@ -2403,17 +2512,18 @@ Public Class Main
                     '0-based file index = "mN.mp4", where "N" is 1-based
                     Files(k - 1) = "m" & k.ToString() & ".mp4"
                 Next k
-                WriteTxtFile(path, Files)                                                                           'Write file list (File.txt) to WorkingDir
+                WriteTxtFile(path, Files)                                                                               'Write file list (File.txt) to WorkingDir
                 file = strQUOT & path & strPATHSEP & "File.txt" & strQUOT                                               'That file is located at "C:\WorkingDir\File.Txt"
                 cmd &= file & " -vcodec h264 " & strQUOT & path & strPATHSEP & filename & ".mp4" & strQUOT '"C:\WorkingDir\File.Txt" -vcodec h264 "C:\WorkingDir\filename.mp4"
 
                 'Run cmd
-                startInfo.FileName = cmd
-                startInfo.WorkingDirectory = path
-                shell.StartInfo = startInfo
-                shell.Start()
-                shell.WaitForExit()
-                shell.Close()
+                'startInfo.FileName = cmd
+                'startInfo.WorkingDirectory = path
+                'shell.StartInfo = startInfo
+                'shell.Start()
+                'shell.WaitForExit()
+                'shell.Close()
+                RunProcess(cmd, , , , , path)
             Else
                 'If video has no multiplicity, just copy "C:\WorkingDir\m1.mp4" to "C:\WorkingDir\filename.mp4"
                 UpdateProg_Cur(CurPrg, "Video does NOT have multiplicity! Use 1st/only multiplicity as near-final composite video...", True, False)
@@ -2456,12 +2566,13 @@ Public Class Main
                     cmd &= file & " -vcodec h264 " & strQUOT & path & strPATHSEP & "dummy.mp4" & strQUOT   '"C:\WorkingDir\File.Txt" -vcodec h264 "C:\WorkingDir\dummy.mp4"
 
                     'Run cmd
-                    startInfo.FileName = cmd
-                    startInfo.WorkingDirectory = path
-                    shell.StartInfo = startInfo
-                    shell.Start()
-                    shell.WaitForExit()
-                    shell.Close()
+                    'startInfo.FileName = cmd
+                    'startInfo.WorkingDirectory = path
+                    'shell.StartInfo = startInfo
+                    'shell.Start()
+                    'shell.WaitForExit()
+                    'shell.Close()
+                    RunProcess(cmd, , , , , path)
                 Else
                     'If no multiplicity, copy "C:\WorkingDir\dummy_1.mp4" to "C:\WorkingDir\dummy.mp4"
                     UpdateProg_Cur(CurPrg, "Video does NOT have multiplicity; just use only dummy video (dummy_1.mp4) as compositie (dummy.mp4)")
@@ -2490,11 +2601,12 @@ Public Class Main
                 cmd &= file                                                             ' -i "C:\WorkingDir\dummy.mp4 -filter_complex vstack -vcodec h264 "C:\WorkingDir\final.mp4""
 
                 'Run cmd
-                startInfo.FileName = cmd
-                shell.StartInfo = startInfo
-                shell.Start()
-                shell.WaitForExit()
-                shell.Close()
+                'startInfo.FileName = cmd
+                'shell.StartInfo = startInfo
+                'shell.Start()
+                'shell.WaitForExit()
+                'shell.Close()
+                RunProcess(cmd)
 
                 'MoveFile("C:\WorkingDir\final.mp4"->"C:\WorkingDir\filename.mp4")
                 file = path & strPATHSEP & "final.mp4"
@@ -2542,11 +2654,12 @@ Public Class Main
             cmd &= "-i " & file                                                             '-i "C:\WorkingDir\filename.mp4"
             file = strQUOT & path & strPATHSEP & "frame_%0" & i.ToString() & "d.bmp" & strQUOT
             cmd &= " " & file                                                               ' "C:\WorkingDir\frame_%0Nd.bmp"
-            'Run cmd
-            startInfo.FileName = cmd
-            shell.StartInfo = startInfo
-            shell.Start()
 
+            'Run cmd
+            'startInfo.FileName = cmd
+            'shell.StartInfo = startInfo
+            'shell.Start()
+            RunProcess(cmd, Nothing, Nothing, True, shell)
             'shell.WaitForExit()
             'Loop while cmd is still running
             While shell.HasExited = False
@@ -2556,6 +2669,8 @@ Public Class Main
                 UpdateProg_Cur(CurPrg)
             End While
             shell.Close()
+            shell.Dispose()
+            shell = Nothing
             CurPrg(0) = CurPrg(1)
             UpdateProg_Cur(CurPrg, "All BMP frames ripped!", False, True)
 
@@ -2571,10 +2686,15 @@ Public Class Main
             If success = False Then Throw New System.Exception("Irfanview INI hack failed!")
             CurPrg(0) = CurPrg(1)
             UpdateProg_Cur(CurPrg, "Irfanview INI hack successful!", False, True)
-            Log_MsgBox("Disabled Progressive JPG for conversions!", MsgBoxStyle.Information, "Irfanview settings INI Hack successful!")
+            Log_MsgBox(Nothing, "Disabled Progressive JPG for conversions!", MsgBoxStyle.Information, "Irfanview settings INI Hack successful!")
 
 
             'Do Step 8.2: Convert .bmp frames to .jpg frames            
+            Dim startInfo As ProcessStartInfo
+            startInfo = New ProcessStartInfo
+            startInfo.UseShellExecute = False
+            shell = New Process()
+
             TtlPrg(0) += 1
             cnt = TryParseErr_Byte(txtTE_D.Text)                                                    'Get amount of digits            
             j = CountFilesFromFolder(path, "frame_*.bmp")                                           'Count amount of BMP frames
@@ -2583,7 +2703,7 @@ Public Class Main
             UpdateProg_Cur(CurPrg)
             UpdateProg_Ttl(TtlPrg, "Step 8.2: Convert BMP frames into JPG frames, using Irfanview and the JPG Quality value (" & nudTE_jpgq.Value.ToString() & "%)")
             UpdateProg_Cur(CurPrg, "Generating " & j.ToString() & " JPG " & Plural(j, "frame", "frames") & ". Please wait; this shall take some time...", True, False)
-            Log_MsgBox("Generating JPG frames; please wait!", MsgBoxStyle.Information, "JPG Rendering")
+            Log_MsgBox(Nothing, "Generating JPG frames; please wait!", MsgBoxStyle.Information, "JPG Rendering")
             For i = 1 To j                                                                          'Iterate frames from 1 to j
                 cmd = strQUOT & txtiView.Text & strQUOT                                             '"C:\iView32\iView32.exe"
                 file2 = StrDup(cnt, "0")                                                            '"0Nd". Create ToString dig formatter
@@ -2594,7 +2714,7 @@ Public Class Main
                 file = strQUOT & path & strPATHSEP & "frame_" & i.ToString(file2) & ".jpg" & strQUOT
                 cmd &= file                                                                   ' "C:\WorkingDir\frames_%0Nd.jpg
 
-                'Run cmd
+                'Manually run cmd. We do NOT want to use RunProcess here, due to Irfanview working differently from FFMPEG suite!
                 startInfo.FileName = cmd
                 shell.StartInfo = startInfo
                 shell.Start()
@@ -2603,6 +2723,8 @@ Public Class Main
                 UpdateProg_Cur(CurPrg)
             Next i
             shell.Close()
+            shell.Dispose()
+            shell = Nothing
             CurPrg(0) = CurPrg(1)
             UpdateProg_Cur(CurPrg, "All JPG frames generated!", False, True)
 
@@ -2659,14 +2781,15 @@ Public Class Main
             End If
 
             'Run cmd
-            startInfo.FileName = cmd
-            shell.StartInfo = startInfo
-            shell.Start()
-            shell.WaitForExit()
-            shell.Close()
+            'startInfo.FileName = cmd
+            'shell.StartInfo = startInfo
+            'shell.Start()
+            'shell.WaitForExit()
+            'shell.Close()
+            RunProcess(cmd)
             CurPrg(0) += 1
             UpdateProg_Cur(CurPrg, "THP (hopefully) generated!", False, True)
-            Log_MsgBox("THP rendered! Now cleaning up...", MsgBoxStyle.Information, "Success!")
+            Log_MsgBox(Nothing, "THP rendered! Now cleaning up...", MsgBoxStyle.Information, "Success!")
 
             'Step 11
             TtlPrg(0) += 1
@@ -2711,10 +2834,15 @@ Public Class Main
                 My.Computer.Audio.Stop()
                 My.Computer.Audio.Play(My.Resources.success, AudioPlayMode.Background)
             End If
-            Log_MsgBox("Done!", MsgBoxStyle.Information, "Tada!", True)
+            Log_MsgBox(Nothing, "Done!", MsgBoxStyle.Information, "Tada!", True)
         Catch ex As Exception
+            If IsNothing(shell) = False Then
+                shell.Close()
+                shell.Dispose()
+                shell = Nothing
+            End If
             Me.Cursor = Cursors.Default
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error during Encoding!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error during Encoding!", True)
         End Try
         HideApp_notTHPEnc(True) 'Restore main form
     End Sub
@@ -2904,7 +3032,7 @@ Public Class Main
         Try
             _datetime = DateTime.Now.ToString("MMddyyyy_HHmmss")
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Exclamation, "Date/Time error in btnLogSave_Click! (Future Y2K-like bug?)", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Exclamation, "Date/Time error in btnLogSave_Click! (Future Y2K-like bug?)", True)
         End Try
 
         If _datetime <> String.Empty Then
@@ -2922,7 +3050,7 @@ Public Class Main
             If SaveLog.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
             SaveLogFile(SaveLog.FileName)
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in btnLogSave_Click!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error in btnLogSave_Click!", True)
         End Try
     End Sub
 
@@ -2943,8 +3071,8 @@ Public Class Main
         Catch ex As Exception
             'Kill lingering stream (but DON'T delete; corrupted error log file is better than nothing...)
             KillStream(xFileData, False, _file)
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error saving log file!")
-        End Try        
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error saving log file!")
+        End Try
 
         'If success writing, then clear textboxes
         If success Then btnLogClear.PerformClick()
@@ -3009,20 +3137,32 @@ Public Class Main
     ''' <summary>
     ''' Log-based MsgBox() wrapper which logs the message, title, and icon to the log box,
     ''' as well as handles chkMsgBox flag
-    ''' </summary>
+    ''' </summary>    
+    ''' <param name="ex">Exception (for line numbering)</param>
     ''' <param name="msg">Message</param>
     ''' <param name="style">New icon</param>
     ''' <param name="title">Title</param>
     ''' <param name="msgBox_override">Forcibly show msgBox, despite chkMsg flag?</param>
     ''' <remarks>Also suppresses some annoying, informational based msgboxes in THP Encoding process</remarks>
-    Private Sub Log_MsgBox(ByVal msg As String, ByVal style As MsgBoxStyle, ByVal title As String, Optional ByVal msgBox_override As Boolean = False)
+    Private Sub Log_MsgBox(ByVal ex As System.Exception, ByVal msg As String, ByVal style As MsgBoxStyle, ByVal title As String, Optional ByVal msgBox_override As Boolean = False)
         'Text to log:
 
         'MsgBox:
         'title: title
         'msg: msg
-        'icon: iconStyle
-        Dim text As String = strNL & "MsgBox:" & strNL & "title: " & title & strNL & "msg: " & msg & strNL & "icon: " & style.ToString() & strNL
+        'icon: iconStyle  
+        '[optional]Line number: ###
+
+        'Get line number (if any) of error
+        'http://www.vbforums.com/showthread.php?645850-RESOLVED-How-to-get-exact-error-line-number
+        Dim line As String = ""                                                                         'Line string
+        If IsNothing(ex) = False Then                                                                   'If ex exists
+            Dim trace As System.Diagnostics.StackTrace = New System.Diagnostics.StackTrace(ex, True)    'Get strack trace
+            Dim number As String = trace.GetFrame(0).GetFileLineNumber().ToString()                     'Get stack trace number
+            line = "Line number: " & number                                                             'Create string
+        End If
+
+        Dim text As String = strNL & "MsgBox:" & strNL & "title: " & title & strNL & "msg: " & msg & strNL & "icon: " & style.ToString() & strNL & line
 
         'Handle some style-specific stuff
         If style = MsgBoxStyle.Information Then
@@ -3247,7 +3387,7 @@ Public Class Main
                 CleanUp_Playback()
             End If
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in CleanUp!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error in CleanUp!", True)
         End Try
     End Sub
 
@@ -3444,7 +3584,7 @@ Public Class Main
             End If
             txtTE_F.Text = txtVF_S.Text
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in HandleArrState()!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error in HandleArrState()!", True)
         End Try
     End Sub
 
@@ -3468,7 +3608,7 @@ Public Class Main
             'From the full file path, replace the file+ext with nothing, to get file directory; return
             strOut = Replace(strPath, strFile, "")
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in FileDir()!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error in FileDir()!", True)
         End Try
         Return strOut
     End Function
@@ -3525,7 +3665,7 @@ Public Class Main
             shtFileLen = shtLen - shtPos(bytItems - 1)  'Set the length of the file+ext
             outp = Mid(strPath, (shtPos(bytItems - 1)) + 1, shtFileLen) 'Extract the file+ext
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error in FileAndExt", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error in FileAndExt", True)
         End Try
         Return outp
     End Function
@@ -3539,7 +3679,7 @@ Public Class Main
     Private Sub WriteTxtFile(ByVal Path As String, ByRef Files() As String)
         Dim xFileData As StreamWriter = Nothing                 'Streamwriter object to write File.txt
         Dim TextFile As String = Path & strPATHSEP & "File.txt" 'The filepath to write
-        Try            
+        Try
             'If the textfile exists, remove it for clean slate
             If My.Computer.FileSystem.FileExists(TextFile) Then My.Computer.FileSystem.DeleteFile(TextFile)
             xFileData = File.CreateText(TextFile)   'Create File.txt
@@ -3557,7 +3697,7 @@ Public Class Main
             KillStream(xFileData, False, TextFile)
         Catch ex As Exception
             KillStream(xFileData, False, TextFile)
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "File I/O error in WriteTxtFile!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "File I/O error in WriteTxtFile!", True)
         End Try
     End Sub
 
@@ -3603,7 +3743,7 @@ Public Class Main
                 Throw New System.Exception("Could not find directory " & Folder & "!")
             End If
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "File I/O error in DeleteFilesFromFolder!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "File I/O error in DeleteFilesFromFolder!", True)
         End Try
     End Sub
 
@@ -3640,7 +3780,7 @@ Public Class Main
                 Next _file
             End If
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "File I/O error in DeleteExtraFilesFromFolder!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "File I/O error in DeleteExtraFilesFromFolder!", True)
         End Try
     End Sub
 
@@ -3660,7 +3800,7 @@ Public Class Main
                 cnt = Files.Count()                                         'Get count of files meeting spec
             End If
         Catch ex As Exception
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "File I/O error in CountFilesFromFolder!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "File I/O error in CountFilesFromFolder!", True)
         End Try
         Return cnt
     End Function
@@ -3696,21 +3836,29 @@ Public Class Main
             End If
         Catch ex As Exception
             sResult = ""
-            Log_MsgBox(ex.Message, MsgBoxStyle.Exclamation, "DLL func call failure within GetDownloadsFolder()! Using root directory...", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Exclamation, "DLL func call failure within GetDownloadsFolder()! Using root directory...", True)
         End Try
         Return sResult
     End Function
 
     ''' <summary>
-    ''' Macro function to kill a lingering StreamReader (if something, close, dispose, set to nothing)
+    ''' Macro function to kill a lingering StreamReader (if something, close, dispose, set to nothing).
+    ''' Also can delete file being read afterwards
     ''' </summary>
-    ''' <param name="xFileData">StreamReader to handle</param>
+    ''' <param name="xFileData">StreamReaderto handle</param>
+    ''' <param name="Delete">Delete file?</param>
+    ''' <param name="_file">File to delete</param>
     ''' <remarks></remarks>
-    Private Sub KillStream(ByVal xFileData As StreamReader)
+    Private Sub KillStream(ByVal xFileData As StreamReader, Optional ByVal Delete As Boolean = False, Optional ByVal _file As String = "")
         If IsNothing(xFileData) = False Then
             xFileData.Close()
             xFileData.Dispose()
             xFileData = Nothing
+
+            'If delete flag, AND if file exists, delete it
+            If Delete = True Then
+                If My.Computer.FileSystem.FileExists(_file) Then My.Computer.FileSystem.DeleteFile(_file)
+            End If
         End If
     End Sub
 
@@ -3852,7 +4000,7 @@ Public Class Main
             'Close any lingering streams
             KillStream(xrINIData)
             KillStream(xwINIData, False, iViewINI2Temp)
-            Log_MsgBox(ex.Message, MsgBoxStyle.Critical, "Error finding, copying, and/or hacking INI Irfanview INI file!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error finding, copying, and/or hacking INI Irfanview INI file!", True)
             success = False
         End Try
 
