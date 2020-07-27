@@ -29,7 +29,6 @@ Public Class Main
 
     'Command-Line Interface Mode?
     'This flag will be set if called from CommandLine with args, and will change the runtime behavior for errors etc.
-    '!@ NOT yet implemented!
     Shared CLI_MODE As Boolean = False
 
     'Characters
@@ -131,8 +130,10 @@ Public Class Main
     ''' <param name="sender"></param>
     ''' <param name="e"></param>
     ''' <remarks></remarks>
-    Private Sub Main_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
+    Private Sub Main_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load        
         'Initialize the application with some setup code
+        Dim CLI As System.Collections.ObjectModel.ReadOnlyCollection(Of String) = My.Application.CommandLineArgs    'Get the cmdline args
+        If CLI.Count <> 0 Then CLI_MODE = True 'If params exist, then CLI MODE
 
         'Init log, with current build version, time, date
         Dim info As String = Application.ProductName & ": " & Application.ProductVersion
@@ -151,6 +152,442 @@ Public Class Main
 
         'Load the THP combo box data from the ext. files
         'InitTHPData()
+
+        'Handle CLI arguments (if CLI_MODE)
+        Try
+            If CLI_MODE Then
+                Dim found(2) As Boolean             'Array of states, indicating if a specified param string key was found
+                Dim success As Boolean = False
+                Dim param(2) As String              'Array of params to check for
+                param(0) = ""
+                param(1) = ""
+
+                Dim mode As String = ""             'CLI action (Encode, View, Rip)
+
+                'Variables to hold argument values
+                Dim INIFile As String = ""          'Inifile path
+                Dim THP_ID As Byte = 0              'THP ID
+                Dim preset As String = ""           'Preset (A1_N string)
+                Dim crop As String = ""             'Crop CSV string
+                Dim sound As Boolean = False        'Sound?
+                'Dim _Log As Boolean = False
+                Dim InputFolder As String = ""      'Input folder path
+                Dim OutputFolder As String = ""     'Output folder path
+                Dim TruncFrame As Integer = 0       'TruncFrame value
+                Dim Digs As Integer = 0             '# of digits
+                Dim JPGQual As Integer = 0          'JPG Quality
+
+                Const SEP As String = ","           'CSV separator char (comma)
+
+                'Argument strings
+                'CLI Mode strings
+                Const CMD_Mode_Rip As String = "/mr"        'Rip
+                Const CMD_Mode_View As String = "/mv"       'View
+                Const CMD_Mode_Encode As String = "/me"     'Encode
+
+                'Various enums for                          Help mode
+                Const CMD_Mode_Help1 As String = "/help"
+                Const CMD_Mode_Help2 As String = "/h"
+                Const CMD_Mode_Help3 As String = "/?"
+                Const CMD_Mode_Help4 As String = "/mh"
+
+                'Individual switches for Rip, View, Encode modes
+                Const CMD_Setting As String = "/s="         'Settings file
+                Const CMD_THP_ID As String = "/t="          'THP ID
+                Const CMD_Preset As String = "/p="          'A1_N Preset
+                Const CMD_Crop As String = "/c="            'Crop params
+                Const CMD_Sound As String = "/n="           'Enable SDL_Audiodrive sound flag?
+                Const CMD_Output As String = "/o="          'Output folder
+                'Const CMD_Log As String = "/L="             'Log stuff?
+                Const CMD_Frame As String = "/f="           'TruncFrame value
+                Const CMD_JPGQ As String = "/q="            'JPG Quality (0-100)
+                Const CMD_Input As String = "/i="           'Input folder
+
+                mode = CLI(0)                               'Get 0th argument; should be the mode
+                Select Case mode
+                    'Handle RIP and View modes
+                    Case CMD_Mode_Rip, CMD_Mode_View
+                        'Rip or View
+                        'thwimp.exe /mr /s=options.txt /tNNN [[/p=A1_N_preset] || [/c=csv_cropvals]] /n=snd_bit /o=output_folder
+                        'thwimp.exe /mv /s=options.txt /tNNN [[/p=A1_N_preset] || [/c=csv_cropvals]] /n=snd_bit
+
+                        'Check if next param is settings flag, pop param into param(0); otherwise throw error
+                        found(0) = ParseParamOrder(CMD_Setting, CLI(1), param(0), -1)
+                        If found(0) = False Then Throw New System.Exception("Expected 2nd argument as " & CMD_Setting & "options.txt")
+                        INIFile = param(0)                  'Set INI file to the param
+                        success = LoadSettings2(INIFile)    'Load INI file
+                        'If failure to load INI file, throw error
+                        If success = False Then Throw New System.Exception("Failed to properly handle " & CMD_Setting & "options INI file!")
+
+                        'Switch to THP tab
+                        tabApp.SelectTab(0)
+
+                        'Handle /t THP ID switch
+                        'Check if next param is THP ID flag, pop param into param(0); otherwise throw error
+                        found(0) = ParseParamOrder(CMD_THP_ID, CLI(2), param(0))
+                        If found(0) = False Then Throw New System.Exception("Expected 3rd argument as " & CMD_THP_ID & "NNN")
+                        'Parse argument as byte, then set the THP ID
+                        THP_ID = TryParseErr_Byte(param(0))
+                        'Check if THP_ID is within range of current fileset; if not, throw error
+                        Dim max As Byte = cmbTHP.Items.Count - 1
+                        If THP_ID < 0 Or THP_ID > max Then Throw New System.Exception("THP ID selected is out of range for the current Data fileset!")                        
+                        cmbTHP.SelectedIndex = THP_ID
+                        'Also check if THP ID is BAD dummy entry.
+                        'This needs to be done AFTER selecting the ID, so we can determine if it's a BAD dummy entry or not
+                        If THPs(THP_ID + 1).Bad = True Then Throw New System.Exception("THP ID selected is a bad, dummy entry!")
+
+                        'Handle /p preset or /c cropvals
+                        'Check if next param is either THP preset flag or crop flag, pop param into param(0); otherwise throw errors
+                        found(0) = ParseParamOrder(CMD_Preset, CLI(3), param(0))
+                        found(1) = ParseParamOrder(CMD_Crop, CLI(3), param(1))
+                        If found(0) = False And found(1) = False Then
+                            'Neither argument was found; throw error
+                            Throw New System.Exception("Expected 4th argument to be either " & CMD_Preset & "NNN preset or " & CMD_Crop & "csv_cropvals")
+                        Else
+                            If found(0) Then
+                                'If preset argument, set preset
+                                preset = param(0)
+
+                                'Select the A1_N preset from the string; if unsuccessful, throw error
+                                success = SelectA1N_Preset(preset)
+                                If success = False Then Throw New System.Exception("Failed to propery handle " & CMD_Preset & "preset")
+                            ElseIf found(1) Then
+                                'If crop argument, set crop strings
+                                crop = param(1)
+                                CLI_HandleCropCSV(crop)
+                            End If
+                        End If
+
+                        'Change DirectSound option
+                        'Check if next param is Directsound flag, pop param into param(0); otherwise throw errors
+                        found(0) = ParseParamOrder(CMD_Sound, CLI(4), param(0))
+                        If found(0) = False Then Throw New System.Exception("Expected 4th argument as " & CMD_Sound & "DirectSound option")
+                        'Convert bit to bool, set checkbox flag
+                        sound = BitToBool(TryParseErr_Byte(param(0)))
+                        chkRip_DSound.Checked = sound
+
+                        'thwimp.exe /mr /s=options.txt /tNNN [[/p=A1_N_preset] || [/c=csv_cropvals]] /n=snd_bit /o=output_folder
+                        'thwimp.exe /mv /s=options.txt /tNNN [[/p=A1_N_preset] || [/c=csv_cropvals]] /n=snd_bit
+                        If mode = CMD_Mode_Rip Then
+                            'If Rip mode, get output folder
+                            'Check if next param is output folder flag, pop param into param(0); otherwise throw errors
+                            found(0) = ParseParamOrder(CMD_Output, CLI(5), param(0), -1)
+                            If found(0) = False Then Throw New System.Exception("Expected 5th argument as /o Output folder")
+                            'Set output folde 
+                            OutputFolder = param(0)
+
+                            'Do the rip!
+                            Rip(OutputFolder)
+                        Else
+                            'If view mode, no more params; just play it back!
+                            'Perform click to view
+                            btnPlay.PerformClick()
+                        End If
+
+                    Case CMD_Mode_Encode
+                        'Encode
+                        'thwimp.exe /me /s=options.txt /tNNN /f=trunc_frame_val[,digs] /q=jpgqual /i=input_folder
+
+                        'Check if next param is settings flag, pop param into param(0); otherwise throw errors
+                        found(0) = ParseParamOrder(CMD_Setting, CLI(1), param(0), -1)
+                        If found(0) = False Then Throw New System.Exception("Expected 2nd argument as " & CMD_Setting & "options.txt")
+                        'Load the INI File
+                        INIFile = param(0)
+                        success = LoadSettings2(INIFile)
+                        'Throw error if unsuccessful
+                        If success = False Then Throw New System.Exception("Failed to properly handle " & CMD_Setting & "options INI file!")
+
+                        'Switch to THP tab
+                        tabApp.SelectTab(0)
+
+                        'Handle /t THP ID switch
+                        'Check if next param is THP ID flag, pop param into param(0); otherwise throw error
+                        found(0) = ParseParamOrder(CMD_THP_ID, CLI(2), param(0))
+                        If found(0) = False Then Throw New System.Exception("Expected 3rd argument as " & CMD_THP_ID & "NNN")
+                        'Parse argument as byte, then set the THP ID
+                        THP_ID = TryParseErr_Byte(param(0))
+                        cmbTHP.SelectedIndex = THP_ID
+
+
+                        'Handle /f Trunc_Frame switch and d digs (comma delim'd)
+                        'Check if next param is Frame/Digs csv, pop param into param(0); otherwise throw error
+                        found(0) = ParseParamOrder(CMD_Frame, CLI(3), param(0))
+                        If found(0) = False Then Throw New System.Exception("Expected 4th argument as " & CMD_Frame & "_trunc_frame_val[,digs]")
+                        Dim delim As Boolean = param(0).Contains(SEP)
+                        If delim Then
+                            'See if param has a comma (if so, then digs param too)
+                            Dim delimPos As Byte = InStr(param(0), SEP) 'Find the position of the SEP char
+                            param(1) = Mid(param(0), delimPos + 1)      'Set param(1) digs to as string from SEP to EOL
+                            param(0) = Mid(param(0), 1, delimPos - 1)       'Set param(0) trunc_frame from start to SEP char 
+                        End If
+
+                        TruncFrame = TryParseErr_UShort(param(0))       'Try parsing trunc_frame as short
+                        txtTE_F.Text = param(0)                         'Update text box
+                        If delim Then
+                            'If delim char, then handle digs 
+                            Digs = TryParseErr_Byte(param(1))           'Parse digs as byte
+                            txtTE_D.Text = param(1)                     'Update text box
+                        End If
+
+
+                        'Handle /q JPG Qual switch
+                        'Check if next param is JPG Qual, pop param into param(0); otherwise throw error
+                        found(0) = ParseParamOrder(CMD_JPGQ, CLI(4), param(0))
+                        If found(0) = False Then Throw New System.Exception("Expected 5th argument as " & CMD_JPGQ & "JPG_Quality")
+                        JPGQual = TryParseErr_Byte(param(0))                        'TryParse value as byte
+                        'Make sure JPG quality is between 0-100%; else clamp
+                        If JPGQual < 0 Then
+                            JPGQual = 0
+                        ElseIf JPGQual > 100 Then
+                            JPGQual = 100
+                        End If
+                        'Update the value
+                        nudTE_jpgq.Value = JPGQual
+
+
+                        'Handle /i Input folder
+                        'Check if next param is Input folder, pop param into param(0); otherwise throw error
+                        found(0) = ParseParamOrder(CMD_Input, CLI(5), param(0), -1)
+                        If found(0) = False Then Throw New System.Exception("Expected 6th argument as " & CMD_Input & "input_folder")
+                        'Set the inputFolder
+                        InputFolder = param(0)
+
+                        'Do the encoding!
+                        Encode(InputFolder)
+
+                    Case CMD_Mode_Help1, CMD_Mode_Help2, CMD_Mode_Help3, CMD_Mode_Help4
+                        'If Help mode, display help
+                        CmdHelp()
+                    Case Else
+                        'If anything else, display help
+                        Log_MsgBox(Nothing, "Invalid arguments/Thwimp action mode!", MsgBoxStyle.Exclamation, "Syntax error", True)
+                        CmdHelp()
+                End Select
+                CloseApp_CLI()
+            End If
+        Catch ex As Exception
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error parsing CLI arguments!", True)
+            CloseApp_CLI()
+        End Try        
+    End Sub
+
+    ''' <summary>
+    ''' Parse command line argument string, check if param has argument, and then return argument from it
+    ''' </summary>
+    ''' <param name="param">Commandline arg switch</param>
+    ''' <param name="cmd">Full Argument to check against</param>
+    ''' <param name="arg">Argument from full string, returned ByRef</param>
+    ''' <param name="QUOTEnclose">Hnadles enclosing quotes. -1=remove quotes, 0=ignore, 1=enclose in quotes. Used when expecting to handle paths as the args</param>
+    ''' <returns>Argument found?</returns>
+    ''' <remarks></remarks>
+    Private Function ParseParamOrder(ByVal param As String, ByVal cmd As String, ByRef arg As String, Optional ByVal QUOTEnclose As SByte = 0) As Boolean
+        Dim result As Boolean = False       'Argument found?        
+        QUOTEnclose = Math.Sign(QUOTEnclose)
+        'If param string contains argument, then replace switch to get argument, return ByRef, and return a found result
+        If cmd.Contains(param) Then
+            arg = cmd.Replace(param, "")
+            If QUOTEnclose = 1 Then
+                Dim _sub As String = Mid(arg, 1)
+                If _sub <> strQUOT Then arg = strQUOT & arg
+                Dim length = arg.Length
+                _sub = Mid(arg, length)
+                If _sub <> strQUOT Then arg = arg & strQUOT
+            ElseIf QUOTEnclose = -1 Then
+                arg = arg.Replace(strQUOT, "")
+            End If
+            result = True
+        End If
+        Return result
+    End Function
+
+    ''' <summary>
+    ''' Given an A1N string from CLI, select the proper preset
+    ''' </summary>
+    ''' <param name="preset">Preset string</param>
+    ''' <returns>Succesful parsing?</returns>
+    ''' <remarks></remarks>
+    Private Function SelectA1N_Preset(ByVal preset As String) As Boolean
+        Dim result As Boolean = False                                           'Succesful?
+        Try
+            Const maxColumns As Byte = 2                                        'Max amount of preset columns
+            Const maxRows As Byte = 6                                           'Max amount of preset rows
+            Const maxSpecial As Byte = 2                                        'Max amount of special presets
+            Const All As String = "All"                                         '"All" special preset string
+            Const Dum As String = "Dum"                                         '"Dum" special preset string
+            Const underscore As String = "_"                                    'Underscore separator (cell_time)
+            'Const maxPresets As Byte = (maxColumns * maxRows) + maxSpecial     'Total amount of presets
+
+            'Array of row/columns of preset radio button refs
+            Dim Rad(maxRows, maxColumns) As System.Windows.Forms.RadioButton
+            Rad(0, 0) = radTD_A1    'Row 0, Column 0
+            Rad(0, 1) = radTD_B1    'Row 0, Column 1
+            'Etc
+            Rad(1, 0) = radTD_A2
+            Rad(1, 1) = radTD_B2
+            Rad(2, 0) = radTD_A3
+            Rad(2, 1) = radTD_B3
+            Rad(3, 0) = radTD_A4
+            Rad(3, 1) = radTD_B4
+            Rad(4, 0) = radTD_A5
+            Rad(4, 1) = radTD_B5
+            Rad(5, 0) = radTD_A6
+            Rad(5, 1) = radTD_B6
+
+            'Array of 2 special prsets, and refs
+            Dim RadS(maxSpecial) As System.Windows.Forms.RadioButton
+            RadS(0) = radTD_All 'All
+            RadS(1) = radTD_Dum 'Dum
+
+            Dim time As String = ""         'Time multiplicty, as string
+            Dim t As Byte = 0               'Time value
+            Dim underPos As Byte = 0        'Underscore pos
+            Dim length = 0                  'Generic length of strings
+            Dim preset2 = ""                'Generalized prset type (no underscore). 
+            'Used to differentiate between normal presets (A1_N) and special (Dum/All)
+
+            'If preset <> All Then
+            underPos = InStr(preset, underscore)    'Find position of underscore
+            length = underPos - 1                   'Lenght = pos-1
+            preset2 = Mid(preset, 1, length)        'Get everything before underscore
+            'Else
+            'preset2 = All
+            'End If
+
+            'Handle preset strings
+            Select Case preset2
+                Case All
+                    'Special all case
+                    RadS(0).Select()                        'Select all
+
+                    length = preset.Length                  'Get length of string
+                    length = length - underPos              'Subtract length from startPos
+                    time = Mid(preset, underPos + 1, length) 'Get mid string after underscore
+                    t = TryParseErr_Byte(time)              'Convert to byte
+                    'If t is out of range for THP_ID, throw error
+                    If t < nudTD_M.Minimum Or t > nudTD_M.Maximum Then Throw New System.Exception("Time mulitplicity out of range for selected THP ID!")
+                    nudTD_M.Value = t                       'Set multiplicity to t
+                    result = True                           'Success!
+
+                Case Dum
+                    'Special dummy case
+                    If RadS(1).Enabled = False Then Throw New System.Exception("Selected THP ID does not support Dum preset!")
+                    RadS(1).Select()                        'Select dum
+
+                    'Get the time mult
+                    length = preset.Length                  'Get length of string
+                    length = length - underPos              'Subtract length from startPos
+                    time = Mid(preset, underPos + 1, length) 'Get mid string after underscore
+                    t = TryParseErr_Byte(time)              'Convert to byte
+                    'If t is out of range for THP_ID, throw error
+                    If t < nudTD_M.Minimum Or t > nudTD_M.Maximum Then Throw New System.Exception("Time mulitplicity out of range for selected THP ID!")
+                    nudTD_M.Value = t                       'Set multiplicity to t
+                    result = True                           'Success!
+
+                Case Else
+                    'All other normal presets ("A1_N")                    
+                    'Dim cell As String = Mid(preset, 0, 2)
+                    'Dim time As String = Mid(preset, 2, 1)
+
+                    'Dim col As String = Mid(cell, 0, 1)
+                    'Dim row As String = Mid(cell, 1, 1)
+                    'Dim c As Byte = TryParseErr_Byte(col)
+                    'Dim r As Byte = TryParseErr_Byte(row)
+                    'Dim t As Byte = TryParseErr_Byte(time)
+
+                    underPos = InStr(preset, underscore)                'Find position of underscore
+                    length = underPos - 1                               'Lenght = pos-1
+
+                    Dim cell As String = Mid(preset, 1, length)         'Cell = everything before underscore
+                    time = Mid(preset, underPos + 1)                    'Time = everything after
+
+                    Dim col As String = Mid(cell, 1, 1)                 'Column of row should be 1st char
+                    length = cell.Length - 1                            'Make length 0-based
+                    Dim row As String = Mid(cell, 2, length)               'Row = everything else
+
+                    'Convert strings to data
+                    Dim c As Byte = 0                                   'Column value
+                    Dim AplphaSuccess As Boolean = SelectA1N_ConvAlpha(col, c)  'Convert alphabet char to value, get successful result
+                    'If couldn't convert alphabet char to value, throw error
+                    If AplphaSuccess = False Then Throw New System.Exception("Failed to parse alphabet letter for cell column!")
+                    Dim r As Byte = TryParseErr_Byte(row)               'Convert row to byte
+                    t = TryParseErr_Byte(time)                          'Convert time to byte
+                    'Row and column should be 0-based for array indices
+                    r = r - 1
+                    c = c - 1
+
+                    'If button is disabled (invalid), throw error
+                    If Rad(r, c).Enabled = False Then Throw New System.Exception("Selected THP ID does not support that row/column combination!")
+                    Rad(r, c).Select()                                  'Select the proper radio button ref
+                    'If t is out of range for THP_ID, throw error
+                    If t < nudTD_M.Minimum Or t > nudTD_M.Maximum Then Throw New System.Exception("Time mulitplicity out of range for selected THP ID!")
+                    nudTD_M.Value = t                                   'Set the multiplicity value to t
+                    result = True                                       'Success!
+            End Select
+        Catch ex As Exception
+            Log_MsgBox(ex, ex.Message, Microsoft.VisualBasic.MsgBoxStyle.Critical, "Preset parsing error!", True)
+        End Try
+        Return result
+    End Function
+
+    ''' <summary>
+    ''' Given a Alphabet letter from A1N notation, returns its value
+    ''' </summary>
+    ''' <param name="letter">Alphabet letter</param>
+    ''' <param name="value">Its value, 1-based, returned ByRef</param>
+    ''' <returns>Successful parsing?</returns>
+    ''' <remarks></remarks>
+    Private Function SelectA1N_ConvAlpha(ByVal letter As String, ByRef value As Byte) As Boolean
+        Const Alphabet As String = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" 'Alphabet chars, in order
+        Dim result As Boolean = False                           'Success?
+        value = InStr(Alphabet, letter)                         'Find 1st/only occurrence of letter; return value ByRef
+        If value <> 0 Then result = True 'If found, then success
+        Return result
+    End Function
+
+    ''' <summary>
+    ''' Parse crop settings CSV from Commandline
+    ''' </summary>
+    ''' <param name="crop">Crop CSV string</param>
+    ''' <remarks></remarks>
+    Private Sub CLI_HandleCropCSV(ByVal crop As String)
+        Try
+            'Initalize crop settings to minimum first, 
+            'in order to prevent fighting against default preset and input validation
+            txtTD_CX.Text = "0"
+            txtTD_CY.Text = "0"
+            txtTD_CW.Text = "1"
+            txtTD_CH.Text = "1"
+            txtTD_FS.Text = "0"
+            txtTD_FE.Text = "1"
+
+            'Array of MaskedTextBos refs, for each CSV value
+            Dim boxes(5) As System.Windows.Forms.MaskedTextBox
+            boxes(0) = txtTD_CX
+            boxes(1) = txtTD_CY
+            boxes(2) = txtTD_CW
+            boxes(3) = txtTD_CH
+            boxes(4) = txtTD_FS
+            boxes(5) = txtTD_FE
+
+            Const SEP As String = ","                       'Comma separate char
+            Dim value As String = "'"                       'CSV entry
+            Dim index As Byte = 0                           'CSV index
+            Dim Pos As Byte = 1                             'Current string startpos
+            Dim SEPPos As Byte = 0                          'Position of next SEP char
+            Dim length As Byte = 0                          'Length for substring processing
+
+            'Iterate through all CSV inices
+            For index = 0 To 5 Step 1
+                SEPPos = InStr(Pos, crop, SEP)                   'Find the pos of the SEP char
+                If SEPPos = 0 Then SEPPos = crop.Length + 1 'If none found, assume EOL
+                length = SEPPos - Pos                       'Length between pos and SEP char
+                value = crop.Substring(Pos - 1, length)        'Fetch value (start at pos, get length)
+                boxes(index).Text = value                   'Update the textbox ref with value
+                Pos = SEPPos + 1                            'Set current pos to SEP char pos +1
+            Next index
+        Catch ex As Exception
+            Log_MsgBox(ex, "Error parsing crop argument CSV in CLI_HandleCropCSV()!", Microsoft.VisualBasic.MsgBoxStyle.Critical, "Crop argument parsing error!", True)
+        End Try
     End Sub
 
     ''' <summary>
@@ -391,6 +828,9 @@ Public Class Main
     Private Sub cmbTHP_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cmbTHP.SelectedIndexChanged
         Try
             'Index in the THP combo box
+
+            'Update the THP File label with current ID
+            lblTHPFile.Text = "THP File" & strNL & "(ID = " & cmbTHP.SelectedIndex.ToString("D3") & ")"
             Dim bytEntry As Byte = cmbTHP.SelectedIndex + 1
 
             'Set THPEnc and THPDec group boxes to visible as appropriately, depending on bad state
@@ -707,17 +1147,34 @@ Public Class Main
             'Load the ofdLoadSettings ofd, user selects thwimp.ini
             ofdLoadSettings.InitialDirectory = strPATH  'InitialDirectory is exe path
             If ofdLoadSettings.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
+            LoadSettings2(ofdLoadSettings.FileName)
+        Catch ex As Exception
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error in btnLoadSettings_Click/LoadSettings!", True)
+        End Try
+    End Sub
 
-            'Parse its contents; if succesful loading, then Handle enabling THP Tab and InitTHPData from new data dir path obtained
-            Dim success As Boolean = LoadSettings(ofdLoadSettings.FileName)
+    ''' <summary>
+    ''' Entrypoint to actually load the settings, given an INI file path
+    ''' </summary>
+    ''' <param name="File">INI File path</param>
+    ''' <returns>Success?</returns>
+    ''' <remarks></remarks>
+    Private Function LoadSettings2(ByVal File As String) As Boolean
+        'Parse its contents; if succesful loading, then Handle enabling THP Tab and InitTHPData from new data dir path obtained
+        Dim success As Boolean = False
+        Try
+            success = LoadSettings(File)
             If success Then
                 InitTHPData()
                 CheckPathsSet()
+            Else
+                Throw New System.Exception("Failed to load INI file!")
             End If
         Catch ex As Exception
-            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error in btnLoadSettings_Click!", True)
+            If CLI_MODE Then Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error in btnLoadSettings_Click/LoadSettings!", True)
         End Try
-    End Sub
+        Return success
+    End Function
 
     ''' <summary>
     ''' Parses the INI settings file, initalizes settings
@@ -847,7 +1304,7 @@ Public Class Main
             KillStream(xFileData)
             _error = ex.Message & strNL & "INI line: " & line
             Log_MsgBox(ex, _error, MsgBoxStyle.Critical, "Error loading settings INI file!", True)
-        End Try        
+        End Try
 
         'Return success
         Return Success
@@ -1069,9 +1526,110 @@ Public Class Main
     ''' </summary>
     ''' <param name="sender"></param>
     ''' <param name="e"></param>
-    ''' <remarks>'!@ Not yet implemented!</remarks>
     Private Sub btnCmdline_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnCmdline.Click
-        Log_MsgBox(Nothing, "Not yet implemented", MsgBoxStyle.Exclamation, "Unsupported", True)
+        CmdHelp()
+    End Sub
+
+    ''' <summary>
+    ''' Generates text for CLI explanation. If CLI_MODE, just Log text; else show Help form and dump text into it
+    ''' </summary>
+    ''' <remarks></remarks>
+    Private Sub CmdHelp()
+        Dim msg As System.Text.StringBuilder = New System.Text.StringBuilder
+
+        msg.Append("Thwimp CLI syntax:")
+        msg.AppendLine() : msg.AppendLine()
+
+        msg.Append("Main actions:")
+        msg.AppendLine() : msg.AppendLine()
+
+        msg.Append("Rip:" & strNL)
+        msg.Append("thwimp.exe rip /s=options.ini /t=NNN [[/p=A1_N_preset] || [/c=csv_cropvals]] /n=snd_bit /o=Output_folder")
+        msg.AppendLine() : msg.AppendLine()
+
+        msg.Append("View:" & strNL)
+        msg.Append("thwimp.exe view /s=options.ini /t=NNN [[/p=A1_N_preset] || [/c=csv_cropvals]] /n=snd_bit")
+        msg.AppendLine() : msg.AppendLine()
+
+        msg.Append("Encode:" & strNL)
+        msg.Append("thwimp.exe encode /s=options.ini /t=NNN /f=trunc_frame_val[,digs] /q=jpgqual /i=input_folder [/o=output_folder]")
+        msg.AppendLine() : msg.AppendLine()
+
+        msg.Append("Help:" & strNL)
+        msg.Append("thwimp.exe /mh" & strNL)
+        msg.Append("thwimp.exe /help" & strNL)
+        msg.Append("thwimp.exe /h" & strNL)
+        msg.Append("thwimp.exe /?" & strNL)
+        msg.Append("thwimp.exe [invalid args]" & strNL)
+        msg.AppendLine() : msg.AppendLine()
+
+        msg.Append("Param values:")
+        msg.AppendLine() : msg.AppendLine()
+        msg.Append("/s=options.ini" & strNL)
+        msg.Append("INI file with Options paths (CRLF delimited). See Thwimp manual about INI data format")
+        msg.AppendLine() : msg.AppendLine()
+
+        msg.Append("/t=NNN" & strNL)
+        msg.Append("ID of THP files to use from datafiles" & strNL)
+        msg.Append("ID From THP file combo box" & strNL)
+        msg.Append("0-based, 3-digit ID")
+        msg.AppendLine() : msg.AppendLine() : msg.AppendLine()
+
+        msg.Append("/p=A1_N_preset" & strNL)
+        msg.Append("Valid preset string ID to use from Crop Setting section in THP Viewer/Ripper section")
+        msg.AppendLine() : msg.AppendLine()
+        msg.Append("Valid A1_N values" & strNL)
+        msg.Append("A1_N to A6_N, B1_N to B6_N" & strNL)
+        msg.Append("MS Excel A1N notation for cells, _N = multiplicity ID for each cell (0 to max)")
+        msg.AppendLine() : msg.AppendLine()
+        msg.Append("Special values" & strNL)
+        msg.Append("All_N = All special preset" & strNL)
+        msg.Append("Dum_N = Dummy special preset")
+        msg.AppendLine() : msg.AppendLine() : msg.AppendLine()
+
+        msg.Append("/c=csv_cropvals" & strNL)
+        msg.Append("Manual crop settings values (csv, no spaces)")
+        msg.AppendLine() : msg.AppendLine()
+        msg.Append("xpos" & strNL)
+        msg.Append("ypos" & strNL)
+        msg.Append("width" & strNL)
+        msg.Append("height" & strNL)
+        msg.Append("time_start" & strNL)
+        msg.Append("time_end")
+        msg.AppendLine() : msg.AppendLine() : msg.AppendLine()
+
+        msg.Append("/n=snd_bit" & strNL)
+        msg.Append("Use DirectSound? (0=false, 1=true)")
+        msg.AppendLine() : msg.AppendLine()
+
+        msg.Append("/o=Output_folder" & strNL)
+        msg.Append("Output folder to place ripped/generated files" & strNL)
+        msg.Append("May be optional based on the Thwimp CLI action" & strNL)
+        msg.Append("Required for rip mode. Rip mode expects a folder path + MP4 filename (" & strQUOT & "C:\Folder\filename.mp4" & strQUOT & ")")
+        msg.AppendLine() : msg.AppendLine()
+
+        msg.Append("/f=trunc_frame_val[,digs]" & strNL)
+        msg.Append("Number of frames to truncate to (per multiplicity), Number of digits for JPG filenaming (optional)" & strNL)
+        msg.Append("If digits unused, will use digsOf(trunc_frame * multiplicity)")
+        msg.AppendLine() : msg.AppendLine()
+
+        msg.Append("/q=jpgqual" & strNL)
+        msg.Append("JPG Quality as percent (0-100, no % sign)")
+        msg.AppendLine() : msg.AppendLine()
+
+        msg.Append("/i=input_folder" & strNL)
+        msg.Append("Input folder for THP Encoding input files")
+
+        Dim mess As String = msg.ToString()
+
+        If CLI_MODE Then
+            'Dump help into log if CLI mode
+            Log_MsgBox(Nothing, mess, MsgBoxStyle.Information, "Thwimp CLI", True)
+        Else
+            'If NOT CLI MODE, then dump text into form, show it
+            Help.helpBox.Text = mess
+            Help.Show()
+        End If
     End Sub
 
     '===========================
@@ -1362,6 +1920,15 @@ Public Class Main
     ''' <param name="e"></param>
     ''' <remarks></remarks>
     Private Sub btnRip_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnRip.Click
+        Rip()
+    End Sub
+
+    ''' <summary>
+    ''' Actually rips THP data
+    ''' </summary>
+    ''' <param name="pathOverride">Optional path to placed ripped assets.</param>
+    ''' <remarks>Param used for CLI_MODE</remarks>
+    Private Sub Rip(Optional ByVal pathOverride As String = "")
         'Open ofdRip, user selects path/base filename
         Try
             'Total/current progress for progress bar.
@@ -1386,9 +1953,14 @@ Public Class Main
             ofdRip.FileName = newFile & suffix                  'Set ofd box filename to newFile & suffix
             ofdRip.InitialDirectory = initDir                   'Set ofd init dir to initDir
 
-            'Show the DBox
-            If ofdRip.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
-            Dim outFile As String = ofdRip.FileName                 'Output file. C:\PathToFile\file.mp4
+            'Show the DBox if not CLI_Mode; else use path override
+            Dim outFile As String = ""
+            If CLI_MODE = False Then
+                If ofdRip.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
+                outFile = ofdRip.FileName                 'Output file. C:\PathToFile\file.mp4
+            Else
+                outFile = pathOverride
+            End If
             Dim tempFile As String = FileDir(outFile) & "temp.mp4"  'Temp file
             Dim outPath As String = FileDir(outFile)                'Output path. Path of outFile
             Dim outFilename As String = FileAndExt(outFile)         'Output filename. Filename.mp4
@@ -1530,104 +2102,104 @@ Public Class Main
                 UpdateProg_Cur(CurPrg, "Video does NOT have an audio stream!", True, False)
                 CurPrg(0) += 1
             End If
-                UpdateProg_Cur(CurPrg, "Audio stream extraction done!", False, True)
+            UpdateProg_Cur(CurPrg, "Audio stream extraction done!", False, True)
 
-                'Step 4: If ripping dummy ctrl frames, convert the cropped MP4 file (cropped to the ctrl area) to bmp frames, keep only 1st frame for each multiplicity
-                CurPrg(0) = 0
-                TtlPrg(0) += 1
-                UpdateProg_Ttl(TtlPrg, "Step 4: If ripping dummy ctrl frames, convert the cropped MP4 file (cropped to the ctrl area) to bmp frames, keep only 1st frame for each multiplicity.")
-                If type = True Then
-                    Dim m As Byte = TryParseErr_Byte(txtVM_M.Text)             '0-based multiplicity value
-                    m -= 1
+            'Step 4: If ripping dummy ctrl frames, convert the cropped MP4 file (cropped to the ctrl area) to bmp frames, keep only 1st frame for each multiplicity
+            CurPrg(0) = 0
+            TtlPrg(0) += 1
+            UpdateProg_Ttl(TtlPrg, "Step 4: If ripping dummy ctrl frames, convert the cropped MP4 file (cropped to the ctrl area) to bmp frames, keep only 1st frame for each multiplicity.")
+            If type = True Then
+                Dim m As Byte = TryParseErr_Byte(txtVM_M.Text)             '0-based multiplicity value
+                m -= 1
 
-                    'If ripping dummy ctrl frames.
-                    'Convert the cropped MP4 file (cropped to the ctrl area) to bmp frames ("dummyTemp_%0Nd.bmp"),
-                    'Keep only 1st frame for each multiplicty, rename to "dummy_N.bmp", delete excess frames
+                'If ripping dummy ctrl frames.
+                'Convert the cropped MP4 file (cropped to the ctrl area) to bmp frames ("dummyTemp_%0Nd.bmp"),
+                'Keep only 1st frame for each multiplicty, rename to "dummy_N.bmp", delete excess frames
 
-                    'Set max current progress to 2 + # of mults
-                    CurPrg(1) = 2 + m
-                    Text = "Video HAS dummy frames!" & strNL & "Ripping all bmp frames..."
-                    UpdateProg_Cur(CurPrg, Text, True, False)
+                'Set max current progress to 2 + # of mults
+                CurPrg(1) = 2 + m
+                Text = "Video HAS dummy frames!" & strNL & "Ripping all bmp frames..."
+                UpdateProg_Cur(CurPrg, Text, True, False)
 
-                    '"C:\FFMPegPath\FFMPEG.exe" -y 
-                    cmd = strQUOT & txtFFMPEG.Text & strPATHSEP & exeFMPeg & strQUOT & " -y "
+                '"C:\FFMPegPath\FFMPEG.exe" -y 
+                cmd = strQUOT & txtFFMPEG.Text & strPATHSEP & exeFMPeg & strQUOT & " -y "
 
-                    'Output ctrl MP4 to .bmp frames
-                    Dim d As String = ""                                                    'Printf digit formatter thingy (pad to N digits)
-                    Dim dgs As UShort = 0                                                   'Amount of digits for printf formatter thingy            
-                    dgs = TryParseErr_UShort(txtVF_T.Text.Length)                           'Set digits to the amount of digits for the total amount of frames in the video
-                    d = "%0" & dgs.ToString() & "d"                                         'Set the printf digit formatter to "dgs" digits
-                    cmd &= "-i " & strQUOT & outFile & strQUOT                              '-i "C:\OutputDir\file.mp4"
+                'Output ctrl MP4 to .bmp frames
+                Dim d As String = ""                                                    'Printf digit formatter thingy (pad to N digits)
+                Dim dgs As UShort = 0                                                   'Amount of digits for printf formatter thingy            
+                dgs = TryParseErr_UShort(txtVF_T.Text.Length)                           'Set digits to the amount of digits for the total amount of frames in the video
+                d = "%0" & dgs.ToString() & "d"                                         'Set the printf digit formatter to "dgs" digits
+                cmd &= "-i " & strQUOT & outFile & strQUOT                              '-i "C:\OutputDir\file.mp4"
 
-                    '"C:\OutputDir\dummyTemp_%0Nd.bmp"
-                    file = strQUOT & FileDir(outFile) & "dummyTemp_" & d & ".bmp" & strQUOT
-                    cmd &= " " & file
+                '"C:\OutputDir\dummyTemp_%0Nd.bmp"
+                file = strQUOT & FileDir(outFile) & "dummyTemp_" & d & ".bmp" & strQUOT
+                cmd &= " " & file
 
-                    'Run cmd
+                'Run cmd
                 'startInfo.FileName = cmd
                 'Shell.StartInfo = startInfo
                 'Shell.Start()
                 'Shell.WaitForExit()
                 RunProcess(cmd)
-                    UpdateProg_Cur(CurPrg, "All BMP frames ripped!", False, True)
-                    UpdateProg_Cur(CurPrg, "Finding and keeping appropriate BMP frames...")
+                UpdateProg_Cur(CurPrg, "All BMP frames ripped!", False, True)
+                UpdateProg_Cur(CurPrg, "Finding and keeping appropriate BMP frames...")
 
-                    'Rename the appropriate frames to "dummy_N.bmp", remove the others 
-                    Dim i As Byte = 0                           'Generic iterator
-                    Dim j As UShort = 0                         'Frame value
-                    Dim frames As UShort = TryParseErr_UShort(txtVF_S.Text)    'The amount of frames per subvideo                
+                'Rename the appropriate frames to "dummy_N.bmp", remove the others 
+                Dim i As Byte = 0                           'Generic iterator
+                Dim j As UShort = 0                         'Frame value
+                Dim frames As UShort = TryParseErr_UShort(txtVF_S.Text)    'The amount of frames per subvideo                
 
-                    'Iterate through the mults (0-based)
-                    For i = 0 To m Step 1
-                        CurPrg(0) += 1                                      'Increment current prog foreach mult
-                        Text = "Mult " & (i + 1).ToString()                 'Log "Mult M"
-                        UpdateProg_Cur(CurPrg, Text)
+                'Iterate through the mults (0-based)
+                For i = 0 To m Step 1
+                    CurPrg(0) += 1                                      'Increment current prog foreach mult
+                    Text = "Mult " & (i + 1).ToString()                 'Log "Mult M"
+                    UpdateProg_Cur(CurPrg, Text)
 
-                        j = i * frames                                      'Frame ID = multiplicity ID * amount of frames. This gets 1st frame for each multplicity.
-                        j += 1                                              'Make FrameID 1-based
-                        d = "_" & j.ToString(StrDup(dgs, "0")) & ".bmp"     'Set d as the frame ID string "_%0Nd.bmp"
-                        file = "dummy_" & (i + 1).ToString() & ".bmp"       'File = "dummy_N.bmp"
+                    j = i * frames                                      'Frame ID = multiplicity ID * amount of frames. This gets 1st frame for each multplicity.
+                    j += 1                                              'Make FrameID 1-based
+                    d = "_" & j.ToString(StrDup(dgs, "0")) & ".bmp"     'Set d as the frame ID string "_%0Nd.bmp"
+                    file = "dummy_" & (i + 1).ToString() & ".bmp"       'File = "dummy_N.bmp"
 
-                        'Move file "C:\OutputDir\dummyTemp_ID.bmp" to "C:\OutputDir\dummy_N.bmp"
-                        file = FileDir(outFile) & FileAndExt(file)          'File = "C:\OutputDir\dummy_N.bmp"
-                        file2 = FileDir(outFile) & "dummyTemp" & d          'File2 = "C:\OutputDir\dummyTemp_ID.bmp"
-                        My.Computer.FileSystem.MoveFile(file2, file, True)
-                    Next i
+                    'Move file "C:\OutputDir\dummyTemp_ID.bmp" to "C:\OutputDir\dummy_N.bmp"
+                    file = FileDir(outFile) & FileAndExt(file)          'File = "C:\OutputDir\dummy_N.bmp"
+                    file2 = FileDir(outFile) & "dummyTemp" & d          'File2 = "C:\OutputDir\dummyTemp_ID.bmp"
+                    My.Computer.FileSystem.MoveFile(file2, file, True)
+                Next i
 
-                    CurPrg(0) = CurPrg(1)
-                    UpdateProg_Cur(CurPrg, "All appropriate BMP frames found and kept!", False, True)
-
-                    'Step 5: Cleanup temporary files (Delete all extra "dummyTemp_%0Nd.bmp" files)
-                    TtlPrg(0) += 1
-                    CurPrg(0) = 0
-                    CurPrg(1) = 1
-                    UpdateProg_Ttl(TtlPrg, "Step 5: Cleanup temporary files")
-                    UpdateProg_Cur(CurPrg, "", True, False)
-                    file = FileDir(outFile)                                                         'file = C:\WorkingDir
-                    file2 = "dummyTemp*.bmp"                                                        'file2 = dummyTemp*.bmp
-                    DeleteFilesFromFolder(file, file2, True, "Cleaning up files...", True, False)   'Delete files (with logging)
-                Else
-                    CurPrg(1) = 1
-                    Text = "Video does NOT have dummy frames!" & strNL
-                    UpdateProg_Cur(CurPrg, Text, True, False)
-                    CurPrg(0) += 1
-                    UpdateProg_Cur(CurPrg, "Dummy frame extraction done!", False, True)
-
-                    TtlPrg(0) += 1
-                    UpdateProg_Ttl(TtlPrg, "Step 5: Cleanup temporary files")
-                End If
-
-                'Delete temp.mp4
-                DeleteFilesFromFolder(FileDir(outFile), "temp.mp4")
-                TtlPrg(0) = TtlPrg(1)
                 CurPrg(0) = CurPrg(1)
-                UpdateProg_Ttl(TtlPrg, "Done!")
-                UpdateProg_Cur(CurPrg, "Cleanup done!", True, True)
+                UpdateProg_Cur(CurPrg, "All appropriate BMP frames found and kept!", False, True)
 
-                'Thwimp kicks dat Koopa shell away!
+                'Step 5: Cleanup temporary files (Delete all extra "dummyTemp_%0Nd.bmp" files)
+                TtlPrg(0) += 1
+                CurPrg(0) = 0
+                CurPrg(1) = 1
+                UpdateProg_Ttl(TtlPrg, "Step 5: Cleanup temporary files")
+                UpdateProg_Cur(CurPrg, "", True, False)
+                file = FileDir(outFile)                                                         'file = C:\WorkingDir
+                file2 = "dummyTemp*.bmp"                                                        'file2 = dummyTemp*.bmp
+                DeleteFilesFromFolder(file, file2, True, "Cleaning up files...", True, False)   'Delete files (with logging)
+            Else
+                CurPrg(1) = 1
+                Text = "Video does NOT have dummy frames!" & strNL
+                UpdateProg_Cur(CurPrg, Text, True, False)
+                CurPrg(0) += 1
+                UpdateProg_Cur(CurPrg, "Dummy frame extraction done!", False, True)
+
+                TtlPrg(0) += 1
+                UpdateProg_Ttl(TtlPrg, "Step 5: Cleanup temporary files")
+            End If
+
+            'Delete temp.mp4
+            DeleteFilesFromFolder(FileDir(outFile), "temp.mp4")
+            TtlPrg(0) = TtlPrg(1)
+            CurPrg(0) = CurPrg(1)
+            UpdateProg_Ttl(TtlPrg, "Done!")
+            UpdateProg_Cur(CurPrg, "Cleanup done!", True, True)
+
+            'Thwimp kicks dat Koopa shell away!
             'Shell.Close()
-                If chkAudio.Checked Then My.Computer.Audio.Play(My.Resources.success, AudioPlayMode.Background)
-                Log_MsgBox(Nothing, "Video ripped!", MsgBoxStyle.Information, "Success!", True)
+            If chkAudio.Checked Then My.Computer.Audio.Play(My.Resources.success, AudioPlayMode.Background)
+            Log_MsgBox(Nothing, "Video ripped!", MsgBoxStyle.Information, "Success!", True)
         Catch ex As Exception
             Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error during ripping!", True)
         End Try
@@ -2069,7 +2641,7 @@ Public Class Main
         Dim nameResult As String = ""                       'String result of cell name (cell+suffix)
         Dim suffix As String = ""                           'Multiplicity suffix
         Try
-            'Array of radio buttons (A1N notation)
+            'Array of radio buttons (A1_N notation)
             Dim Rads(6, 2) As System.Windows.Forms.RadioButton
             Rads(1, 1) = radTD_A1
             Rads(2, 1) = radTD_A2
@@ -2176,6 +2748,10 @@ Public Class Main
     ''' <param name="e"></param>
     ''' <remarks>This the main feature of the program, and quite schmancy</remarks>
     Private Sub btnTE_Enc_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnTE_Enc.Click
+        Encode()
+    End Sub
+
+    Private Sub Encode(Optional ByVal pathOverride As String = "")
         'Psuedo code of encoding process. Assume an array of subvideos with a multiplicity.
         'During these steps, MP4s with an -avcodec of h264 are used, in order to preserve loseless but compressed quality output during the multiple passes.
         'Ideally, I would use AVIs with -avcodec of rawvideo, but AVIs don't support video dimensions that aren't a mult of 16 without speedloss
@@ -2212,7 +2788,7 @@ Public Class Main
         'The working directory for conversion needs the following input files:
         '*  MP4 video files for each subvideo, and for each multiplicity. These MP4s should be encoded with -vcodec h264
         '   Named as "filename_AX_Y.mp4", where "A" is a letter indicating the row ID in the array,
-        '   where "X" is the column ID as a number, and "Y" is the multiplicity ID. A and X are setup in MS Excel A1N notation
+        '   where "X" is the column ID as a number, and "Y" is the multiplicity ID. A and X are setup in MS Excel A1_N notation
         '*  If video has audio, "filename.wav" for the audio stream
         '*  If video has dummy padding, a single BMP image file for each multiplicity
         '   ("dummy_N.bmp", where N is the current mult ID).
@@ -2248,7 +2824,10 @@ Public Class Main
         'Show ofdOutput, let user select the working directory with the input files
         Dim shell As Process = New Process()
         Try
-            If ofdOutput.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
+            'If not CLI_MODE, then show dialog/handle cancel
+            If CLI_MODE = False Then
+                If ofdOutput.ShowDialog() = Windows.Forms.DialogResult.Cancel Then Exit Sub
+            End If
 
             'Total/current progress for progress bar.
             'Index(0)=current progress, Index(1)=max progress
@@ -2264,7 +2843,15 @@ Public Class Main
             'Dim shell As Process
             'shell = New Process
 
-            Dim path As String = ofdOutput.SelectedPath         'The working directory with our input files.
+            Dim path As String
+
+            'If NOT CLI_MODE, then get path from dialog box; else use path override
+            If CLI_MODE = False Then
+                path = ofdOutput.SelectedPath         'The working directory with our input files.
+            Else
+                path = pathOverride
+            End If
+
             Dim filename As String = FileAndExt(cmbTHP.Text)    '"filename.thp" we want to create
             Dim file As String = ""                             'Generic file string
             Dim file2 As String = ""                            'Generic file string2
@@ -2288,7 +2875,7 @@ Public Class Main
             Dim frames As UShort = TryParseErr_UShort(txtTE_F.Text) 'The amount of frames to limit each subvideo to
             Dim FPS As Single = TryParseErr_Single(txtVC_F.Text)    'The framerate FPS as single
 
-            'Array of suffixes for the naming conventions in MS Excel A1N notation (Row, Column)
+            'Array of suffixes for the naming conventions in MS Excel A1_N notation (Row, Column)
             'It is hardcoded to 6x2, since the components of each length dimension don't go any larger than this
             Dim suffixes(6, 2) As String
             suffixes(1, 1) = "_A1"
@@ -2988,6 +3575,14 @@ Public Class Main
 
             'If wait flag, stall app by 3s
             If _wait Then Threading.Thread.Sleep(3000)
+        Else
+            'If text is null BUT CLI_MODE, log progress. This allows showing of intermediateary progres in CLI_MODE
+            If type = False Then
+                logText = "THPEnc progress (ttl, cur) = (" & prog2.ToString("P2") & "," & prog.ToString("P2") & ")"
+            Else
+                logText = "THPEnc progress (ttl, cur) = (" & prog.ToString("P2") & "," & prog2.ToString("P2") & ")"
+            End If
+            Log(logText)
         End If
     End Sub
 
@@ -3117,12 +3712,10 @@ Public Class Main
                 bitmap = System.Drawing.SystemIcons.Information.ToBitmap()
             Case MsgBoxStyle.Question
                 bitmap = System.Drawing.SystemIcons.Question.ToBitmap()
-
-                'NOP; don't handle
             Case MsgBoxStyle.OkOnly
-
-                'Anthing else = nullicon
+                'NOP; don't handle                
             Case Else
+                'Anthing else = nullicon
                 bitmap = My.Resources.nullIcon
         End Select
 
@@ -3132,6 +3725,9 @@ Public Class Main
             'Force a pic update for fast rendering
             picLog.Update()
         End If
+
+        'Spit output to CMD Prompt if CLI_MODE
+        If CLI_MODE Then Console.WriteLine(text)
     End Sub
 
     ''' <summary>
@@ -3190,6 +3786,14 @@ Public Class Main
 
         'Log the msgBox text
         Log(text, style)
+    End Sub
+
+    ''' <summary>
+    ''' Closes app if CLI_MODE
+    ''' </summary>
+    ''' <remarks></remarks>
+    Private Sub CloseApp_CLI()
+        If CLI_MODE Then Me.Close()
     End Sub
 
     ''' <summary>
@@ -3475,7 +4079,7 @@ Public Class Main
         Dim Dec_Dum As System.Windows.Forms.RadioButton         'Dummy radio button (for padding)
         Dim Dec_All As System.Windows.Forms.RadioButton         'Radio button for all
 
-        'Init the encoding array. In A1N MS Excel notation, Alpha=row, Number=Col
+        'Init the encoding array. In A1_N MS Excel notation, Alpha=row, Number=Col
         Enc_Boxes(1, 1) = chkTE_A1
         Enc_Boxes(2, 1) = chkTE_A2
         Enc_Boxes(3, 1) = chkTE_A3
@@ -3492,7 +4096,7 @@ Public Class Main
         Enc_Dum = chkTE_Dum
         Enc_Wav = chkTE_wav
 
-        'Init the decoding array. In A1N MS Excel notation, Alpha=row, Number=Col
+        'Init the decoding array. In A1_N MS Excel notation, Alpha=row, Number=Col
         Dec_Rads(1, 1) = radTD_A1
         Dec_Rads(2, 1) = radTD_A2
         Dec_Rads(3, 1) = radTD_A3

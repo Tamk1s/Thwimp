@@ -1181,12 +1181,12 @@ Partial Class Main
         'lblTHPFile
         '
         Me.lblTHPFile.AutoSize = True
-        Me.lblTHPFile.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblTHPFile.Location = New System.Drawing.Point(4, 14)
+        Me.lblTHPFile.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.2!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lblTHPFile.Location = New System.Drawing.Point(6, 4)
         Me.lblTHPFile.Name = "lblTHPFile"
-        Me.lblTHPFile.Size = New System.Drawing.Size(70, 17)
+        Me.lblTHPFile.Size = New System.Drawing.Size(69, 32)
         Me.lblTHPFile.TabIndex = 0
-        Me.lblTHPFile.Text = "THP File"
+        Me.lblTHPFile.Text = "THP File" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "(ID = 0)"
         '
         'grpTHPInfo
         '
