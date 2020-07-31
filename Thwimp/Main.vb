@@ -29,7 +29,10 @@ Public Class Main
 
     'Command-Line Interface Mode?
     'This flag will be set if called from CommandLine with args, and will change the runtime behavior for errors etc.
+    'http://www.csharp411.com/console-output-from-winforms-application/
     Shared CLI_MODE As Boolean = False
+    Shared CLI_Attached As Boolean = False                  'Has application hooked into calling Command Prompt? (For Console.WriteLine redirection)
+    Private Const ATTACH_PARENT_PROCESS As Integer = -1     'Constant for AttachConsole Kernel32.dll PInvoke
 
     'Characters
     Shared strPATHSEP As String = Path.DirectorySeparatorChar 'Path separator symbol
@@ -130,14 +133,13 @@ Public Class Main
     ''' <param name="sender"></param>
     ''' <param name="e"></param>
     ''' <remarks></remarks>
-    Private Sub Main_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load        
+    Private Sub Main_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
         'Initialize the application with some setup code
         Dim CLI As System.Collections.ObjectModel.ReadOnlyCollection(Of String) = My.Application.CommandLineArgs    'Get the cmdline args
         If CLI.Count <> 0 Then CLI_MODE = True 'If params exist, then CLI MODE
 
-        'Init log, with current build version, time, date
-        Dim info As String = Application.ProductName & ": " & Application.ProductVersion
-        Log(info, MsgBoxStyle.Information, True)
+        'Init log info
+        Dim info As String = Application.ProductName & ": " & Application.ProductVersion        
 
         'Load Options tab
         tabApp.SelectedIndex = 1
@@ -156,6 +158,9 @@ Public Class Main
         'Handle CLI arguments (if CLI_MODE)
         Try
             If CLI_MODE Then
+                CLI_Attached = AttachConsole(ATTACH_PARENT_PROCESS) 'Attach Console to calling Command Prompt, return success result
+                If CLI_Attached Then SetConsoleTitle("Thwimp CLI") 'Set the title on the console window (if attached)                
+                Log(info, MsgBoxStyle.Information, True)            'Init log, with current build version, time, date
                 Dim found(2) As Boolean             'Array of states, indicating if a specified param string key was found
                 Dim success As Boolean = False
                 Dim param(2) As String              'Array of params to check for
@@ -230,7 +235,7 @@ Public Class Main
                         THP_ID = TryParseErr_Byte(param(0))
                         'Check if THP_ID is within range of current fileset; if not, throw error
                         Dim max As Byte = cmbTHP.Items.Count - 1
-                        If THP_ID < 0 Or THP_ID > max Then Throw New System.Exception("THP ID selected is out of range for the current Data fileset!")                        
+                        If THP_ID < 0 Or THP_ID > max Then Throw New System.Exception("THP ID selected is out of range for the current Data fileset!")
                         cmbTHP.SelectedIndex = THP_ID
                         'Also check if THP ID is BAD dummy entry.
                         'This needs to be done AFTER selecting the ID, so we can determine if it's a BAD dummy entry or not
@@ -364,12 +369,45 @@ Public Class Main
                         CmdHelp()
                 End Select
                 CloseApp_CLI()
+            Else
+                'Init log, with current build version, time, date
+                Log(info, MsgBoxStyle.Information, True)
             End If
         Catch ex As Exception
             Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error parsing CLI arguments!", True)
             CloseApp_CLI()
-        End Try        
+        End Try
     End Sub
+
+
+    'Various Kernel32.dll PInvokes for Console stuff
+
+    ''' <summary>
+    ''' Allocate a Console
+    ''' </summary>
+    ''' <returns>Handle/error code</returns>
+    ''' <remarks>https://www.pinvoke.net/default.aspx/kernel32.AllocConsole</remarks>
+    Private Declare Function AllocConsole Lib "kernel32" () As Long
+    ''' <summary>
+    ''' Free handle from console
+    ''' </summary>
+    ''' <returns>Handle/error code</returns>
+    ''' <remarks>https://www.pinvoke.net/default.aspx/kernel32.FreeConsole</remarks>
+    Private Declare Function FreeConsole Lib "kernel32" () As Long
+    ''' <summary>
+    ''' Attached console to command prompt that called this app (if any)
+    ''' </summary>
+    ''' <param name="dwProcessId">Constant for process ID</param>
+    ''' <returns>Succesfully attached?</returns>
+    ''' <remarks>https://www.pinvoke.net/default.aspx/kernel32.AttachConsole</remarks>
+    Private Declare Function AttachConsole Lib "kernel32" (ByVal dwProcessId As Integer) As Boolean
+    ''' <summary>
+    ''' Set the title for the console
+    ''' </summary>
+    ''' <param name="lpConsoleTitle">Title</param>
+    ''' <returns>Handle/Error code</returns>
+    ''' <remarks>https://www.pinvoke.net/default.aspx/kernel32.SetConsoleTitle</remarks>
+    Private Declare Function SetConsoleTitle Lib "kernel32" Alias "SetConsoleTitleA" (ByVal lpConsoleTitle As String) As Long
 
     ''' <summary>
     ''' Parse command line argument string, check if param has argument, and then return argument from it
@@ -3696,7 +3734,8 @@ Public Class Main
         If _Set = True Then
             txtLog.Text = text
         Else
-            txtLog.AppendText(text & strNL)
+            text = text & strNL
+            txtLog.AppendText(text)
         End If
         'Force a text update for fast rendering
         txtLog.Update()
@@ -3726,8 +3765,8 @@ Public Class Main
             picLog.Update()
         End If
 
-        'Spit output to CMD Prompt if CLI_MODE
-        If CLI_MODE Then Console.WriteLine(text)
+        'Spit output to CMD Prompt if CLI_MODE and attached
+        If CLI_MODE And CLI_Attached Then Console.WriteLine(text)
     End Sub
 
     ''' <summary>
@@ -3793,7 +3832,10 @@ Public Class Main
     ''' </summary>
     ''' <remarks></remarks>
     Private Sub CloseApp_CLI()
-        If CLI_MODE Then Me.Close()
+        If CLI_MODE Then
+            If CLI_Attached Then FreeConsole() 'Destroy the console if attached
+            Me.Close()                         'Close app!
+        End If
     End Sub
 
     ''' <summary>
