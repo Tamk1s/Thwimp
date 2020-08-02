@@ -392,7 +392,172 @@ The data for each THP from the original MKWii game is hard-coded and read from e
 		- Text must be single-line for each THP file in order to be in parallel with FileListing.txt
 
 ## 5. Change Log
+ - **v1.2: 2nd revision, bugfixes, enhancements, CLI support (08/01/20)**
+	- **Bugfixes**
+		- **[Issue #5](https://github.com/Tamk1s/Thwimp/issues/5): Irfanview path bug/Issue, [Issue #6](https://github.com/Tamk1s/Thwimp/issues/6): JPG Quality Bug**
+			- Fixed serious, application-breaking bug where pointing to a real i_view32.exe executable would cause the THP Encoder process to convert the ripped BMP frames from the final generated video to Progressive JPG files
+			- This bug also fixes Issue #6 (same bug)
+			- THPConv cannot handle Progressive JPG markers (SOF2 header of $FFC2), so this bug would cause **THP conversion to fail**
+			- Bug cause
+				- Pointing to a symlink of i_view32.exe does not read i_view32.ini option files when calling Irfanview command-line commands, and thus ignores JPEG Save Progressive option
+				- Pointing to a real i_view32.exe install directory does read i_view32.ini option file, and thus may apply JPEG Save Progressive option (and break THP conversion)
+			- Bugfix method (HackINIFile() function))
+				- Read i_view32.ini file (located at exe path)
+				- Locate the options i_view32.ini pointed to from within (usually located at %APPDATA%\Irfanview)
+				- Copy that options i_view32.ini file to the THP Encoding working directory
+				- Hack that INI file with changes
+					- Save Progressive=0 (false)
+					- Save Quality=[User-defined JPEG Quality setting]
+					- Run BMP -> JPG converion via Irfanview commandline during THP Encoding, using hacked INI file options and /JPGQ setting, in order to ensure no Progressive JPG output and proper JPG Quality setting
+					
+        	- **[Issue #7](https://github.com/Tamk1s/Thwimp/issues/7): THP encoding optimization**
+            	- Issue related to encoding THPs that require dummy/padding frames
+            	- Issue would cause the conversion of each multiplicities' dummy frame (dummy_N.bmp) into a dummy multiplicity video (dummy_N.mp4) to be poor, with their framecounts exceeding their intended value
+            	- Issue would snowball further along the THP encoding process, and cause the final video to be much larger in framecount than expected
+            	- This would, in turn, slow down the process of ripping BMP frames and converting to JPG frames for the actual THP encoding
+            		- Application deletes all JPG files above the framecount limit ("Frame Trunc" * number_of_multiplicities), so many CPU cycles would be wasted without the bugfix
+            	- Bug fixed with a better FFMPEG cmdline call, which properly converts the dummy BMP frames into a correct length dummy video
+			- Fixed bug with THP Encoder "Trunc Frame" field not updating always when changing the selected THP video (THP combo box)
+			- Made application start in Options Tab					
+			
+		- **[Issue #11](https://github.com/Tamk1s/Thwimp/issues/11): Error parsing string into Single**
+			- Fixed meat of TryParseErr_Single() function
+				- Made parsing of strings into Single be culture-invariant (EN-US culture)
+			- Fixes issue where FPS value from the data fileset wouldn't be read properly in other cultures (such as EN-GB)
+				- Single values must be defined as "ww.dd"
+				- w = whole value
+				- d=decimal values
+				
+		- **[Issue #12](https://github.com/Tamk1s/Thwimp/issues/12): KeepInRange parsing bugs**
+			- Fixed issue where, in the THP Viewer/Ripper section, "Error Parsing String into [T]" errors will throw under the following conditions
+				- If a MaskedTextBox is focused on
+				- If MaskedTextBox cleared to empty (a bunch of underscores "_")
+				- If the user focuses elsewhere
+			- Fixed by less over-zealous error-trapping, to prevent false positives
 
+		- **[Issue #13](https://github.com/Tamk1s/Thwimp/issues/13): Path Separator Char**
+			- Split the constants used for "\\" (backslash path separator char) and "/" (FFMPEG cropping char) into 2 separate constants
+			- Refactored code to use proper const refs
+			- Allows for easier porting of code to other platforms
+				- MacOS
+				- Linux
+				- Wrt handling the proper path separtor char
+				
+		- **[Issue #14](https://github.com/Tamk1s/Thwimp/issues/14): Lingering File I/O from StreamReaders/Writers**
+			- Added proper closing of StreamReaders/Writers, regardless of whether successful usage or failure due to Try-Catch errors
+			- This properly
+				- Closes file I/O handles on files, in case of error and application is then quit
+				- Unlocks them for everyday user file operations afterwards
+				
+		- Added an additional dummy entry as 0th entry in default MKWii data files
+
+	- **Enhancements**
+		- **[Issue #9](https://github.com/Tamk1s/Thwimp/issues/9): Thwimp CLI**
+			- Implemented command-line interface into Thwimp!
+			- Redirected all stdoutput from the application's console into the calling Command Prompt
+		- **[Issue #8](https://github.com/Tamk1s/Thwimp/issues/8): THP Viewer/Ripper enhancements**
+			- Modified the THP Viewer playback so that it
+				- Applies the Crop Settings (both physical and time) to the playback
+				- Now properly trims any audio streams for playback of applicable THP videos!
+					- This is done via ripping audio and video streams separately (temporary MP4 files with only one stream type), trimming both, and remerging both back into a final temp mp4 video file
+					- Playback final temp mp4 video file with the trimming applied
+					- Temporary files generated in FFPlay WorkDir (new Options directory setting)
+			- Modified THP Ripper so that it now properly trims any ripped audio streams for applicable THP videos!			
+
+		- **New Options**
+			- **Fileset Data**
+				- New **"FileSet.txt"** file
+					- Informational file which lists this fileset's
+						- Game
+						- Desc
+						- Author
+						- Version
+						- Creation date
+					- Data is displayed in new fields within Options tab
+				- Updated stock MKWii Fileset with the new FileSet.txt file
+
+			- **Paths**
+				- FFPlay WorkDir
+					- Working Directory for FFPlay temporary files
+					- Used when viewing/ripping THP files with both Audio and Video streams, when cropping time
+                			- Directory used **must** have read/write access!
+				- DataFile Dir
+					- Directory to use containing data files to use for Thwimp (e.g. customization to use for other games)
+
+			- **Option flags** (in Options tab)				
+				- "Audio" checkbox
+					- Toggles audio
+				- "Elevator Music" checkbox
+					- Toggle THP Encoder elevator music
+				- "Less MsgBox" checkbox
+					- Supresses most informational MsgBoxes during THP Encoding processes
+					- Prevents interruption for this long process
+				- "Full Logs" checkbox
+					- Logs **everything** (including stdout from Process cmdline calls)	
+				- **Settings INI file**
+					- Buttons to save/load a Thwimp INI settings file
+					- Allows for saving/loading of settings
+
+			- **Help/Resources**
+				- Added new section with various buttons to launch URLs in default browser with Thwimp resources
+				- Buttons
+					- Webpage
+						- [EagleSoft Ltd. Thwimp webpage](http://www.eaglesoftltd.com/retro/Nintendo-Wii/thwimp)
+					- About
+						- Application about box
+					- MKWiiki Article
+						- [MKWiiki Thwimp article webpage](http://wiki.tockdom.com/wiki/Thwimp)
+					- Manual (Github)
+						-  [Thwimp's readme.md webpage on this Github repo](https://github.com/Tamk1s/Thwimp/blob/master/README.md)
+					- Latest Release
+						-  [Releases webpage on this Github repo](https://github.com/Tamk1s/Thwimp/releases)
+					- Cmdline
+						- Details valid command-line options for application (for CLI mode)				
+
+		- **Added audio to application**
+			- Custom error sfx (SMB1 Mario death)
+			- Custom success sfx (SMB1 flagpole)
+			- Elevator Music
+				- Looping song bgm to play during long THP Encoding process
+				- Song.wav at application directory
+				- Default application [song.wav](https://github.com/Tamk1s/Thwimp/blob/master/Thwimp/Resources/song.wav) is my own [MKWii Menu (SMPS32x) song](https://www.youtube.com/watch?v=9IgTsuiI_ig)
+				- Audio toggle via new "Elevator Music" checkbox in Options tab
+			- Audio toggle via new "Audio" checkbox in Options tab
+		- **Progress bars/application logging**
+			- **Progress bars**
+				- Added a "Progress" section in THP tab, showing status of processes
+				- 2 progress bar groups
+					- Total
+					- Current
+						- Progress for a particular chunk in total progress
+						- Think of those old Installshield installer wizards from Windows 95, with multiple progress bars
+					- Elements within a progress bar group
+						- Textbox (logs progress messages)
+						- Progressbar (self-explanatory)
+						- Label (display current progress percentage)
+				- **Refactored and improved THP Encoding process**
+                	- Display total/current encoding progress
+
+                    - Log informational progress messages
+			- **Application logging**
+				- Added new "Log" group box section
+				- Logs various mesages
+					- Application messages
+					- Total/Current progress messages
+					- MsgBox messages (and icons)
+				- Control buttons
+					- Cls
+						- Clears various log elements
+							- Total/current progress bar elements
+								- Progress bar
+								- Messages
+								- Progress percentage
+							- Main Log box
+								- Log text
+								- MsgBox icon
+					- Save
+						- Saves log text to a file (for error reporting/debugging)
+ 
  - **v1.1: 1st revision** (01/06/19)
 	- Bugfixes
 		- Fixed a bug with proper framerate not being applied to encoded THP videos for replacement
@@ -425,10 +590,8 @@ Development of the 1st release was from October 19-23, 2018. It was based on my 
 
 
 ## 6. Known Issues
- - Encoding THP videos may get desynced
+ - Encoded THP videos may lag or stutter on real hardware (especially when streaming modded files from SD card via Riivolution)
  	- Read "Streaming bandwidth notes" subsection in Section 3 (How to use it) about this issue.
- - Trimming a THP video and then ripping it with audio will not have the audio file trimmed.
-	- Feature not planned to be implemented. (Not easy to do with FFMPEG)
  
 ## 7. Credits:
 
@@ -451,6 +614,11 @@ Development of the 1st release was from October 19-23, 2018. It was based on my 
  	- [Thwimp artwork](https://www.deviantart.com/the-papernes-guy/art/Thwomps-Thwomps-Thwomps-186879685)
  - Asneter (DeviantArt)
  	- [Filmstrip art](https://www.deviantart.com/asneter/art/Filmstrip-stock-349762273)
+ - Flipfloppery (DeviantArt)
+ 	- [Lakitu art](https://www.deviantart.com/flipfloppery/art/Piras-kart-445108302)
+ - ariarts258 (DeviantArt)
+ 	- [MKWii Riding art](https://www.deviantart.com/ariarts258/art/mario-kart-wii-244952252)	
+
  - Nintendo
  	- Nintendo Wii
     - Mario Kart Wii
