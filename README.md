@@ -24,14 +24,22 @@ By [Tamkis/EagleSoft Ltd.](http://www.eaglesoftltd.com)
 
 ## 1. What is it?
 
-Thwimp is a hybrid GUI/CLI Windows utility which allows users easily to view, to rip, and to encode [Nintendo THP](http://wiki.tockdom.com/wiki/THP_(File_Format)) video files for Mario Kart Wii (and for other GCN/Wii games, to an extent). Written in Visual Basic (from Visual Studio 2010 IDE), the Thwimp application calls some FOSS and other command line tools **(not included)** "from arms length" via the Command Prompt to perform its tasks.
+Thwimp is a hybrid GUI/CLI **Windows** utility which allows users easily to view, to rip, and to encode [Nintendo THP](http://wiki.tockdom.com/wiki/THP_(File_Format)) video files for Mario Kart Wii (and for other GCN/Wii games, to an extent). Written in Visual Basic (from Visual Studio 2010 IDE), the Thwimp application calls some FOSS and other command line tools **(not included)** "from arms length" via the Command Prompt to perform its tasks.
 
 **Specifically, Thwimp uses:**
 
-- FFMPEG for video processing
-- FFPlay for THP playback
-- Irfanview for image conversion
-- THPConv **(definitely not included)** for encoding JPG frames + wav file into THP videos
+- **FFMPEG**
+	- Video processing
+- **FFPlay**
+	- THP playback
+- **Irfanview**
+	- Image conversion
+	- BMP to JPG conversion
+		- JPG Quality setting applied
+		- Non-progressive JPG files
+- **THPConv**
+	- **Definitely not included!**
+	- Encoding JPG frames + WAV file into THP videos
 
 ![Utility logos](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/Utils.png)
 
@@ -97,37 +105,131 @@ As mentioned earlier, Thwimp uses some FOSS and other command line tools for pro
  - [THPConv or THPGUI](http://www.google.com)
 
 ![Utility logos](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/Utils.png)
-### Setting up paths:
-
-Before doing **anything** in the utility, goto the "Options" tab of the application and set your paths. Do this by clicking the "Browse" buttons beside each item and navigating to the appropriate places with the file dialog boxes that appear.
+### Options tab:
 
 ![Options](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/Options.png)
+
+#### Setting up paths:
+
+Before doing **anything** in the utility, goto the "Options" tab of the application and set your paths. Do this by clicking the "Browse" buttons beside each item and navigating to the appropriate places with the file dialog boxes that appear.
 
 **Paths to set:**
 1. THP Root
 	- Path containing the original Nintendo THP video files for viewing/ripping
-    - On a legally obtained, self-dumped Mario Kart Wii ISO from a copy of the disc that you own **(don't ask me where to get one)**, this should be the ["root\thp"](http://wiki.tockdom.com/wiki/Filesystem/thp) folder extracted from the Partition 1 (0-based ID) of the ISO.
-    - Use Dolphin's ISO Filesystem browsing feature, or [Wiimm's ISO Tools](http://wiki.tockdom.com/wiki/Wiimms_ISO_Tools)
+	- On a legally obtained, self-dumped Mario Kart Wii ISO from a copy of the disc that you own **(don't ask me where to get one)**, this should be the ["root\thp"](http://wiki.tockdom.com/wiki/Filesystem/thp) folder extracted from  Partition 1 (0-based ID) of the DVD/ISO.	
+	- File extraction utilities
+		- [Dolphin's](https://dolphin-emu.org/) [ISO Filesystem browsing feature](https://wiki.vg-resource.com/Dolphin)
+		- [Wiimm's ISO Tools](http://wiki.tockdom.com/wiki/Wiimms_ISO_Tools)
+		- Extract files using [WiiXplorer](https://wiibrew.org/wiki/WiiXplorer) from an original MKWii DVD to SD Card (real Wii hardware with Homebrew Channel)
 
 2. FFMPEG Exe Root
 	- Points to the folder containing the executables of FFMPEG
-    - Usually located at "[FFMPEG root]\bin", should contain
-    	- ffmpeg.exe
-        - ffplay.exe
-3. IrfanView
+    	- Usually located at "[FFMPEG root]\bin", should contain
+    		- ffmpeg.exe
+        	- ffplay.exe
+
+3. FFPlay WorkDir
+	- Directory to place some temporary, intermediary files when using the THP Viewer
+	- Especially used when time cropping a THP video with an audio stream
+
+4. IrfanView
 	- Points to the IrfanView executable (i_view32.exe)
-4. THPConv Exe
+	- Must be the **32-bit version**
+
+5. THPConv Exe
 	- Points to THPConv.exe
-    - A command line tool used to encode jpg frames and a wav file into a Nintendo THP video. 
-    - **Do not ask me where to obtain this!**
+	- Command line tool used for encoding JPG frames (and optionally a WAV file) into a Nintendo THP video
+	- **Do not ask me where to obtain this!**
 
-The "About" button displays information about the current build of this application. After setting all of your paths, the elements in the "THP" tab will be available!
+6. Data File Dir
+	- Points to a folder containing the Thwimp data fileset for the game you wish to handle THPs from
+	- Default MKWii data fileset should be within the Thwimp exectuable's folder, others elsewhere
+	- Metadata information about the loaded fileset will appear in the "Data Fileset Info" groupbox
+		- Read the **Data Fileset Info subsection** for more information
+	- See **Section 5 Customization** for more information	
+	
+   After setting all of your paths, the elements in the "THP" tab will be available! You can also quickly load your options from an INI file (after saving one). See **Load/Save Settings" subsection** for more information.
 
-![About](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/About.png)
+#### Option flags:
+
+  Underneath the paths in the Options tab are various checkboxes. These are various option flags which tweak how Thwimp will operate.
+  
+**Option flags:**
+
+1. Less MsgBox
+	- During THP encoding, a few informational message boxes will appear during encoding
+	- Checking this box will suppress them, allowing for encoding without interruption
+
+2. Full Logs
+	- If checked, will log **everything** (including stdout from FOSS co-utilities) into the Logger form in the THP tab
+	- Use this for debugging issues/sending detailed error reports that occur when the THP Viewer, Ripper, or Encoder fail to work from FFMPEG/FFPlay commands that are called from Thwimp
+	- **Required to be checked when operating from CLI mode!**
+
+3. Audio
+	- If checked, will play audio clips on certain events
+		- Super Mario Bros 1. flagpole victory
+			- THP Ripper success
+			- THP Encoder success
+			- Cmdline help box
+		- EagleSoft Ltd branding
+			- About box
+		- Super Mario Bros 1. death
+			- Errors, failure
+	- Must be checked to enabled Elevator Music feature
+
+4. Elevator Music
+	- If Audio is checked and this, then will playback some "Elevator Music" during THP encoding
+	- Plays back song.wav (located at Thwimp executable directory) looped
+	- Use this feature as
+		- An audial notifier that Encoder is still running
+		OR
+		- Is done when it stops
+		- Entertainment
+
+#### Load/Save Settings:
+
+  Within the option flags area are also two buttons: "Load Settings" and "Save Settings". Click "Save Settings" to save your current settings to an INI file, or "Load Settings" to restore settings from one. It is recommended to save your machine's default settings at the Thwimp executable folder, for easier and quicker usage of Thwimp. Use this feature to quickly load common options, rather than tweaking them every launch of the application. **CLI mode requires** the usage of a Thwimp INI file, so make sure to save your desired settings when using a particular data fileset to a specific INI file!
+  
+#### Data Fileset Info:
+
+   Underneath the Options' paths, flags, and Load/Save Settings buttons is another group box titled "Data Fileset Info". This section lists metadata about the loaded data fileset (from FileSet.txt)
+   
+**FileSet metadata:**
+- Game
+	- Game this fileset is meant for
+- Description
+	- A quick description about this fileset
+- Author
+	- Who created this fileset
+- Version
+	- Version string of this fileset
+- Date
+	- Release date of this version
+
+#### Help/Resources:
+
+  At the bottom of the Options tab is a group box labelled "Help/Resources". As its name suggests, it has various buttons to  launch website links in your default web browser, and display data for resources about Thwimp.
+  
+**Buttons:**
+- Webpage
+	- Opens up the [EagleSoft Ltd. Thwimp webpage](http://www.eaglesoftltd.com/retro/Nintendo-Wii/thwimp)
+- About
+	- Displays information about the current build of this application.
+	- ![About](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/About.png)
+- MKWiiki article
+	- Opens up the [Thwimp MKWiiki article](http://wiki.tockdom.com/wiki/Thwimp)
+- Manual (Github)
+	- Opens up [this readme document](https://github.com/Tamk1s/Thwimp/blob/master/README.md)
+- Latest Release
+	- Opens up the [Thwimp Github releases page](https://github.com/Tamk1s/Thwimp/releases)
+	- Use this to check for newer releases
+- Cmdline
+	- Opens up another form, displaying the current CLI syntax
+	- ![CLI](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/CLI.png)
 
 ### Using the THP tab:
 
-At the top of the THP tab will be a dropdown box. Use this to select which THP file from MKWii to view, to rip, or to encode a new THP for. After selecting a valid THP file, the THP Viewer/Ripper and THP Encoder group boxes will be available for use.
+After loading valid settings, the THP tab will be available. At the top of the THP tab will be a dropdown box. Use this to select which THP file from MKWii to view, to rip, or to encode a new THP for. The "THP File" label will be updated with the current selectedIndex ID of the dropdown box; use this ID value in CLI operations using this fileset. After selecting a valid THP file, the THP Viewer/Ripper and THP Encoder group boxes will be available for use.
 
 #### THP Info:
 
@@ -136,33 +238,34 @@ The "THP Info" group box gives statistical information about each original, Nint
 ![THP Info](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/THP.png)
 
 **Video:**
- - Total dims
+ - **Total dims**
 	- Width
 		- Width of the entire THP video (in px)
 	- Height
 		- Height of the entire THP video (in px)
 
- - Video array info
-	- Array
+ - **Video array info**
+	- **Array**
 		- R
-			- Amount of rows in the array of subvideos
+			- Amount of rows in the array of subvideo cells
 		- C
-			- Amount of columns in the array of subvideos
+			- Amount of columns in the array of subvideo cells
 		- Subv
 			- Amount of subvideo cells in the array (S = R * C)
 		
-	- Subvideo Info
+	- **Subvideo Info**
 		- Multi
-			- Multiplicity for each video
+			- Number of multiplicities for each subvideo cells
 			- Example
 				- Some videos may show several tracks within one subvideo cell 
 				- "course\cup_select.thp" in MKWii
-				- THP shows 4 tracks in each cell, so mult = 4 here
+				- THP shows 4 tracks in each subvideo cell, so mult = 4 here
 		- Tot. Subv
-			- Total amount of subvideos in the THP video (T = R * C * Mult)
+			- Total amount of subvideos cells in the THP video, taking into account multiplicities (T = R * C * Mult)
+			- This value will indicate the amount of MP4 video files you will need when encoding
 		
-	- Playback info
-		- Subvid dims
+	- **Playback info**
+		- **Subvid dims**
 			- Subv (Width, Height)
 				- Width and height of each subvideo cell within the array (in px)
 			- Pad (Width, Height)
@@ -170,20 +273,22 @@ The "THP Info" group box gives statistical information about each original, Nint
 				- THP video total dims must be a multiple of 16px
 				- Padding used for 2 purposes
 					- Pad total video dims to nearest multiple of 16px
-					- Control signal. See THP video's "Control" group box for usage information
+						- Requirement of THP format filespec
+					- Control signal
+						- See THP video's "Control" group box for usage information
 					
-		- Number of frames 
+		- **# of frames**
 			- Subv (mult)
-				- Amount of video frames for each multiplicity of each subvideo
+				- Amount of video frames for each multiplicity for each subvideo cell
 			- Total
 				- Total amount of video frames in the THP file (T = Subv_mult * mult)
 			
-		- Control
+		- **Control**
 			- FPS
 				- **F**rames **P**er **S**econd playback speed of the THP
 				- Default values
-					- 59.94 Hz (NTSC)
-					- 50 Hz (PAL)
+					- 59.94 Hz **(NTSC)**
+					- 50 Hz **(PAL)**
 				
 			- Ctrl?
 				- Is padding used for control purposes?
@@ -205,9 +310,29 @@ The "THP Info" group box gives statistical information about each original, Nint
 	- How the THP video is formatted
 	- THP file's usage/purpose in-game
 
+#### Log:
+
+At the bottom of the THP tab, is a group box labelled "Log". This consists of a textbox, an icon, and 2 buttons: "Cls" and "Save". The textbox will display log messages, warnings, and any errors that occur when running Thwimp. If "Full Log" option is set in the options, it will also log output from the FOSS applications called at-arms-length by Thwimp. This logger will also log data from the progress bars, as well as MsgBoxes (the icon will display the same one that the MsgBox had when it was displayed).
+
+The "Cls" button will clear the logger, while the "Save" button will dump the logger's contents into a text file. Use this for better inspections of issues, or sending me error reports for debugging!
+
+#### Progress bars:
+
+To the right of the Logger group box are 2 sets of Progress bar data.
+
+**Each progress bar set consists of:**
+- Textbox
+	- Displays messages
+- Progress bar
+	- The progress bar itself
+- Percentage label
+	- Displays the current progress as a percentage
+
+The upper set is for total progress, while the lower set is used for current progress (think Installshield Wizard total/current progress bar sets from Windows 9X era). These progress bars are used by the THP Viewer, Ripper, and Encoder for showing progress of the current operation and about what it is currently doing.
+
 #### THP Viewer/Ripper
 
-The "THP Viewer/Ripper" group box allows one to view/convert the THP to audio/video files. This group box has the following settings/form elements:
+The "THP Viewer/Ripper" group box allows one to view a THP video, or convert the THP to various applicable asset files (video, audio, video frames). This group box has the following settings/form elements:
 
 ![THP Viewer/Ripper](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/THP.png)
 
@@ -218,75 +343,80 @@ The "THP Viewer/Ripper" group box allows one to view/convert the THP to audio/vi
 	
 - "Play" button
 	- Plays currently selected THP file.
-	- Use "DirectSound" option for audio playback as needed
+	- Use "DirectSound" option for proper audio playback as needed
 	
 - "Rip" button
 	- Converts the THP video to the appropriate file format(s)
 			
 - Crop Settings
-	- Crops the converted THP video to a specific size, starting at a point, and from a starting video frame to an ending video frame
+	- Crops the converted THP video to a specific physical size and to a particular timeframe, starting at a point, and from a starting video frame to an ending video frame
 	- Point coordinates are relative to top-left corner of video (origin (0,0))
-	- Fields
-		- Position
-			- xpos
+	- **Fields**
+		- **Position**
+			- X-pos
 				- x position to start crop (0-based, in px)
-			- ypos
+			- Y-pos
 				- y position to start crop (0-based, in px)
-		- Size
+		- **Size**
 			- Width
 				- Width to crop video (1-based, in px)
 			- Height
 				- Height to crop video (1-based, in px)
-		- Time
+		- **Time**
 			- Start
 				- Starting frame value to begin ripping (1-based)
 			- End
 				- Ending frame value to begin ripping (1-based)
 		
-	- Subvideo array
-		- Cells
+	- **Preset (Row/Column)**
+		- **Cells**
 			- Cells A1 to B6
 				- Select a particular subvideo cell to crop to
 				- Updates the crop setting fields appropriately
+		- **Special Presets**
 			- "All" radio button
-				- Rip the entire array of subvideos into a single video file
+				- Rip the entire array of subvideos into a single video file for a particular multiplicity
+				- Select "All" special preset and Mult of 0 to rip the whole video as a single file
 			- "Dum" radio button
 				- Rips the dummy padding/control signal area of video (if any)
 				- If multiplicity = 0, and start/end frames are set to the min/max within THP video, then the unique dummy frames will be ripped as BMP files, named to the proper naming convention for re-encoding with a replacement THP video
-		- Multiplicity
-			- Mult numeric up/down control
+	- **Time/Info**
+		- Mult
+			- Multiplicity numeric up/down control
 				- Changes the multiplicity to rip in the selected subvideo cell.
 				- A multiplicity of 0 will rip all multiplicities
-				- This updates the start/end frame values accordingly
-			- Multiplicity checkbox
-				- Indicates if a "single" (unchecked) or "multiple" (checked, when the multiplicity=0) multiplicities will be ripped
-			- Dum Frames
-				- Indicates if unique dummy frames will be ripped as BMP files
-				- Only enabled when the "Dum" radio button is selected
+				- This updates the start/end time frame values accordingly
+		- Multiplicity checkbox
+			- Indicates if a "single" (unchecked) or "multiple" (checked, when the multiplicity=0) multiplicities will be ripped
+		- Dum Frames
+			- Indicates if unique dummy frames will be ripped as BMP files
+			- Only enabled when the "Dum" radio button is selected
 
-Tweak the settings as appropriately and use the "View" or "Rip" buttons to play a THP or convert it, respectively. Pressing the "rip" button will ask the user to select an output directory and base filename for the converted files; by default, the path is at the location of the original THP, and the filename is "[thp_filename]_suffix", where suffix is the appropriate one based on the A1N naming notation for the input files used for encoding (see "THP Encoder section"). If the original THP video has an audio stream, it will automatically be ripped with an crop setting option and named appropriately. Dummy/control frames will be ripped automatically and named appropriately if the THP video has padding/control frames, if the "Dum" radio button is selected, if the multiplicity is set to 0, and if the start/end frame values are set to the original video's min/max values.
+Tweak the settings as appropriately and use the "View" or "Rip" buttons to play a THP or convert it to appropriate assets, respectively. Pressing the "Rip" button will ask the user to select an output directory and base filename for the converted files; by default, the path is at the location of the original THP, and the filename is "[thp_filename]_suffix", where suffix is the appropriate one based on the A1_N naming notation for the input files used for encoding (see "THP Encoder section"). If the original THP video has an audio stream, it will automatically be ripped with the crop time setting option and named appropriately. Dummy/control frames will be ripped automatically and named appropriately if the THP video has padding/control frames, if the "Dum" radio button is selected, if the multiplicity is set to 0, and if the start/end frame values are set to the original video's min/max values.
 
 **Files are ripped from THP video files in the following formats:**
 
-- Video
+- **Video**
 	- MP4 (H.264 encoded) video file
 	- Named as [thp_filename]_suffix.mp4
-- Audio
+- **Audio**
 	- WAV audio file
 	- Named as [thp_filename].wav
-- Dummy/padding frames
+- **Dummy/padding frames**
 	- BMP image frames
 	- Named as "dummy_N.bmp", where "N" is the value of the multiplicity
 
 For the file naming, for example, if the THP is titled "battle_retro.thp", and you are using the crop settings to rip the subvideo in the 1st row, 1st column, and 1st multiplicity, the default filename would be "battle_retro_A1_1".
 
+When either ripping or viewing a THP file, progress and detail about the current operation shall be shown in the progress bar sets.
+
 #### THP Encoder
 
 This group box allows the user to encode a new THP formatted as such to replace the original one currently selected in the THP File combo box. The left side of the group box has an array of checkboxes, which depict to the user which subvideo cells are in use in the video array and the naming convention that will be needed for each cell in the video's array of subvideos. If the checkbox is white and checked, that cell will be used for this THP video.
 
-The input files have a base filename of [thp_filename].ext . Videos should have extensions of mp4 (H.264 encoded), audio files as wav, and padding frames as bmp files. The array cells are in Microsoft Excel A1N notation, where columns are letter digits (1st column="A", 2nd column="B", etc) and rows are numbers (1st row=1, 2nd row=2, etc). In Microsoft Excel A1N notation, "A1" would refer to the 1st row, 1st column. The array also has a box showing the multiplicity range ("Multi", 1 to M), and two additional checkboxes: "wav" and "dum". "wav" signifies an audio WAV file is needed, and "dum" signifies that padding frames will be needed.
+The input files have a base filename of [thp_filename].ext . Videos should have extensions of MP4 (H.264 encoded), audio files as WAV, and padding frames as BMP files. The array cells are in Microsoft Excel A1N notation, where columns are letter digits (1st column="A", 2nd column="B", etc) and rows are numbers (1st row=1, 2nd row=2, etc). In Microsoft Excel A1N notation, "A1" would refer to the 1st row, 1st column. The array also has a textbox showing the multiplicity range ("Multi", _1 to _M), and two additional checkboxes: "wav" and "dum". "wav" signifies an audio WAV file is needed, and "dum" signifies that padding BMP frames will be needed.
 
-Consider if we have a THP video file (named "test.thp") that is a 2x2 array of subvideos with 3 multiplicities, padding, and audio. For the 1st multiplicity, the top left subvideo will be named "test_A1_1.mp4", the top right "test_B1_1.mp4", the bottom left "test_A2_1.mp4", and the bottom right "test_B2_1.mp4" . For the 2nd multiplicity, these same subvideos would be named "test_A1_2.mp4", "test_B1_2.mp4", and so on. The audio file is applied to the entire THP video, and would be named "test.wav" . The padding frames are named slightly different. The frame for the 1st multiplicity would be "dummy_1.bmp", the 2nd "dummy_2.bmp", and so on. The subvideos for each multiplicity should have the same dimensions as shown in the "subvid dims" fields and have the same, appropriate amount of frames. The padding should have the same dimensions as shown in the "Subvid dims" group box, and be formatted as described in the "Ctrl desc" field.
+Consider if we have a THP video file (named "test.thp") that is a 2x2 array of subvideos with 3 multiplicities, padding, and audio. For the 1st multiplicity, the top left subvideo will be named "test_A1_1.mp4", the top right "test_B1_1.mp4", the bottom left "test_A2_1.mp4", and the bottom right "test_B2_1.mp4" . For the 2nd multiplicity, these same subvideos would be named "test_A1_2.mp4", "test_B1_2.mp4", and so on. The audio file is applied to the entire THP video, and would be named "test.wav" . The padding frames are named slightly different. The frame for the 1st multiplicity would be "dummy_1.bmp", the 2nd "dummy_2.bmp", and so on. The subvideo cells for each multiplicity should have the same dimensions as shown in THP Info group boxe's "Subvid dims" fields and have the same, appropriate amount of frames. The padding should have the same dimensions as shown in the "Subvid dims" group box, and be formatted as described in the "Ctrl desc" field.
 
 ![Naming Convention scheme](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/naming_test_thp.png)
 
@@ -303,28 +433,34 @@ Consider if we have a THP video file (named "test.thp") that is a 2x2 array of s
 
 	- Digs
 		- Amount of digits in the video's total frame length
-        - = DigitsOf(trunc_frame value * multiplicity)
-        - Used for formatting the sequential numbering in naming of the final .jpg frames used for THPConv
-        	- E.g. Should jpg frame be named "frame_005.bmp" (3 digs) or "frame_0005.bmp" (4 digs)?
+        	- = DigitsOf(trunc_frame value * multiplicity)
+        	- Used for formatting the sequential numbering in naming of the final .jpg frames used for THPConv
+        		- E.g. Should jpg frames be named such as "frame_005.bmp" (3 digs) or "frame_0005.bmp" (4 digs)?
 	- JPG Qual
-		- JPG Compression quality for each JPG file used for THPConv (1-100)
+		- JPG Compression quality precentage for each JPG file used for THPConv (1%-100%)
 			- Lower values
-				- High compression
-				- Low visual quality
-				- High streaming bandwidth quality
-				- (Small THP filesize, blocky jpg artifacts)
+				- Higher compression
+				- Lower visual quality
+				- Higher streaming bandwidth quality
+				- (Smaller THP filesize, but more blocky jpg artifacts)
 			- Higher values
-				- Low compression
-				- High visual quality
-				- Low streaming bandwidth quality
-				- (Large THP filesize, less artifacts)
+				- Lower compression
+				- Higher visual quality
+				- Lower streaming bandwidth quality
+				- (Larger THP filesize, but fewer artifacts)
 
-After setting your encoding settings, and clicking the "Encode" button, you will need to select the folder containing your appropriately named input files. The encoder will then begin processing your files; this will take some time. Make sure to have **significant amount free disk space** (a few GBs should be safe); some of the operations may produce a **large** amount of temporary files! After conversion, you will have a thp file in the input folder (named [thp_filename].thp), and all temporary files will be cleaned up!
+After setting your encoding settings, and clicking the "Encode" button, you will need to select the folder containing your appropriately named input files. The encoder will then begin processing your files; this will take some time. Make sure to have **significant amount of free disk space** available (a few GBs should be safe); some of the operations may produce a **large** amount of temporary files! During conversion, progress and details of the work shall be shown in the progress bar sections, as well as the Elevator Music playing if the option is set. After successful conversion, you will have a THP  video file in the input folder (named [thp_filename].thp), and all temporary files will be cleaned up!
 
 ##### **Streaming bandwidth notes:**
-A **very** important note about the JPG quality, final THP filesize, and video streaming. Odds are the THPs you will be creating will be used for either a [Riivolution](http://wiki.tockdom.com/wiki/Riivolution) filepatch or a [MKWiiki "My Stuff" mod](http://wiki.tockdom.com/wiki/My_Stuff) from the SD Card. Experimentation has shown that streaming THP videos from SD Card has a much smaller bandwidth than when streaming from DVD. You may notice when playing a THP video from SD Card that the video will stutter (both audibly and visually) when there is too much action during certain frames of video playback. (To test this fact out yourself, copy MKWii's original title.thp file into your "My Stuff" folder, in order to patch the DVD game to read that file from SD Card instead. You will notice video playback for the title video will stutter and lag when too much action occurs , due to lower data bandwidth on the SD Card. This experiment was tested with a [4GB Lexar SDHC Card](https://www.digitalcamerawarehouse.com.au/lexar-sdhc-card-4gb-class-4), the type that come with Original Nintendo 3DS XLs).
 
-In order to reduce lagging from too much bandwidth, use the JPG Quality field to generate JPG video frames with a good balance between visual quality and compression. Higher compression will lead to smaller overall THP video sizes, and to less data bandwidth being used to stream the video file (and thus smoother playback). You may also be able to get better playback quality with higher performance SD cards that are compatible with the Wii; however, do try to create THP files that would play well on lower performance SD cards, in order to cover high-quality playback for the least common denominator. For better performance, you can try burning your mod files and THPs to a DVD (via an [ISO Patcher](http://wiki.tockdom.com/wiki/ISO_Patcher)). Also of importance is keeping the THP filesize down. Some THP files from the original game will only accept replacement files so large (for example, during the creation of my Hover Pack, battle_retro.thp crashed in-game when it was ~300MB large). Most replacement THP files should work with a total frame size > than the original to an extent. Some with a total frame length < than the original may need padded or looped to the original frame count. (Example, title.thp must be the same frame count; using a shorter video than the original will loop, and a longer one will cut out prematurely.)
+A **very** important note about the JPG quality, final THP filesize, and video streaming. Odds are the THPs you will be creating will be used for either a [Riivolution](http://wiki.tockdom.com/wiki/Riivolution) patch or a [MKWiiki "My Stuff" mod](http://wiki.tockdom.com/wiki/My_Stuff) from the SD Card. Experimentation has shown that streaming THP videos from SD Card has a much smaller bandwidth than when streaming from DVD. You may notice when playing a THP video from SD Card that the video will stutter (both audibly and visually) when there is too much action during certain frames of video playback. (To test this fact out yourself, copy MKWii's original title.thp file into your "My Stuff" folder, in order to patch the DVD game to read that file from SD Card instead. You will notice video playback for the title video will stutter and lag when too much action occurs , due to lower data bandwidth on the SD Card. This experiment was tested with a [4GB Lexar SDHC Card](https://www.digitalcamerawarehouse.com.au/lexar-sdhc-card-4gb-class-4), the type that come with Original Nintendo 3DS XLs).
+
+In order to reduce lagging from too much bandwidth, use the **JPG Quality** field to generate JPG video frames with a good balance between visual quality and compression. Higher compression will lead to smaller overall THP video sizes, and to less data bandwidth being used to stream the video file (and thus smoother playback). You may also be able to get better playback quality with higher performance SD cards that are compatible with the Wii; however, do try to create THP files that would play well on lower performance SD cards, in order to cover high-quality playback for the least common denominator. For better performance, you can try burning your mod files and THPs to a DVD (via an [ISO Patcher](http://wiki.tockdom.com/wiki/ISO_Patcher)). Also of importance is keeping the THP filesize down. Some THP files from the original game will only accept replacement files so large before the game will crash. (For example, during the creation of my Hover Pack, battle_retro.thp crashed in-game when it was ~300MB large). Most replacement THP files should work with a total frame size > than the original to an extent. Some with a total frame length < than the original may need padded or looped to the original frame count. (Example, title screen videos from the Title folder **must** be the same frame count; using a shorter video than the original will loop it, and using a video longer will cut it out prematurely.)
+
+## 4. How to use it (CLI)
+
+**PLACEHOLDER**
+![CLI](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/CLI.png)
 
 ## 5. Customization
 The data for each THP from the original MKWii game is hard-coded and read from external files. These 4, parallel data files can be edited to improve the accuracy of the database, or could be completely modified for use in other GameCube/Wii games which use THP videos similarly. These file should always be placed right by the Thwimp executable; otherwise Thwimp may brick. Poor Thwimp! These files can use certain special values as separators/dummy entries. The 4 parallel files are FileListing.txt, FileData.txt, FileDesc.txt, and FileCDesc.txt.
