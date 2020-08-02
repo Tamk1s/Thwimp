@@ -11,7 +11,7 @@ Imports System.Runtime.InteropServices
 ' Review the values of the assembly attributes
 
 <Assembly: AssemblyTitle("Thwimp")> 
-<Assembly: AssemblyDescription("A GUI/commandline utility which views, rips, and helps create THP videos for Mario Kart Wii.")> 
+<Assembly: AssemblyDescription("A dual-GUI/CLI utility which views, rips, and helps create THP video files for Mario Kart Wii. Can be modified for usage with other games.")> 
 <Assembly: AssemblyCompany("EagleSoft Ltd")> 
 <Assembly: AssemblyProduct("Thwimp")> 
 <Assembly: AssemblyCopyright("EagleSoft Ltd 2020")> 
