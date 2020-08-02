@@ -1,4 +1,4 @@
-# Thwimp
+# Thwimp v1.2
 
 ![Thwimp logo](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/Thwimp/Resources/thwimp.png)
 
@@ -8,25 +8,23 @@ By [Tamkis/EagleSoft Ltd.](http://www.eaglesoftltd.com)
 
 [MKWiiki article](http://wiki.tockdom.com/wiki/Thwimp)
 
-[Video of latest version](https://youtu.be/WMLOtY16AtA)
-
-[v1.0/Video tutorial](https://youtu.be/IINyrm6pJBg)
-
+[Video of latest version](about:blank)
 
 ## Table of contents
 
 1. What is it?
 2. Why was it created?
-3. How to use it
-4. Customization
-5. Change Log
-6. Known Issues/Todo
-7. Credits
+3. How to use it (GUI)
+4. How to use it (CLI)
+5. Customization
+6. Change Log
+7. Known Issues/Todo
+8. Credits
 
 
 ## 1. What is it?
 
-Thwimp is a Windows utility which allows users easily to view, to rip, and to encode [Nintendo THP](http://wiki.tockdom.com/wiki/THP_(File_Format)) video files for Mario Kart Wii (and for other GCN/Wii games, to an extent). Written in Visual Basic (from Visual Studio 2010 IDE), the Thwimp application calls some FOSS and other command line tools **(not included)** "from arms length" via the Command Prompt to perform its tasks.
+Thwimp is a hybrid GUI/CLI Windows utility which allows users easily to view, to rip, and to encode [Nintendo THP](http://wiki.tockdom.com/wiki/THP_(File_Format)) video files for Mario Kart Wii (and for other GCN/Wii games, to an extent). Written in Visual Basic (from Visual Studio 2010 IDE), the Thwimp application calls some FOSS and other command line tools **(not included)** "from arms length" via the Command Prompt to perform its tasks.
 
 **Specifically, Thwimp uses:**
 
@@ -37,15 +35,15 @@ Thwimp is a Windows utility which allows users easily to view, to rip, and to en
 
 ![Utility logos](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/Utils.png)
 
-Thwimp can show the hard-coded information about how each THP file is formatted in Mario Kart Wii. Thwimp can also view MKWii's THP files, as well as convert them to everyday video files. It can crop the THP video files, and then convert them to MP4 (H.264 codec) video files, to WAV files (for videos with audio), and padding to BMP files.
+Thwimp can show the hard-coded information about how each THP file is formatted in Mario Kart Wii. Thwimp can also view MKWii's THP files, as well as convert them to everyday video files. It can crop the THP video files (both physically and in terms of time length), and then convert them to MP4 (H.264 codec) video files, to WAV files (for videos with audio), and padding to BMP files.
 
-The THP video files in Mario Kart Wii tend to be an array of multiple subvideo cells inside, with each cell playing back several other videos (multiplicities). As required by the file format specification, THP video files must have their dimensions be a multiple of 16px. Often times the size of the subvideo array will not be enough to meet the specification, so padding is added to the bottom of the THP video array. This padding is not only used to meet the specification, but used for control information. For example, some of the videos shown during menus will have a white rectangle move at integer positions at each multiplicity. This white rectangle controls which row in a menu is highlighted during THP playback.
+The THP video files in Mario Kart Wii tend to be an array of multiple subvideo cells inside, with each cell playing back several other videos in multiple time chunks ("multiplicities"). As required by the file format specification, THP video files must have their dimensions be a multiple of 16px. Often times the size of the subvideo array will **not** be enough to meet the specification, so padding is added to the bottom of the THP video array. This padding is not only used to meet the specification, but sometimes used for control information. For example, some of the videos shown during menus will have a white rectangle move at integral positions at each multiplicity within this padding space. This white rectangle controls which row in a menu is highlighted during THP playback, for synchronization purposes.
 
-Thwimp can intelligently handle audio, subvideo array, multiplicity, and padding/control information when encoding THP files to replace ones in-game. It does this by accepting appropriately named, input mp4 video files for each subvideo cell in the array, and for each multiplicity. It will also accept a WAV audio file, and BMP image frames for each multiplicity for a padding/control signal as needed. After reading the input files, Thwimp will intelligently process and splice all of the files together appropriately in order to create a high-quality, properly formatted THP video replacement file!
+Thwimp can intelligently handle audio, subvideo array, multiplicity, and padding/control information when encoding THP files to replace ones in-game. It does this by accepting appropriately named, input mp4 video files for each subvideo cell in the array, and for each multiplicity. Wher applicable, it will also accept a WAV audio file, and BMP image frames for each multiplicity for creating an appropriate padding area as needed. After reading the input files, Thwimp will intelligently process and composite all of the files together appropriately, in order to create a high-quality, properly formatted THP video replacement file!
 
 ## 2. Why was it created?
 
-It was created in order to help MKWii modders to create high-quality, original THP video files for their custom track distributions and mods, using subvideos for each cell in the THP's array of subvideos. Specifically, it was created for the creation of more complex THP files, such as **"battle\battle_cup_select.thp"** and for **"course\cup_select.thp"**.
+It was created in order to help MKWii modders to create high-quality, original THP video files for their custom track distributions and mods, using multiplicity videos for each cell in the THP's array of subvideos. Specifically, it was created for the creation of more complex THP files, such as **"battle\battle_cup_select.thp"** and for **"course\cup_select.thp"**.
 
 ### Examples of complex THPs used in MKWii, which Thwimp helps create
 
@@ -53,15 +51,15 @@ It was created in order to help MKWii modders to create high-quality, original T
 	- Shows CAD animated walkthroughs of each track in both the Wii and Retro battle cups    
     - When a battle cup is highlighted (but not selected), the subvideos for each track are shown for the current cup
     - Video layout
-    	- Array of 2x1 subvideos
-    	- Whole THP video lasts 600 frames long
+    	- Array of 2x1 subvideo cells
+    	- Entire THP video lasts 600 frames long
     	- Top row = Wii battle courses
     	- Bot row = Retro battle courses
-    	- Each cup has 5 courses (5 multiplicities per subvideo)
-    	- Every 120 frames, the subvideos show the next track in the cup (goes to the next multiplicity)
+    	- Each cup has 5 courses (5 multiplicities per subvideo cell)
+    	- Every 120 frames, the subvideo cells show the next track in the cup (goes to the next multiplicity)
     	- Video has some padding at bottom
-    		- Padding has a white rectangle which moves to a different integer position at every multiplicity
-    		- Position of white rectangle determines which row (which track) is highlighted in the menus
+    		- Padding has a white rectangle which moves to a different integral position at every multiplicity
+    		- Position of white rectangle determines which row (which track) is highlighted in the menus, for synchronization
 
 ![battle_cup_select.thp](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/battle_cup_select.png)
 - **"course\cup_select.thp"**
@@ -70,27 +68,27 @@ It was created in order to help MKWii modders to create high-quality, original T
     - Track menu layout
     	- Array of 2x4 cups
     	- Each cup has 4 tracks
-	- Video layout
-    	- Array of 4x2 subvideos
+    - Video layout
+    	- Array of 4x2 subvideos cells (one for each of the 8 cups)
+    	- Each cup has 4 tracks (4 multiplicities for the subvideo cells)
     	- Whole THP video lasts 480 frames long
     	- Left column = Tracks from 1st row of cups in menu layout
-    	- Right column - Tracks from 2nd row of cups in menu layout
-    	- Each cup has 4 tracks (4 multiplicities for the subvideos)
+    	- Right column = Tracks from 2nd row of cups in menu layout
     	- Every 120 frames, the subvideos show the next track in each cup (goes to the next multiplicity)
     	- Video has some padding at bottom
-    		- Padding has a white rectangle which moves to a different integer position at every multiplicity
-    		- Position of white rectangle determines which row (which track) is highlighted in the menus when a cup is selected
+    		- Padding has a white rectangle which moves to a different integral position at every multiplicity
+    		- Position of white rectangle determines which row (which track) is highlighted in the menus when a cup is selected, for synchronization
 
 ![cup_select.thp](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/cup_select.png)
 
-After doing what this program does for my projects (manually and painfully via batch files), I created Thwimp in order to automate the THP creation process for complex videos like the ones above. The application was used to create the custom THPs in my [Hover Pack project](http://wiki.tockdom.com/wiki/Hover_Pack)
+After doing what this program does for my projects (manually and painfully via batch files), I developed Thwimp in order to automate the THP creation process for complex videos like the ones above. This application was used to create the high-quality, custom THPs in my own [Hover Pack project](http://wiki.tockdom.com/wiki/Hover_Pack).
 
 
-## 3. How to use it
+## 3. How to use it (GUI)
 
 ### Prerequisites:
 
-As mentioned earlier, Thwimp uses some FOSS and other Command Line tools for processing **(not included)**. You will need to download/install the following utilities before using Thwimp.
+As mentioned earlier, Thwimp uses some FOSS and other command line tools for processing **(not included)**. You will need to download/install the following utilities **before** using Thwimp.
 
 **Utilities:**
 
@@ -328,7 +326,7 @@ A **very** important note about the JPG quality, final THP filesize, and video s
 
 In order to reduce lagging from too much bandwidth, use the JPG Quality field to generate JPG video frames with a good balance between visual quality and compression. Higher compression will lead to smaller overall THP video sizes, and to less data bandwidth being used to stream the video file (and thus smoother playback). You may also be able to get better playback quality with higher performance SD cards that are compatible with the Wii; however, do try to create THP files that would play well on lower performance SD cards, in order to cover high-quality playback for the least common denominator. For better performance, you can try burning your mod files and THPs to a DVD (via an [ISO Patcher](http://wiki.tockdom.com/wiki/ISO_Patcher)). Also of importance is keeping the THP filesize down. Some THP files from the original game will only accept replacement files so large (for example, during the creation of my Hover Pack, battle_retro.thp crashed in-game when it was ~300MB large). Most replacement THP files should work with a total frame size > than the original to an extent. Some with a total frame length < than the original may need padded or looped to the original frame count. (Example, title.thp must be the same frame count; using a shorter video than the original will loop, and a longer one will cut out prematurely.)
 
-## 4. Customization
+## 5. Customization
 The data for each THP from the original MKWii game is hard-coded and read from external files. These 4, parallel data files can be edited to improve the accuracy of the database, or could be completely modified for use in other GameCube/Wii games which use THP videos similarly. These file should always be placed right by the Thwimp executable; otherwise Thwimp may brick. Poor Thwimp! These files can use certain special values as separators/dummy entries. The 4 parallel files are FileListing.txt, FileData.txt, FileDesc.txt, and FileCDesc.txt.
 
 ![Data Files](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/DataFiles.png)
@@ -391,7 +389,7 @@ The data for each THP from the original MKWii game is hard-coded and read from e
 		- Both should use "n/a" if unused/for dummy entries
 		- Text must be single-line for each THP file in order to be in parallel with FileListing.txt
 
-## 5. Change Log
+## 6. Change Log
  - **v1.2: 2nd revision, bugfixes, enhancements, CLI support (08/01/20)**
 	- **Bugfixes**
 		- **[Issue #5](https://github.com/Tamk1s/Thwimp/issues/5): Irfanview path bug/Issue, [Issue #6](https://github.com/Tamk1s/Thwimp/issues/6): JPG Quality Bug**
@@ -589,11 +587,11 @@ The data for each THP from the original MKWii game is hard-coded and read from e
 Development of the 1st release was from October 19-23, 2018. It was based on my manually-crafted batch files I created for concatenating videos into arrays, which was used for creating THPs for my [Hover Pack](http://wiki.tockdom.com/wiki/Hover_Pack), a set of battle courses for MKWii from Microsoft Hover! (1995 original) courses.
 
 
-## 6. Known Issues
+## 7. Known Issues
  - Encoded THP videos may lag or stutter on real hardware (especially when streaming modded files from SD card via Riivolution)
  	- Read "Streaming bandwidth notes" subsection in Section 3 (How to use it) about this issue.
  
-## 7. Credits:
+## 8. Credits:
 
  - The creators of FFMPEG and FFPlay,
 	- A complete, cross-platform solution to record, convert and stream audio and video. 
