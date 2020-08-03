@@ -8,7 +8,7 @@ By [Tamkis/EagleSoft Ltd.](http://www.eaglesoftltd.com)
 
 [MKWiiki article](http://wiki.tockdom.com/wiki/Thwimp)
 
-[Video of latest version](about:blank)
+[Video playlist](https://www.youtube.com/playlist?list=PL3N-ZrZe1CWKxEOHgq64HNUm0rHZEQx3X)
 
 ## Table of contents
 
@@ -899,7 +899,7 @@ Development of the 1st release was from October 19-23, 2018. It was based on my 
 
 ## 7. Known Issues
  - Encoded THP videos may lag or stutter on real hardware (especially when streaming modded files from SD card via Riivolution)
- 	- Read "Streaming bandwidth notes" subsection in Section 3 (How to use it) about this issue.
+ 	- Read **"Streaming bandwidth notes" subsection** in **Section 3 How to use it** about this issue.
  
 ## 8. Credits:
 
