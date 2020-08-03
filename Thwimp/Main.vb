@@ -2120,14 +2120,23 @@ Public Class Main
                 End If
 
                 'ffmpeg.exe -y -i video.thp -vn -ss audio_Start -to audio_End "C:\OutputDir\file.wav" 
+                Dim wav As String = ""  'Output file for wav
 
                 '"C:\FFMPegPath\FFMPEG.exe"
                 cmd = strQUOT & txtFFMPEG.Text & strPATHSEP & exeFMPeg & strQUOT
                 '-y -i "C:\PathToTHP\DIRtoTHP\file.thp" -vn -ss audio_Start -to audio_End output_file
                 'Note ToString("G9") format is the recommended one for "RoundTripping" a single
                 cmd &= " -y -i " & strQUOT & inFile & strQUOT & " -vn -ss " & _aStart.ToString("G9") & " -to " & _aEnd.ToString("G9") & " "
-                '"C:\OutputDir\file.wav"
-                cmd &= strQUOT & outPath & FileAndExt(inFile).Replace(".thp", ".wav") & strQUOT
+
+                'If not override flag, then replace inFile.thp with .wav; else replace outFIle.mp4 with .wav
+                If pathOverride = "" Then
+                    '"C:\OutputDir\file.wav"
+                    wav = strQUOT & outPath & FileAndExt(inFile).Replace(".thp", ".wav") & strQUOT
+                Else
+                    'file.wav
+                    wav = strQUOT & outPath & FileAndExt(outFile).Replace(".mp4", ".wav") & strQUOT
+                End If
+                cmd &= wav
 
                 'Run the cmd
                 'startInfo.FileName = cmd
@@ -2140,104 +2149,104 @@ Public Class Main
                 UpdateProg_Cur(CurPrg, "Video does NOT have an audio stream!", True, False)
                 CurPrg(0) += 1
             End If
-            UpdateProg_Cur(CurPrg, "Audio stream extraction done!", False, True)
+                UpdateProg_Cur(CurPrg, "Audio stream extraction done!", False, True)
 
-            'Step 4: If ripping dummy ctrl frames, convert the cropped MP4 file (cropped to the ctrl area) to bmp frames, keep only 1st frame for each multiplicity
-            CurPrg(0) = 0
-            TtlPrg(0) += 1
-            UpdateProg_Ttl(TtlPrg, "Step 4: If ripping dummy ctrl frames, convert the cropped MP4 file (cropped to the ctrl area) to bmp frames, keep only 1st frame for each multiplicity.")
-            If type = True Then
-                Dim m As Byte = TryParseErr_Byte(txtVM_M.Text)             '0-based multiplicity value
-                m -= 1
-
-                'If ripping dummy ctrl frames.
-                'Convert the cropped MP4 file (cropped to the ctrl area) to bmp frames ("dummyTemp_%0Nd.bmp"),
-                'Keep only 1st frame for each multiplicty, rename to "dummy_N.bmp", delete excess frames
-
-                'Set max current progress to 2 + # of mults
-                CurPrg(1) = 2 + m
-                Text = "Video HAS dummy frames!" & strNL & "Ripping all bmp frames..."
-                UpdateProg_Cur(CurPrg, Text, True, False)
-
-                '"C:\FFMPegPath\FFMPEG.exe" -y 
-                cmd = strQUOT & txtFFMPEG.Text & strPATHSEP & exeFMPeg & strQUOT & " -y "
-
-                'Output ctrl MP4 to .bmp frames
-                Dim d As String = ""                                                    'Printf digit formatter thingy (pad to N digits)
-                Dim dgs As UShort = 0                                                   'Amount of digits for printf formatter thingy            
-                dgs = TryParseErr_UShort(txtVF_T.Text.Length)                           'Set digits to the amount of digits for the total amount of frames in the video
-                d = "%0" & dgs.ToString() & "d"                                         'Set the printf digit formatter to "dgs" digits
-                cmd &= "-i " & strQUOT & outFile & strQUOT                              '-i "C:\OutputDir\file.mp4"
-
-                '"C:\OutputDir\dummyTemp_%0Nd.bmp"
-                file = strQUOT & FileDir(outFile) & "dummyTemp_" & d & ".bmp" & strQUOT
-                cmd &= " " & file
-
-                'Run cmd
-                'startInfo.FileName = cmd
-                'Shell.StartInfo = startInfo
-                'Shell.Start()
-                'Shell.WaitForExit()
-                RunProcess(cmd)
-                UpdateProg_Cur(CurPrg, "All BMP frames ripped!", False, True)
-                UpdateProg_Cur(CurPrg, "Finding and keeping appropriate BMP frames...")
-
-                'Rename the appropriate frames to "dummy_N.bmp", remove the others 
-                Dim i As Byte = 0                           'Generic iterator
-                Dim j As UShort = 0                         'Frame value
-                Dim frames As UShort = TryParseErr_UShort(txtVF_S.Text)    'The amount of frames per subvideo                
-
-                'Iterate through the mults (0-based)
-                For i = 0 To m Step 1
-                    CurPrg(0) += 1                                      'Increment current prog foreach mult
-                    Text = "Mult " & (i + 1).ToString()                 'Log "Mult M"
-                    UpdateProg_Cur(CurPrg, Text)
-
-                    j = i * frames                                      'Frame ID = multiplicity ID * amount of frames. This gets 1st frame for each multplicity.
-                    j += 1                                              'Make FrameID 1-based
-                    d = "_" & j.ToString(StrDup(dgs, "0")) & ".bmp"     'Set d as the frame ID string "_%0Nd.bmp"
-                    file = "dummy_" & (i + 1).ToString() & ".bmp"       'File = "dummy_N.bmp"
-
-                    'Move file "C:\OutputDir\dummyTemp_ID.bmp" to "C:\OutputDir\dummy_N.bmp"
-                    file = FileDir(outFile) & FileAndExt(file)          'File = "C:\OutputDir\dummy_N.bmp"
-                    file2 = FileDir(outFile) & "dummyTemp" & d          'File2 = "C:\OutputDir\dummyTemp_ID.bmp"
-                    My.Computer.FileSystem.MoveFile(file2, file, True)
-                Next i
-
-                CurPrg(0) = CurPrg(1)
-                UpdateProg_Cur(CurPrg, "All appropriate BMP frames found and kept!", False, True)
-
-                'Step 5: Cleanup temporary files (Delete all extra "dummyTemp_%0Nd.bmp" files)
-                TtlPrg(0) += 1
+                'Step 4: If ripping dummy ctrl frames, convert the cropped MP4 file (cropped to the ctrl area) to bmp frames, keep only 1st frame for each multiplicity
                 CurPrg(0) = 0
-                CurPrg(1) = 1
-                UpdateProg_Ttl(TtlPrg, "Step 5: Cleanup temporary files")
-                UpdateProg_Cur(CurPrg, "", True, False)
-                file = FileDir(outFile)                                                         'file = C:\WorkingDir
-                file2 = "dummyTemp*.bmp"                                                        'file2 = dummyTemp*.bmp
-                DeleteFilesFromFolder(file, file2, True, "Cleaning up files...", True, False)   'Delete files (with logging)
-            Else
-                CurPrg(1) = 1
-                Text = "Video does NOT have dummy frames!" & strNL
-                UpdateProg_Cur(CurPrg, Text, True, False)
-                CurPrg(0) += 1
-                UpdateProg_Cur(CurPrg, "Dummy frame extraction done!", False, True)
-
                 TtlPrg(0) += 1
-                UpdateProg_Ttl(TtlPrg, "Step 5: Cleanup temporary files")
-            End If
+                UpdateProg_Ttl(TtlPrg, "Step 4: If ripping dummy ctrl frames, convert the cropped MP4 file (cropped to the ctrl area) to bmp frames, keep only 1st frame for each multiplicity.")
+                If type = True Then
+                    Dim m As Byte = TryParseErr_Byte(txtVM_M.Text)             '0-based multiplicity value
+                    m -= 1
 
-            'Delete temp.mp4
-            DeleteFilesFromFolder(FileDir(outFile), "temp.mp4")
-            TtlPrg(0) = TtlPrg(1)
-            CurPrg(0) = CurPrg(1)
-            UpdateProg_Ttl(TtlPrg, "Done!")
-            UpdateProg_Cur(CurPrg, "Cleanup done!", True, True)
+                    'If ripping dummy ctrl frames.
+                    'Convert the cropped MP4 file (cropped to the ctrl area) to bmp frames ("dummyTemp_%0Nd.bmp"),
+                    'Keep only 1st frame for each multiplicty, rename to "dummy_N.bmp", delete excess frames
 
-            'Thwimp kicks dat Koopa shell away!
-            'Shell.Close()
-            If chkAudio.Checked Then My.Computer.Audio.Play(My.Resources.success, AudioPlayMode.Background)
-            Log_MsgBox(Nothing, "Video ripped!", MsgBoxStyle.Information, "Success!", True)
+                    'Set max current progress to 2 + # of mults
+                    CurPrg(1) = 2 + m
+                    Text = "Video HAS dummy frames!" & strNL & "Ripping all bmp frames..."
+                    UpdateProg_Cur(CurPrg, Text, True, False)
+
+                    '"C:\FFMPegPath\FFMPEG.exe" -y 
+                    cmd = strQUOT & txtFFMPEG.Text & strPATHSEP & exeFMPeg & strQUOT & " -y "
+
+                    'Output ctrl MP4 to .bmp frames
+                    Dim d As String = ""                                                    'Printf digit formatter thingy (pad to N digits)
+                    Dim dgs As UShort = 0                                                   'Amount of digits for printf formatter thingy            
+                    dgs = TryParseErr_UShort(txtVF_T.Text.Length)                           'Set digits to the amount of digits for the total amount of frames in the video
+                    d = "%0" & dgs.ToString() & "d"                                         'Set the printf digit formatter to "dgs" digits
+                    cmd &= "-i " & strQUOT & outFile & strQUOT                              '-i "C:\OutputDir\file.mp4"
+
+                    '"C:\OutputDir\dummyTemp_%0Nd.bmp"
+                    file = strQUOT & FileDir(outFile) & "dummyTemp_" & d & ".bmp" & strQUOT
+                    cmd &= " " & file
+
+                    'Run cmd
+                    'startInfo.FileName = cmd
+                    'Shell.StartInfo = startInfo
+                    'Shell.Start()
+                    'Shell.WaitForExit()
+                    RunProcess(cmd)
+                    UpdateProg_Cur(CurPrg, "All BMP frames ripped!", False, True)
+                    UpdateProg_Cur(CurPrg, "Finding and keeping appropriate BMP frames...")
+
+                    'Rename the appropriate frames to "dummy_N.bmp", remove the others 
+                    Dim i As Byte = 0                           'Generic iterator
+                    Dim j As UShort = 0                         'Frame value
+                    Dim frames As UShort = TryParseErr_UShort(txtVF_S.Text)    'The amount of frames per subvideo                
+
+                    'Iterate through the mults (0-based)
+                    For i = 0 To m Step 1
+                        CurPrg(0) += 1                                      'Increment current prog foreach mult
+                        Text = "Mult " & (i + 1).ToString()                 'Log "Mult M"
+                        UpdateProg_Cur(CurPrg, Text)
+
+                        j = i * frames                                      'Frame ID = multiplicity ID * amount of frames. This gets 1st frame for each multplicity.
+                        j += 1                                              'Make FrameID 1-based
+                        d = "_" & j.ToString(StrDup(dgs, "0")) & ".bmp"     'Set d as the frame ID string "_%0Nd.bmp"
+                        file = "dummy_" & (i + 1).ToString() & ".bmp"       'File = "dummy_N.bmp"
+
+                        'Move file "C:\OutputDir\dummyTemp_ID.bmp" to "C:\OutputDir\dummy_N.bmp"
+                        file = FileDir(outFile) & FileAndExt(file)          'File = "C:\OutputDir\dummy_N.bmp"
+                        file2 = FileDir(outFile) & "dummyTemp" & d          'File2 = "C:\OutputDir\dummyTemp_ID.bmp"
+                        My.Computer.FileSystem.MoveFile(file2, file, True)
+                    Next i
+
+                    CurPrg(0) = CurPrg(1)
+                    UpdateProg_Cur(CurPrg, "All appropriate BMP frames found and kept!", False, True)
+
+                    'Step 5: Cleanup temporary files (Delete all extra "dummyTemp_%0Nd.bmp" files)
+                    TtlPrg(0) += 1
+                    CurPrg(0) = 0
+                    CurPrg(1) = 1
+                    UpdateProg_Ttl(TtlPrg, "Step 5: Cleanup temporary files")
+                    UpdateProg_Cur(CurPrg, "", True, False)
+                    file = FileDir(outFile)                                                         'file = C:\WorkingDir
+                    file2 = "dummyTemp*.bmp"                                                        'file2 = dummyTemp*.bmp
+                    DeleteFilesFromFolder(file, file2, True, "Cleaning up files...", True, False)   'Delete files (with logging)
+                Else
+                    CurPrg(1) = 1
+                    Text = "Video does NOT have dummy frames!" & strNL
+                    UpdateProg_Cur(CurPrg, Text, True, False)
+                    CurPrg(0) += 1
+                    UpdateProg_Cur(CurPrg, "Dummy frame extraction done!", False, True)
+
+                    TtlPrg(0) += 1
+                    UpdateProg_Ttl(TtlPrg, "Step 5: Cleanup temporary files")
+                End If
+
+                'Delete temp.mp4
+                DeleteFilesFromFolder(FileDir(outFile), "temp.mp4")
+                TtlPrg(0) = TtlPrg(1)
+                CurPrg(0) = CurPrg(1)
+                UpdateProg_Ttl(TtlPrg, "Done!")
+                UpdateProg_Cur(CurPrg, "Cleanup done!", True, True)
+
+                'Thwimp kicks dat Koopa shell away!
+                'Shell.Close()
+                If chkAudio.Checked Then My.Computer.Audio.Play(My.Resources.success, AudioPlayMode.Background)
+                Log_MsgBox(Nothing, "Video ripped!", MsgBoxStyle.Information, "Success!", True)
         Catch ex As Exception
             Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error during ripping!", True)
         End Try
@@ -4646,7 +4655,7 @@ Public Class Main
             'Close any lingering streams
             KillStream(xrINIData)
             KillStream(xwINIData, False, iViewINI2Temp)
-            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error finding, copying, and/or hacking INI Irfanview INI file!", True)
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error finding, copying, and/or hacking Irfanview INI file!", True)
             success = False
         End Try
 
