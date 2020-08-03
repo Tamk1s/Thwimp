@@ -8,7 +8,7 @@ By [Tamkis/EagleSoft Ltd.](http://www.eaglesoftltd.com)
 
 [MKWiiki article](http://wiki.tockdom.com/wiki/Thwimp)
 
-[Video of latest version](about:blank)
+[Video playlist](https://www.youtube.com/playlist?list=PL3N-ZrZe1CWKxEOHgq64HNUm0rHZEQx3X)
 
 ## Table of contents
 
@@ -225,7 +225,7 @@ Before doing **anything** in the utility, goto the "Options" tab of the applicat
 	- Use this to check for newer releases
 - Cmdline
 	- Opens up another form, displaying the current CLI syntax
-	- ![CLI](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/CLI.png)
+	- ![CLI.png](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/CLI.png)
 
 ### Using the THP tab:
 
@@ -459,20 +459,124 @@ In order to reduce lagging from too much bandwidth, use the **JPG Quality** fiel
 
 ## 4. How to use it (CLI)
 
-**PLACEHOLDER**
-![CLI](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/CLI.png)
+Please refer to **section #3 (How to use it (GUI))** for basics on how to use Thwimp.
 
+**The CLI has the same main actions as with GUI mode:**
+- View
+- Rip
+- Encode THP files
+- Help
+	- Displays the same CLI arguments as from the Cmdline button from the Options tab
+
+![CLI.png](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/CLI.png)
+
+The main difference with CLI mode vs. GUI mode is with how some actions are accessed. The options and wanted Thwimp data fileset are set by loading in an INI settings file (via /s switch, e.g. /s="C:\Folder\Thwimp.ini"), and a THP file is selected by an ID vs. the THP combo box (via /t=NNN ID switch, e.g. "/t=001"). (This ID can be found on the label when in GUI mode). For the THP Viewer/Ripper, a subvideo and multiplicity preset is selected by a string (via /p switch, e.g. "/p=A2_1", to use subvideo cell A2, 1st multiplicity), **or** by manually setting the crop values in a csv list of values (via /c switch, e.g. "/c=0,0,320,240,1,600", to crop a 320x240 px video from the top left corner orgin, from time frame 1 to 600).
+
+For **Rip** and **Encode** actions, instead of using a File dialog box to select the output folder and filename, it is just set by the /o output folder switch. The output folder switch is required for rip mode, optional for encode (it will place output files in the input folder with no switch). Simiarly, **Encode** mode needs the /i input folder switch to define where the input files for encoding are located. All path switches **should** enclose the path in "quotes", in order to handle paths with spaces in them!
+
+For **Encode** action, the Trunc Frame and digits can be set by the /f switch as csv list, with the digits optional. (E.g. "/f=600,3" for 600 frames, 3 digits; or just "/f=600" for 600 frames and auto-calculated digits.) The JPG Quality setting is set by the /q switch, and is a value between 1-100 (e.g. "/q=85" for JPG Quality of 85%).
+
+When running in CLI mode, it is **highly recommended** to enable Full Log option for the Thwimp INI settings file loaded! This will show all logging, progress bar information, msgboxes, and stdout from the FOSS co-utilities, all within the command prompt. Any errors or successful operations that occur will close Thwimp CLI mode and restore control back to the user.
+
+**Examples calls for Thwimp CLI mode:**
+- **Example scenario assumptions**
+	- For the /s INI setting file, these examples will assume the default Thwimp data fileset for MKWii is loaded
+	- Also assume that all paths are set correctly for the FOSS co-utilities in the INI file
+	- The command prompt's current directory is set to the Thwimp executable
+
+- **Examples**
+	- **Encoding**
+		- thwimp.exe /me /s="E:\GC_Wii\Hacking\Tools\Video\Thwimp\Thwimp\bin\Release\thwimp.ini" /t=002 /f=480,3 /q=85 /i="C:\Users\Anthony\Downloads\Output\TEST"
+			- Loads Thwimp.ini settings from the Thwimp executable folder
+			- Handles encoding a new file for ID=002 ("\battle\battle_retro.thp" video)
+			- Trunc frame to 480 frames, digits to 3
+			- JPG Quality to 85%
+			- Input files for encoding located at "C:\Users\Anthony\Downloads\Output\TEST"
+
+		- thwimp.exe /me /s="E:\GC_Wii\Hacking\Tools\Video\Thwimp\Thwimp\bin\Release\thwimp.ini" /t=002 /f=480 /q=85 /i="C:\Users\Anthony\Downloads\Output\TEST"
+			- Same as above, but for /f switch, only Trunc Frames of 480 set, and digits auto-calculated
+
+
+	- **Viewing**
+		- thwimp.exe /mv /s=E:\GC_Wii\Hacking\Tools\Video\Thwimp\Thwimp\bin\Release\thwimp.ini /t=001 /p=A2_2 /n=1
+			- Loads Thwimp.ini settings from the Thwimp executable folder
+			- Handles viewing THP file for ID=001 ("\battle\battle_cup_select.thp" video)
+			- View preset subvideo cell A2, multiplicity 2
+			- DirectSound enabled
+
+		- thwimp.exe /mv /s=E:\GC_Wii\Hacking\Tools\Video\Thwimp\Thwimp\bin\Release\thwimp.ini /t=001 /p=All_0 /n=1
+			- Loads Thwimp.ini settings from the Thwimp executable folder
+			- Handles viewing THP file for ID=001 ("\battle\battle_cup_select.thp" video)
+			- View special preset All, multiplicity 0 (entire video)
+			- DirectSound enabled
+
+		- thwimp.exe /mv /s=E:\GC_Wii\Hacking\Tools\Video\Thwimp\Thwimp\bin\Release\thwimp.ini /t=001 /p=Dum_2 /n=1
+			- Loads Thwimp.ini settings from the Thwimp executable folder
+			- Handles viewing THP file for ID=001 ("\battle\battle_cup_select.thp" video)
+			- View special preset Dum, multiplicity 2
+			- DirectSound enabled
+
+		- thwimp.exe /mv /s=E:\GC_Wii\Hacking\Tools\Video\Thwimp\Thwimp\bin\Release\thwimp.ini /t=001 /c=0,0,336,250,1,600 /n=1
+			- Loads Thwimp.ini settings from the Thwimp executable folder
+			- Handles viewing THP file for ID=001 ("\battle\battle_cup_select.thp" video)
+			- View the area defined by following crop settings
+				- Point at X-Pos = 0, Y-Pos = 0 (top left corner)
+				- Physical video viewport of 336x250 px from that point
+				- Time segment from frame 1 to frame 600
+			- DirectSound enabled
+
+
+	- **Ripping**
+		- thwimp.exe /mr /s=E:\GC_Wii\Hacking\Tools\Video\Thwimp\Thwimp\bin\Release\thwimp.ini /t=001 /p=A2_2 /n=1 /o="C:\Users\Anthony\Downloads\Output\TEST\Battle_Cup_Select_A2_2.mp4"
+			- Loads Thwimp.ini settings from the Thwimp executable folder
+			- Handles ripping assets from THP file for ID=001 ("\battle\battle_cup_select.thp" video)
+			- Rip the area at preset subvideo A2, multiplicity 2
+			- DirectSound enabled
+			- Output file to Battle_Cup_Select_A2_2.mp4
+
+		- thwimp.exe /mr /s=E:\GC_Wii\Hacking\Tools\Video\Thwimp\Thwimp\bin\Release\thwimp.ini /t=001 /p=All_0 /n=1 /o="C:\Users\Anthony\Downloads\Output\TEST\Battle_Cup_Select.mp4"
+			- Loads Thwimp.ini settings from the Thwimp executable folder
+			- Handles ripping assets from THP file for ID=001 ("\battle\battle_cup_select.thp" video)
+			- Rip the area at special preset All, multiplicity 0 (so entire video as one video)
+			- DirectSound enabled
+			- Output file to Battle_Cup_Select.mp4
+
+		- thwimp.exe /mr /s=E:\GC_Wii\Hacking\Tools\Video\Thwimp\Thwimp\bin\Release\thwimp.ini /t=001 /p=Dum_0 /n=1 /o="C:\Users\Anthony\Downloads\Output\TEST\Dummy.mp4"
+			- Loads Thwimp.ini settings from the Thwimp executable folder
+			- Handles ripping assets from THP file for ID=001 ("\battle\battle_cup_select.thp" video)			
+			- DirectSound enabled
+			- Create a video (Dummy.mp4) just for the entire Dummy padding section, rip each unique frame as BMP Frames (Dummy_1.bmp to Dummy_4.bmp)
+
+		- thwimp.exe /mr /s=E:\GC_Wii\Hacking\Tools\Video\Thwimp\Thwimp\bin\Release\thwimp.ini /t=001 /c=0,0,336,250,1,600 /n=1 /o="C:\Users\Anthony\Downloads\Output\TEST\Battle_Cup_Select_A1_1.mp4"
+			- Loads Thwimp.ini settings from the Thwimp executable folder
+			- Handles ripping assets from THP file for ID=001 ("\battle\battle_cup_select.thp" video)
+			- Rip the area defined by following crop settings
+				- Point at X-Pos = 0, Y-Pos = 0 (top left corner)
+				- Physical video viewport of 336x250 px from that point
+				- Time segment from frame 1 to frame 600
+			- DirectSound enabled
+			- Output file to Battle_Cup_Select_A1_1.mp4
+
+		- thwimp.exe /mr /s=E:\GC_Wii\Hacking\Tools\Video\Thwimp\Thwimp\bin\Release\thwimp.ini /t=027 /p=A1_1 /n=1 /o="C:\Users\Anthony\Downloads\Output\TEST\Title_A1_1.mp4"
+			- Loads Thwimp.ini settings from the Thwimp executable folder
+			- Handles ripping assets from THP file for ID=027 ("\title\title.thp" video)
+			- Rip the area at preset subvideo A1, multiplicity 1.
+			- DirectSound enabled
+			- Output files
+				- Video to Title_A1_1.mp4
+				- Audio to Title_A1_1.wav
 ## 5. Customization
-The data for each THP from the original MKWii game is hard-coded and read from external files. These 4, parallel data files can be edited to improve the accuracy of the database, or could be completely modified for use in other GameCube/Wii games which use THP videos similarly. These file should always be placed right by the Thwimp executable; otherwise Thwimp may brick. Poor Thwimp! These files can use certain special values as separators/dummy entries. The 4 parallel files are FileListing.txt, FileData.txt, FileDesc.txt, and FileCDesc.txt.
+The data for each THP from the original MKWii game is hard-coded and read from external files. These 5, parallel data files can be edited to improve the accuracy of the database, give metadata information about the fileset, or could be completely modified for use in other GameCube/Wii games which use THP videos similarly. The default fileset should be placed in the Thwimp executable's directory, while those for other games should be placed into their own directory. Upon loading Thwimp, the wanted fileset is loaded by pointing it to its directory from the Data File Dir path option (or directly from the INI settings file). These files can use certain special values as separators/dummy entries. The 5 parallel files are FileListing.txt, FileData.txt, FileDesc.txt, FileCDesc.txt, and FileSet.txt
 
 ![Data Files](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/DataFiles.png)
 
 **Image file data:**
 
 - **FileListing.txt**
-	- Each line is a relative path from THP Root folder pointing to THP files
-	- This is the list of files shown in the "THP Files" drop down box in "THP" tab
-	- Dummy entries should be listed as "============================="
+	- Each line is a relative path from the THP Root folder pointing to THP files
+	- This is the list of files shown in the "THP Files" drop down box in "THP" tab	
+	- Dummy entries/separators should be listed as "============================="
+	- 0th entry **must** be a dummy entry
 
 - **FileData.txt**
 	- Each line has a list of values for all of the data for each THP file in FileListing.txt
@@ -480,29 +584,31 @@ The data for each THP from the original MKWii game is hard-coded and read from e
 	- Each entry in each line should be separate by commas (",")
 	- Each line should end with a semicolon (";")
 	- Lines used for dummy entries should be all zeroes (0s)
-	- Data for each line (see "THP Info" in Section 3.)
+
+	- **Data for each line (see _"THP Info" in Section 3_)**
 		- Width (Total dims)
 		- Height (Total dims)
-		- R
-		- C
-		- Subv
-		- Multi
-		- Tot. Subv
-		- Subv Width
-		- Subv Height
-		- Pad Width
-		- Pad Height
-		- Subv (mult) frames
-		- Total frames
-		- FPS
-		- Ctrl?
-		- Audio?
-		- Stereo?
-		- Freq (Hz)
-	- Corresponding Visual Basic data type for each entry
-		- [UShort](https://docs.microsoft.com/en-us/dotnet/visual-basic/language-reference/data-types/ushort-data-type)
+		- R (Array)
+		- C (Array)
+		- Subv (Array)
+		- Multi (Subvideo Info)
+		- Tot. Subv (Subvideo Info)
+		- Subv Width (Subv dims)
+		- Subv Height (Subv dims)
+		- Pad Width (Subv dims)
+		- Pad Height (Subv dims)
+		- Subv (mult) frames (# of frames)
+		- Total frames (# of frames)
+		- FPS (Control)
+		- Ctrl? (Control)
+		- Audio? (Audio)
+		- Stereo? (Audio)
+		- Freq (Hz) (Audio)
+
+	- **Corresponding Visual Basic data type for each entry**
+		- **[UShort](https://docs.microsoft.com/en-us/dotnet/visual-basic/language-reference/data-types/ushort-data-type)**
 		- UShort
-		- [Byte](https://docs.microsoft.com/en-us/dotnet/visual-basic/language-reference/data-types/byte-data-type)
+		- **[Byte](https://docs.microsoft.com/en-us/dotnet/visual-basic/language-reference/data-types/byte-data-type)**
 		- Byte
 		- Byte
 		- Byte
@@ -513,17 +619,85 @@ The data for each THP from the original MKWii game is hard-coded and read from e
 		- UShort
 		- UShort
 		- UShort
-		- [Single](https://docs.microsoft.com/en-us/dotnet/visual-basic/language-reference/data-types/single-data-type)
-		- Byte as Boolean Bit (0=false, 1=true)
+		- **[Single](https://docs.microsoft.com/en-us/dotnet/visual-basic/language-reference/data-types/single-data-type)**
+			- This is parsed with invariant (EN-US) culture, and is expected to be in the format of ww.dd (dot character for fractional separator)
+			- w = whole part
+			- d = decimal part
+		- **Byte as Boolean Bit (0=false, 1=true)**
 		- Byte as Boolean Bit
 		- Byte as Boolean Bit
 		- UShort
 
 	- **FileDesc.txt and FileCDesc.txt**
 		- Former used as a text file describing the usage/formatting of each THP video
-		- Latter used as a text file describing the usage/formatting of the control signal in the padding
+		- Latter used as a text file describing the usage/formatting of the control signal in the padding	
+		- Each line is a [String](https://docs.microsoft.com/en-us/dotnet/visual-basic/language-reference/data-types/string-data-type) data type
 		- Both should use "n/a" if unused/for dummy entries
-		- Text must be single-line for each THP file in order to be in parallel with FileListing.txt
+		- Text must be single-line for each THP file, in order to be in parallel with FileListing.txt
+
+	- **FileSet.txt**
+		- Contains metadata to display in the Options tab, gives basic information about this fileset
+		- **Data for each line**
+			- Game
+			- Description
+			- Author
+			- Version
+			- Date
+		- **Corresponding Visual Basic data type for each entry**
+			- [String](https://docs.microsoft.com/en-us/dotnet/visual-basic/language-reference/data-types/string-data-type)
+			- String
+			- String
+			- String
+			- String
+
+**Song.wav**
+
+  If the "Elevator Music" option is set, Twhimp will playback a wav file (looped) during the long THP encoding process. This is used to indicate to the user that the encoding procedure is still running, and that it has ended when it stops. This file must be placed in the Thwimp exectuable's directory, and should be loopable.
+  
+**INI Settings file**
+
+  Options can be saved/loaded from/into the application, using the "Load/Save Settings" buttons within the Options Tab. When saving, Thwimp will generate a valid INI settings file that it will understand.
+  
+![INI.png](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/INI.png)
+
+**Thwimp INI file format:**
+- **Basic info**
+	- INI file starts with a magic header, also indicating the version of Thwimp that generated it
+	- All other entries define options data
+	- Data entry format
+		- String marker
+		- Assignment operator " = "
+		- Data
+			- Paths are always **absolute** paths
+			- Rest of data are **bits (0=false, 1=true)** for checkboxes
+- **Header info**
+	- File **must** start with valid header!
+	- Consists of string [Thwimp.ini v(version number)]
+	 Version number should be in the format a.b.c.d
+		- Version will be used in the future for backwards compatibility/legacy purposes, if INI format changes
+- **Data**
+	- Markers and their usage (**must** be in this order)
+		- THPRoot
+			- Path to THP root directory
+		- FFMpegDir
+			- Directory to FFMPEG\bin installation folder (with FFMPEG.exe and FFPLAY.exe)
+		- FFplay_wdir
+			- Working directory FFPlay
+		- irfanview
+			- Path to Irfanview executable (i_view32.exe)
+		- thpconv
+			- Path to THPConv.exe executable
+		- dataDir
+			- Path to folder with the game's fileset data defintiion files
+			- If path is to default fileset (in Thwimp executable's directory), then use 0 instead
+		- audio
+			- Audio checkbox option (bit)
+		- audio_bgm
+			- Elevator music checkbox option (bit)
+		- log_msgBox
+			- Less MsgBox checkbox option  (bit)
+		- log_Full
+			- Full Log checkbox option (bit)
 
 ## 6. Change Log
  - **v1.2: 2nd revision, bugfixes, enhancements, CLI support (08/01/20)**
@@ -725,36 +899,47 @@ Development of the 1st release was from October 19-23, 2018. It was based on my 
 
 ## 7. Known Issues
  - Encoded THP videos may lag or stutter on real hardware (especially when streaming modded files from SD card via Riivolution)
- 	- Read "Streaming bandwidth notes" subsection in Section 3 (How to use it) about this issue.
+ 	- Read **"Streaming bandwidth notes" subsection** in **Section 3 How to use it** about this issue.
  
 ## 8. Credits:
 
- - The creators of FFMPEG and FFPlay,
-	- A complete, cross-platform solution to record, convert and stream audio and video. 
-   	- [FFMPEG.org webpage](https://www.ffmpeg.org/)
+- **Special thanks (v1.2 Beta Testers, error reporters, etc)**
+	- Application would still be broken and usuable from v1.1 version without their helpful error reports!
+	- [H1KOUSEN](https://www.youtube.com/channel/UC_a_CsLJGAcUHKUFoIhukwQ/videos)
+		- For pointing out that v1.1 was broken and unusable
+		- Lead to discovery and fixing of [issue #5](https://github.com/Tamk1s/Thwimp/issues/5) and [Issue #6](https://github.com/Tamk1s/Thwimp/issues/6)
+	- [Moukrea](https://github.com/Moukrea)
+		- For discovering and reorting [Issue #11](https://github.com/Tamk1s/Thwimp/issues/11) when parsing strings as single in a foreign culture
 
- - Irfan Škiljan, the creator of IrfanView, 
- 	- An image viewer, editor, organizer and converter program for Microsoft Windows
- 	- [Irfanview webpage](https://www.irfanview.com/)
+- **Co-utilities**
+	- The creators of FFMPEG and FFPlay,
+		- A complete, cross-platform solution to record, convert and stream audio and video. 
+   		- [FFMPEG.org webpage](https://www.ffmpeg.org/)
 
- - "Diddy Kong" the creator of THPGUI (from the Super Smash Bros. Brawl forums)
-	- [Do a Google Search](http://www.google.com)
-   
- - Tock, Wiimm, the MKWii modding community, et. al.
-	- For all of their technical information and for the MKWiiki
-	- [MKWiiki](http://wiki.tockdom.com/wiki/Main_Page)
-   
- - The Paper NES Guy (DeviantArt)
- 	- [Thwimp artwork](https://www.deviantart.com/the-papernes-guy/art/Thwomps-Thwomps-Thwomps-186879685)
- - Asneter (DeviantArt)
- 	- [Filmstrip art](https://www.deviantart.com/asneter/art/Filmstrip-stock-349762273)
- - Flipfloppery (DeviantArt)
- 	- [Lakitu art](https://www.deviantart.com/flipfloppery/art/Piras-kart-445108302)
- - ariarts258 (DeviantArt)
- 	- [MKWii Riding art](https://www.deviantart.com/ariarts258/art/mario-kart-wii-244952252)	
+ 	- Irfan Škiljan, the creator of IrfanView, 
+ 		- An image viewer, editor, organizer and converter program for Microsoft Windows
+ 		- [Irfanview webpage](https://www.irfanview.com/)
 
- - Nintendo
- 	- Nintendo Wii
-    - Mario Kart Wii
-    - Super Mario franchise
-    - Etc.
+ 	- "Diddy Kong" the creator of THPGUI (from the Super Smash Bros. Brawl forums)
+		- [Do a Google Search](http://www.google.com)   
+	
+- **Artwork assets**
+ 	- The Paper NES Guy (DeviantArt)
+ 		- [Thwimp artwork](https://www.deviantart.com/the-papernes-guy/art/Thwomps-Thwomps-Thwomps-186879685)
+ 	- Asneter (DeviantArt)
+	 	- [Filmstrip art](https://www.deviantart.com/asneter/art/Filmstrip-stock-349762273)
+ 	- Flipfloppery (DeviantArt)
+ 		- [Lakitu art](https://www.deviantart.com/flipfloppery/art/Piras-kart-445108302)
+ 	- ariarts258 (DeviantArt)
+	 	- [MKWii Riding art](https://www.deviantart.com/ariarts258/art/mario-kart-wii-244952252)	
+
+- **General**
+	- Tock, Wiimm, the MKWii modding community, et. al.
+		- For all of their technical information and for the MKWiiki
+		- [MKWiiki](http://wiki.tockdom.com/wiki/Main_Page)
+
+ 	- Nintendo
+		- Nintendo Wii
+    		- Mario Kart Wii
+    		- Super Mario franchise
+    		- Etc.
