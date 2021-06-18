@@ -27,6 +27,22 @@ Public Class Main
     'If disabled, clear options tab items and forcibly set them every run
     Shared DEBUG As Boolean = False
 
+
+    'Formatting, parsing, and bugfix stuff
+
+    ''' <summary>
+    ''' Single_ToString function enum value conversion types
+    ''' </summary>
+    ''' <remarks></remarks>
+    Enum Single_ToString_Types
+        PERCENT = -1    '2-digit percentage (nn.dd%)
+        _SINGLE = 0     '2-digit single (nn.dd)
+        FIXED = 1       'G9 fixed point (for FFMPEG audio conversion)
+    End Enum
+
+    'Invariant culture object info
+    Shared culture As System.Globalization.CultureInfo = System.Globalization.CultureInfo.InvariantCulture
+
     'Command-Line Interface Mode?
     'This flag will be set if called from CommandLine with args, and will change the runtime behavior for errors etc.
     'http://www.csharp411.com/console-output-from-winforms-application/
@@ -903,8 +919,12 @@ Public Class Main
             txtVF_S.Text = THPs(bytEntry).visual.Frames.subframes.ToString()
             txtVF_T.Text = THPs(bytEntry).visual.Frames.totframes.ToString()
 
-            'Other playback info. FPS, does video have control signal?, Text desc of the control signal usage
-            txtVC_F.Text = THPs(bytEntry).visual.FPS.ToString("f")
+            'Other playback info. FPS, does video have control signal?, Text desc of the control signal usage            
+
+            'Convert FPS properly (bugfix for issue #16)
+            Dim fps As Single = THPs(bytEntry).visual.FPS                                       'Get FPS single value
+            Dim fps_string As String = Single_ToString(fps, Single_ToString_Types._SINGLE)      'Convert to string properly
+            txtVC_F.Text = fps_string                                                           'Update text
             txtVC_C.Text = THPs(bytEntry).visual.Ctrl.ToString()
             txtVC_D.Text = THPs(bytEntry).visual.CDesc
 
@@ -1709,14 +1729,21 @@ Public Class Main
             Dim x As String = txtTD_CX.Text                     'Crop xpos
             Dim y As String = txtTD_CY.Text                     'Crop ypos
             Dim w As String = txtTD_CW.Text                     'Crop width
-            Dim h As String = txtTD_CH.Text                     'Crop height
-            Dim _start As UShort = txtTD_FS.Text                'frame start
-            Dim _end As UShort = txtTD_FE.Text                  'frame end
-            Dim FPS As Single = txtVC_F.Text                    'FPS
+            Dim h As String = txtTD_CH.Text                     'Crop height            
 
             'Audio info. In seconds (so start/end pt /FPS = seconds)
+            Dim _start As UShort = TryParseErr_UShort(txtTD_FS.Text)    'frame start
+            Dim _end As UShort = TryParseErr_UShort(txtTD_FE.Text)      'frame end
+            Dim FPS As Single = TryParseErr_Single(txtVC_F.Text)        'FPS
+
             Dim _aStart As Single = _start / FPS                'audio start
             Dim _aEnd As Single = _end / FPS                    'audio end
+
+            'Note ToString("G9") format is the recommended one for "RoundTripping" a single
+            'Audio start/end values as G9 string format
+            Const FixedType As Single_ToString_Types = Single_ToString_Types.FIXED
+            Dim _gaStart As String = Single_ToString(_aStart, FixedType)
+            Dim _gaEnd As String = Single_ToString(_aEnd, FixedType)
 
             'User-error:
             'If chkRipDumF is checked (therefore, multiplicity=0 and Dum radio button),
@@ -1829,8 +1856,7 @@ Public Class Main
                 UpdateProg_Cur(CurPrg, "Ripping audio only as MP4...", True, False)
                 file2 = strQUOT & txtFFPlayTemp.Text & strPATHSEP & "audio.mp4" & strQUOT   'output file: "C:\THPPlayWorkDir\audio.mp4"
                 'Args: -i input_file -vn -ss audio_Start -to audio_End output_file
-                'Note ToString("G9") format is the recommended one for "RoundTripping" a single
-                args = " -i " & file & " -y -vn -ss " & _aStart.ToString("G9") & " -to " & _aEnd.ToString("G9") & " " & file2
+                args = " -i " & file & " -y -vn -ss " & _gaStart & " -to " & _gaEnd & " " & file2
 
                 'Run the cmd+args
                 'startInfo.FileName = cmd & args
@@ -2012,18 +2038,25 @@ Public Class Main
             'https://superuser.com/questions/459313/how-to-cut-at-exact-frames-using-ffmpeg
             'Cut video from start to end frame: -vf select="between(n\,200\,300),setpts=PTS-STARTPTS"
 
-            Dim cmd As String = ""                              'Command to run
-            Dim x As String = txtTD_CX.Text                     'Crop xpos
-            Dim y As String = txtTD_CY.Text                     'Crop ypos
-            Dim w As String = txtTD_CW.Text                     'Crop width
-            Dim h As String = txtTD_CH.Text                     'Crop height
-            Dim _start As UShort = txtTD_FS.Text                'frame start
-            Dim _end As UShort = txtTD_FE.Text                  'frame end
-            Dim FPS As Single = txtVC_F.Text                    'FPS
+            Dim cmd As String = ""                                      'Command to run
+            Dim x As String = txtTD_CX.Text                             'Crop xpos
+            Dim y As String = txtTD_CY.Text                             'Crop ypos
+            Dim w As String = txtTD_CW.Text                             'Crop width
+            Dim h As String = txtTD_CH.Text                             'Crop height
+
+            Dim _start As UShort = TryParseErr_UShort(txtTD_FS.Text)    'frame start
+            Dim _end As UShort = TryParseErr_UShort(txtTD_FE.Text)      'frame end
+            Dim FPS As Single = TryParseErr_Single(txtVC_F.Text)        'FPS
 
             'Audio info. In seconds (so start/end pt /FPS = seconds)
-            Dim _aStart As Single = _start / FPS                'audio start
-            Dim _aEnd As Single = _end / FPS                    'audio end
+            Dim _aStart As Single = _start / FPS                        'audio start
+            Dim _aEnd As Single = _end / FPS                            'audio end
+
+            'Note ToString("G9") format is the recommended one for "RoundTripping" a single
+            'Audio start/end values as G9 string format
+            Const FixedType As Single_ToString_Types = Single_ToString_Types.FIXED
+            Dim _gaStart As String = Single_ToString(_aStart, FixedType)
+            Dim _gaEnd As String = Single_ToString(_aEnd, FixedType)
 
             'User-error:
             'If chkRipDumF is checked (therefore, multiplicity=0 and Dum radio button),
@@ -2125,8 +2158,7 @@ Public Class Main
                 '"C:\FFMPegPath\FFMPEG.exe"
                 cmd = strQUOT & txtFFMPEG.Text & strPATHSEP & exeFMPeg & strQUOT
                 '-y -i "C:\PathToTHP\DIRtoTHP\file.thp" -vn -ss audio_Start -to audio_End output_file
-                'Note ToString("G9") format is the recommended one for "RoundTripping" a single
-                cmd &= " -y -i " & strQUOT & inFile & strQUOT & " -vn -ss " & _aStart.ToString("G9") & " -to " & _aEnd.ToString("G9") & " "
+                cmd &= " -y -i " & strQUOT & inFile & strQUOT & " -vn -ss " & _gaStart & " -to " & _gaEnd & " "
 
                 'If not override flag, then replace inFile.thp with .wav; else replace outFIle.mp4 with .wav
                 If pathOverride = "" Then
@@ -2488,7 +2520,7 @@ Public Class Main
             If singleM = False Then
                 'Set range from 1 to final frame
                 _start = 1
-                _end = TryParseErr_Single(txtVF_T.Text)
+                _end = TryParseErr_UShort(txtVF_T.Text)
                 If radTD_Dum.Checked = True Then dumF = True 'If dummy rad is checked, then set dumF flag
             Else
                 mb = nudTD_M.Value                                  'mult index in box
@@ -2921,6 +2953,7 @@ Public Class Main
             Dim parm As String                                      'Usually the concatenation of the elements in the parms array
             Dim frames As UShort = TryParseErr_UShort(txtTE_F.Text) 'The amount of frames to limit each subvideo to
             Dim FPS As Single = TryParseErr_Single(txtVC_F.Text)    'The framerate FPS as single
+            Dim FPS_string As String = Single_ToString(FPS, Single_ToString_Types._SINGLE)
 
             'Array of suffixes for the naming conventions in MS Excel A1_N notation (Row, Column)
             'It is hardcoded to 6x2, since the components of each length dimension don't go any larger than this
@@ -2989,7 +3022,7 @@ Public Class Main
 
                     'Properly convert bmp files to MP4: ffmpeg -y -f image2 -framerate FPS -i dummy_N_%03d.bmp out.mp4
                     cmd = strQUOT & txtFFMPEG.Text & strPATHSEP & exeFMPeg & strQUOT                                            '"C:\FFMPegPath\FFMPeg.exe"
-                    cmd &= " -y -f image2 -framerate " & FPS                                                                ' -y -f image2 -framerate FPS
+                    cmd &= " -y -f image2 -framerate " & FPS_string                                                             ' -y -f image2 -framerate FPS
 
                     file = strQUOT & path & strPATHSEP & "dummy_" & k.ToString() & "_%0" & dg.ToString() & "d.bmp" & strQUOT
                     cmd &= " -i " & file                                                                                    ' -i "C:\WorkingDir\dummy_M_%0Nd.bmp"
@@ -3385,7 +3418,7 @@ Public Class Main
             CurPrg(0) = 0
             CurPrg(1) = 1
             UpdateProg_Cur(CurPrg)
-            UpdateProg_Ttl(TtlPrg, "Step 10: Feed the JPG frames and any audio files ('" & filename & ".wav') into THPConv.exe to generate " & filename & ".thp (FPS=" & FPS.ToString("F2") & ")")
+            UpdateProg_Ttl(TtlPrg, "Step 10: Feed the JPG frames and any audio files ('" & filename & ".wav') into THPConv.exe to generate " & filename & ".thp (FPS=" & FPS_string & ")")
             UpdateProg_Cur(CurPrg, "Generating THP...", True, False)
             Dim hasAudio As Boolean = THPHasAudio()
             If hasAudio = False Then
@@ -3396,7 +3429,7 @@ Public Class Main
                 cmd = strQUOT & txtTHPConv.Text & strQUOT
                 file = "-j " & strQUOT & path & strPATHSEP & "*.jpg" & strQUOT
                 cmd &= " " & file
-                cmd &= " -r " & FPS.ToString("F2")
+                cmd &= " -r " & FPS_string
                 file = strQUOT & path & strPATHSEP & filename & ".thp" & strQUOT
                 cmd &= " -d " & file
             Else
@@ -3409,7 +3442,7 @@ Public Class Main
                 cmd &= " " & file
                 file = strQUOT & path & strPATHSEP & filename & ".wav" & strQUOT
                 cmd &= " -s " & file
-                cmd &= " -r " & FPS.ToString("F2")
+                cmd &= " -r " & FPS_string
                 file = strQUOT & path & strPATHSEP & filename & ".thp" & strQUOT
                 cmd &= " -d " & file
             End If
@@ -3548,6 +3581,10 @@ Public Class Main
         Dim prog2 As Single     'Progress% for other bar
         Dim logText As String   'Text for logging
 
+        Dim str_SingleA As String = ""                  '1st percentage value.toString register for text logging
+        Dim str_SingleB As String = ""                  '2nd percentage value.toString register for text logging
+        Const pcent_type As Single_ToString_Types = Single_ToString_Types.PERCENT   'Constant enum value for percent Single conv type
+
         Dim prg As System.Windows.Forms.ProgressBar     'Obj ref to this prog bar
         Dim prg2 As System.Windows.Forms.ProgressBar    'Obj ref to other prog bar
         Dim lbl As System.Windows.Forms.Label           'Obj ref to this prog bar's text percentage progress
@@ -3589,12 +3626,12 @@ Public Class Main
             'If current value < min 0, then set current to min
             value(0) = 0
         End If
-        prg.Value = value(0)                'Set this progress bar current progress
-        prog = value(0) / value(1)          'Get this progress bar's progress as %
+        prg.Value = value(0)                    'Set this progress bar current progress
+        prog = value(0) / value(1)              'Get this progress bar's progress as %
 
-        prog2 = prg2.Value / prg2.Maximum   'Get other progress bar's progress as %
-        lbl.Text = prog.ToString("P2")      'Display progress as 2-dig% ("iii.dd%")
-        lbl.Update()                        'Force a lbl update for fast rendering
+        prog2 = prg2.Value / prg2.Maximum       'Get other progress bar's progress as %
+        lbl.Text = Single_ToString(prog, pcent_type)  'Display progress as 2-dig% ("iii.dd%")
+        lbl.Update()                            'Force a lbl update for fast rendering
 
         'Handle message (if not null)
         If IsNothing(text) = False Then
@@ -3613,22 +3650,28 @@ Public Class Main
                 'THPEnc progress (ttl, cur) = (ttl%,cur%):
                 'Message
                 If type = False Then
-                    logText = "THPEnc progress (ttl, cur) = (" & prog2.ToString("P2") & "," & prog.ToString("P2") & "):" & strNL & text
+                    str_SingleA = Single_ToString(prog2, pcent_type)
+                    str_SingleB = Single_ToString(prog, pcent_type)
                 Else
-                    logText = "THPEnc progress (ttl, cur) = (" & prog.ToString("P2") & "," & prog2.ToString("P2") & "): " & strNL & text
+                    str_SingleA = Single_ToString(prog, pcent_type)
+                    str_SingleB = Single_ToString(prog2, pcent_type)
                 End If
+                logText = "THPEnc progress (ttl, cur) = (" & str_SingleA & "," & str_SingleB & "):" & strNL & text
                 Log(logText)
             End If
 
             'If wait flag, stall app by 3s
             If _wait Then Threading.Thread.Sleep(3000)
         Else
-            'If text is null BUT CLI_MODE, log progress. This allows showing of intermediateary progres in CLI_MODE
+            'If text is null BUT CLI_MODE, log progress. This allows showing of intermediary progres in CLI_MODE
             If type = False Then
-                logText = "THPEnc progress (ttl, cur) = (" & prog2.ToString("P2") & "," & prog.ToString("P2") & ")"
+                str_SingleA = Single_ToString(prog2, pcent_type)
+                str_SingleB = Single_ToString(prog, pcent_type)
             Else
-                logText = "THPEnc progress (ttl, cur) = (" & prog.ToString("P2") & "," & prog2.ToString("P2") & ")"
+                str_SingleA = Single_ToString(prog, pcent_type)
+                str_SingleB = Single_ToString(prog2, pcent_type)
             End If
+            logText = "THPEnc progress (ttl, cur) = (" & str_SingleA & "," & str_SingleB & ")"
             Log(logText)
         End If
     End Sub
@@ -3667,12 +3710,13 @@ Public Class Main
 
         Const ext As String = ".log"
         Const name As String = "thwimp"   'Base filename
+        Const dateFormat As String = "MMddyyyy_HHmmss"
         Dim _datetime As String = ""        'Current date
         Dim _file As String = ""        'Final filename
 
         'Try-Catch-block in case of stupid Y2K-like bug in the far future
         Try
-            _datetime = DateTime.Now.ToString("MMddyyyy_HHmmss")
+            _datetime = DateTime.Now.ToString(dateFormat)
         Catch ex As Exception
             Log_MsgBox(ex, ex.Message, MsgBoxStyle.Exclamation, "Date/Time error in btnLogSave_Click! (Future Y2K-like bug?)", True)
         End Try
@@ -4693,9 +4737,12 @@ Public Class Main
         Return result
     End Function
 
-    'Converts String with "True" or "False" into appropriate boolean value
-    'In = Boolean String
-    'Out = Boolean value
+    ''' <summary>
+    ''' Converts String with "True" or "False" into appropriate boolean value
+    ''' </summary>
+    ''' <param name="inp">Boolean String</param>
+    ''' <returns>Boolean value</returns>
+    ''' <remarks></remarks>
     Private Function BoolStrToBool(ByVal inp As String) As Boolean
         Dim outp As Boolean = False      'Output value
         If inp = "True" Then outp = True 'If "True" then true
@@ -4743,6 +4790,7 @@ Public Class Main
         End If
         Return outp
     End Function
+
     ''' <summary>
     ''' Try parsing a string as Single; if fail, throw error
     ''' </summary>
@@ -4757,9 +4805,42 @@ Public Class Main
 
         'TryParse single on a Float using InvariantCulture
         Dim style As System.Globalization.NumberStyles = System.Globalization.NumberStyles.Float
-        Dim culture As System.Globalization.CultureInfo = System.Globalization.CultureInfo.InvariantCulture
         Dim result As Boolean = Single.TryParse(inp, style, culture, outp)
         If result = False Then Throw New System.Exception("Error parsing string into Single")
+        Return outp
+    End Function
+
+    ''' <summary>
+    ''' Given a single datatype value, returns its string form as a particular format (culture invariant)
+    ''' Function for various related bugfixes for issue #16
+    ''' https://github.com/Tamk1s/Thwimp/issues/16
+    ''' </summary>
+    ''' <param name="inp">Single value</param>
+    ''' <param name="type">Single_ToString_Types conversion type; see enum definition</param>
+    ''' <returns>Properly formatted single value (culture invariant string)</returns>
+    ''' <remarks></remarks>
+    Private Function Single_ToString(ByVal inp As Single, ByVal type As Single_ToString_Types) As String
+        ''Bugfix for single ToString culture invariance:
+        'https://stackoverflow.com/questions/164926/how-do-i-display-a-decimal-value-to-2-decimal-places#comment96097523_1907832
+
+        Dim outp As String = ""                                                                                 'Output string
+
+        'Format string to use for Single_ToString_Types type
+        Dim formatString As String = ""
+        Select Case type
+            Case Single_ToString_Types.PERCENT
+                'If percent, format as 2-digit percent (nn.dd%)
+                formatString = "P2"
+            Case Single_ToString_Types._SINGLE
+                'If single, format as 2-digit single (nn.dd)
+                formatString = "F2"
+            Case Single_ToString_Types.FIXED
+                'If fixed, format as 9-digit format for FFMPEG Audio conversion round-tripping stuff
+                formatString = "G9"
+        End Select
+
+        'Convert single to appropriate format (culture-invariant); return
+        outp = inp.ToString(formatString, culture)
         Return outp
     End Function
 End Class

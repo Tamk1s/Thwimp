@@ -14,7 +14,7 @@ Imports System.Runtime.InteropServices
 <Assembly: AssemblyDescription("A dual-GUI/CLI utility which views, rips, and helps create THP video files for Mario Kart Wii. Can be modified for usage with other games.")> 
 <Assembly: AssemblyCompany("EagleSoft Ltd")> 
 <Assembly: AssemblyProduct("Thwimp")> 
-<Assembly: AssemblyCopyright("EagleSoft Ltd 2020")> 
+<Assembly: AssemblyCopyright("EagleSoft Ltd 2021")> 
 <Assembly: AssemblyTrademark("")> 
 
 <Assembly: ComVisible(False)> 
@@ -33,7 +33,7 @@ Imports System.Runtime.InteropServices
 ' by using the '*' as shown below:
 ' <Assembly: AssemblyVersion("1.0.*")> 
 
-<Assembly: AssemblyVersion("1.2.0.0")> 
-<Assembly: AssemblyFileVersion("1.2.0.0")> 
+<Assembly: AssemblyVersion("1.2.0.1")> 
+<Assembly: AssemblyFileVersion("1.2.0.1")> 
 
 <Assembly: NeutralResourcesLanguageAttribute("en-US")> 
