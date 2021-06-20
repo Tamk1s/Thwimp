@@ -1,5 +1,5 @@
 ﻿'Thwimp - GUI/CLI FOSS utility for ripping, viewing, and creating THP video files for Mario Kart Wii
-'Copyright (C) 2018-2020 Tamkis
+'Copyright (C) 2018-2021 Tamkis
 
 'This program is free software: you can redistribute it and/or modify
 'it under the terms of the GNU General Public License as published by
@@ -155,7 +155,7 @@ Public Class Main
         If CLI.Count <> 0 Then CLI_MODE = True 'If params exist, then CLI MODE
 
         'Init log info
-        Dim info As String = Application.ProductName & ": " & Application.ProductVersion        
+        Dim info As String = Application.ProductName & ": " & Application.ProductVersion & strNL
 
         'Load Options tab
         tabApp.SelectedIndex = 1
@@ -3716,7 +3716,9 @@ Public Class Main
 
         'Try-Catch-block in case of stupid Y2K-like bug in the far future
         Try
-            _datetime = DateTime.Now.ToString(dateFormat)
+            'Use invariant culture as usual
+            '(See top answer: https://social.msdn.microsoft.com/Forums/sqlserver/en-US/31bd2f3c-a99d-4f24-8cb9-3f87d424d1c6/datetimenow-to-string-by-culture?forum=csharpgeneral )
+            _datetime = DateTime.Now.ToString(dateFormat, culture)
         Catch ex As Exception
             Log_MsgBox(ex, ex.Message, MsgBoxStyle.Exclamation, "Date/Time error in btnLogSave_Click! (Future Y2K-like bug?)", True)
         End Try
@@ -3750,14 +3752,15 @@ Public Class Main
         Dim xFileData As StreamWriter = Nothing
         Try
             xFileData = New StreamWriter(_file, False, System.Text.Encoding.ASCII)
+            Log_MsgBox(Nothing, "Successfully generated log file!", MsgBoxStyle.Information, "Logger", True)
             Dim strEntry As String = txtLog.Text
-            xFileData.Write(strEntry)
+            xFileData.Write(strEntry)            
             KillStream(xFileData, False, _file)
             success = True
         Catch ex As Exception
-            'Kill lingering stream (but DON'T delete; corrupted error log file is better than nothing...)
+            'Kill lingering stream (but DON'T delete; corrupted error log file is better than nothing...)            
+            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error saving log file!", True)
             KillStream(xFileData, False, _file)
-            Log_MsgBox(ex, ex.Message, MsgBoxStyle.Critical, "Error saving log file!")
         End Try
 
         'If success writing, then clear textboxes
