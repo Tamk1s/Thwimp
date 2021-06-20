@@ -1,4 +1,5 @@
-﻿'Thwimp - GUI/CLI FOSS utility for ripping, viewing, and creating THP video files for Mario Kart Wii
+﻿'Thwimp v1.2.0.1
+'GUI/CLI FOSS utility for ripping, viewing, and creating THP video files for Mario Kart Wii
 'Copyright (C) 2018-2021 Tamkis
 
 'This program is free software: you can redistribute it and/or modify

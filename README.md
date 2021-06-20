@@ -1,4 +1,4 @@
-# Thwimp v1.2
+# Thwimp v1.2.0.1
 
 ![Thwimp logo](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/Thwimp/Resources/thwimp.png)
 
@@ -695,11 +695,38 @@ The data for each THP from the original MKWii game is hard-coded and read from e
 		- audio_bgm
 			- Elevator music checkbox option (bit)
 		- log_msgBox
-			- Less MsgBox checkbox option  (bit)
+			- Less MsgBox checkbox option (bit)
 		- log_Full
 			- Full Log checkbox option (bit)
 
 ## 6. Change Log
+ - **v1.2.0.1: v1.2 bugfixe revision (06/20/21)**
+	- **Bugfixes**
+	    - Fixed various lingering cultural issues that would cause the application to break when processing THP videos and to display wrongly formatted data on foreign machines (outside en-US culture). Enforced invariant culture for bugfixes for [issue #11](https://github.com/Tamk1s/Thwimp/issues/11), [issue #16](https://github.com/Tamk1s/Thwimp/issues/16)
+	        - Fixed issues with FPS textbox in THP Info group box not displaying culture invariant single string format, further breaking program when processing THP videos on foreign machines
+	        - Fixed issues with video start/end frame single strings for THP Viewer/Ripper cropper not using invariant culture for FFMPEG/FFPlay cmdline calls
+	        - Fixed issues with FFMPEG calls not using the FPS string value with invariant culture formatting while THP encoding
+	        - Fixed issues with the progress bar/application logger not using invariant culture format for the progress bar percentage string values
+	        - Fixed issue with enforcing invariant culture date formatting for the pre-generated file name when saving the Thwimp application log file
+
+	    - Added more string parsing input validation
+            - THP Viewer
+            - THP Ripper
+            - **Parsing changes**
+                - Start/end video frame cropping information (handle parsing as UShort)
+                - FPS value (handle as Single)
+	    - Fixed a code typo of parsing the video frame end value string as a UShort datatype instead of a Single datatype
+            - Handled after changing the multiplicity Numeric Up/Down box in the video cropper (THP Viewer/Ripper section)
+        - Added a newLine to the end of the Application name/version string in the application logger after booting up application (Main_Load() function)
+
+	- **Enhancements**
+	    - Versioning and application branding
+	        - Updated application build and manual versions to v.1.2.0.1
+	        - Updated application and GNU license copyright dates to ©2021
+	        - Updated include Elevator Music song.wav song, MP3 file
+        - Application logger saving
+            - Added MsgBox display and logging of successful saving of application logger file to the log
+
  - **v1.2: 2nd revision, bugfixes, enhancements, CLI support (08/01/20)**
 	- **Bugfixes**
 		- **[Issue #5](https://github.com/Tamk1s/Thwimp/issues/5): Irfanview path bug/Issue, [Issue #6](https://github.com/Tamk1s/Thwimp/issues/6): JPG Quality Bug**
@@ -828,7 +855,7 @@ The data for each THP from the original MKWii game is hard-coded and read from e
 			- Elevator Music
 				- Looping song bgm to play during long THP Encoding process
 				- Song.wav at application directory
-				- Default application [song.wav](https://github.com/Tamk1s/Thwimp/blob/master/Thwimp/Resources/song.wav) is my own [MKWii Menu (SMPS32x) song](https://www.youtube.com/watch?v=9IgTsuiI_ig)
+				- Default application [song.wav](https://github.com/Tamk1s/Thwimp/blob/master/Thwimp/Resources/song.wav) is my own [MKWii Menu (SMPS32x) song](https://youtu.be/wYIMIcdarNQ)
 				- Audio toggle via new "Elevator Music" checkbox in Options tab
 			- Audio toggle via new "Audio" checkbox in Options tab
 		- **Progress bars/application logging**
@@ -909,7 +936,9 @@ Development of the 1st release was from October 19-23, 2018. It was based on my 
 		- For pointing out that v1.1 was broken and unusable
 		- Lead to discovery and fixing of [issue #5](https://github.com/Tamk1s/Thwimp/issues/5) and [Issue #6](https://github.com/Tamk1s/Thwimp/issues/6)
 	- [Moukrea](https://github.com/Moukrea)
-		- For discovering and reorting [Issue #11](https://github.com/Tamk1s/Thwimp/issues/11) when parsing strings as single in a foreign culture
+		- For discovering and reporting [Issue #11](https://github.com/Tamk1s/Thwimp/issues/11) when parsing strings as single in a foreign culture
+	- [toni15538](https://github.com/toni15538)
+		- For discovering and reporting more application breaking, invariant-culture bugs ([Issue #16](https://github.com/Tamk1s/Thwimp/issues/16), extension of unresolved [Issue #11](https://github.com/Tamk1s/Thwimp/issues/11))
 
 - **Co-utilities**
 	- The creators of FFMPEG and FFPlay,
