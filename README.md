@@ -102,7 +102,7 @@ As mentioned earlier, Thwimp uses some FOSS and other command line tools for pro
 
  - [FFMPEG (with FFPlay)](https://ffmpeg.zeranoe.com/builds/)
  - [Irfanview (32-bit)](https://www.irfanview.com/main_download_engl.htm)
- - [THPConv or THPGUI](http://www.google.com)
+ - THPConv or THPGUI
 
 ![Utility logos](https://raw.githubusercontent.com/Tamk1s/Thwimp/master/readme/Utils.png)
 ### Options tab:
